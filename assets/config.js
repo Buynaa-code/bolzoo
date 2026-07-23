@@ -9,6 +9,6 @@
  *   3. SQL editor руу орж sql/schema.sql-ийг ажиллуулах
  */
 window.BOLZOO_CONFIG = {
-  supabaseUrl: 'https://bhcjaemcrqyfhjejotcg.supabase.co',
-  supabaseAnonKey: 'sb_publishable_Ft9Zjy4AvQ1ww6BTuMsWkg_SSPphUTc'
+  supabaseUrl: 'https://chmxjljudmwttwhemdri.supabase.co',
+  supabaseAnonKey: 'sb_publishable_arrXY92vzLxUIKrb5SKenQ_fM7Y7vKR'
 };

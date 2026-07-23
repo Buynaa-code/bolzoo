@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex,nofollow" />
+<title>Админ 🔐</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Comfortaa:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --coral:#ff8fa6; --coral-deep:#f76a8e; --coral-soft:#ffb3c0;
+    --ink:#5a2a46; --muted:#9a6b84;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0; padding:0;}
+  body{
+    min-height:100vh; font-family:'Nunito',system-ui,sans-serif; color:var(--ink);
+    background:
+      radial-gradient(900px 620px at 12% 8%, #ffe6d6 0%, transparent 52%),
+      radial-gradient(820px 560px at 88% 14%, #ffdce8 0%, transparent 50%),
+      linear-gradient(158deg,#fff6ef 0%, #fff0f2 55%, #fdeef6 100%);
+  }
+  .wrap{max-width:960px; margin:0 auto; padding:32px 20px 60px;}
+  h1{font-family:'Comfortaa',sans-serif; font-weight:700; font-size:26px; margin:0 0 4px;}
+  .subtitle{color:var(--muted); margin:0 0 22px; font-size:14px;}
+  .card{background:#fffdfb; border-radius:20px; padding:20px 22px; box-shadow:0 14px 40px -20px rgba(247,106,142,.35); margin-bottom:18px;}
+  label{display:block; font-weight:800; font-size:12px; letter-spacing:.4px; text-transform:uppercase; color:var(--coral-deep); margin-bottom:6px;}
+  input, textarea, select{
+    width:100%; padding:11px 14px; border:1px solid #ffd7c9; border-radius:12px;
+    font-family:'Nunito',sans-serif; font-size:14px; color:var(--ink); background:#fff;
+  }
+  input:focus, textarea:focus, select:focus{outline:none; border-color:var(--coral-deep); box-shadow:0 0 0 3px rgba(247,106,142,.15);}
+  .row{display:grid; grid-template-columns:120px 1fr; gap:12px; align-items:end;}
+  @media (max-width:600px){ .row{grid-template-columns:1fr;} }
+  .btn{border:none; cursor:pointer; font-family:'Nunito',sans-serif; font-weight:800; font-size:14px;
+    padding:11px 18px; border-radius:999px; color:#fff;
+    background:linear-gradient(135deg,var(--coral),var(--coral-deep));
+    box-shadow:0 8px 20px -8px rgba(247,106,142,.55);
+  }
+  .btn.secondary{background:#fff; color:var(--coral-deep); border:2px solid var(--coral-soft); box-shadow:none;}
+  .btn.small{padding:6px 12px; font-size:12px;}
+  .btn.danger{background:linear-gradient(135deg,#ffa3a3,#e46060);}
+  .btn:disabled{opacity:.45; cursor:not-allowed;}
+  .stats{display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:16px;}
+  @media (max-width:640px){ .stats{grid-template-columns:repeat(2,1fr);} }
+  .stat{background:#fffdfb; border-radius:14px; padding:14px 16px; box-shadow:0 10px 26px -18px rgba(247,106,142,.35);}
+  .stat-num{font-family:'Comfortaa',sans-serif; font-weight:700; font-size:24px; color:var(--coral-deep);}
+  .stat-lbl{font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.6px; font-weight:800;}
+  table{width:100%; border-collapse:collapse; font-size:13px;}
+  th{text-align:left; font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; padding:8px 10px; border-bottom:2px solid #ffe6dc;}
+  td{padding:10px; border-bottom:1px solid #fff0e6; vertical-align:middle;}
+  tr.used td{opacity:.65;}
+  .code-cell{font-family:ui-monospace,Menlo,monospace; font-weight:800; font-size:14px; color:var(--ink); letter-spacing:1px;}
+  .badge{display:inline-block; font-size:10px; font-weight:800; padding:3px 9px; border-radius:999px; letter-spacing:.4px; text-transform:uppercase;}
+  .badge.free{background:#dcffde; color:#3a8a4a;}
+  .badge.used{background:#f3e6ec; color:var(--muted);}
+  .status{margin-top:10px; min-height:20px; font-weight:800; font-size:13px; color:var(--coral-deep);}
+  .newcodes{background:#fff8ee; border:1px dashed var(--coral-soft); border-radius:12px; padding:12px; margin-top:10px; font-family:ui-monospace,Menlo,monospace; font-size:13px; white-space:pre-wrap; word-break:break-all;}
+  .empty{color:var(--muted); text-align:center; padding:30px 10px; font-size:14px;}
+  .locked{max-width:440px; margin:60px auto 0;}
+  .locked h2{font-family:'Comfortaa',sans-serif; margin:0 0 8px;}
+  .toolbar{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:12px;}
+  .warn{background:#fff1cf; color:#8a6a20; padding:10px 14px; border-radius:12px; margin-bottom:16px; font-size:13px; font-weight:700;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ─── LOCKED ─── -->
+  <div id="lockView" class="locked" style="display:none;">
+    <div class="card">
+      <h2>🔐 Админ нэвтрэх</h2>
+      <p class="subtitle">Зөвхөн эзэмшигчид зориулав. Нууц үг оруулна уу.</p>
+      <div style="margin-bottom:12px;">
+        <label>Нууц үг</label>
+        <input id="pwInput" type="password" placeholder="••••••••" autocomplete="current-password" />
+      </div>
+      <button class="btn" id="loginBtn" style="width:100%;">Нэвтрэх</button>
+      <div class="status" id="loginStatus"></div>
+      <p style="font-size:11px; color:var(--muted); margin-top:14px;">
+        Локал сервер горимд ADMIN_PASSWORD env var-аар тохируулна (default: <code>admin123</code>).
+        Supabase-д <code>admin_settings</code> хүснэгтэд хадгална.
+      </p>
+    </div>
+  </div>
+
+  <!-- ─── UNLOCKED ─── -->
+  <div id="mainView" style="display:none;">
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:18px;">
+      <div>
+        <h1>🔑 Код удирдлага</h1>
+        <div class="subtitle">Хэрэглэгчид зориулж код үүсгэх, хянах</div>
+      </div>
+      <div style="display:flex; gap:8px;">
+        <a class="btn secondary small" href="dashboard.html">📊 Урилгууд</a>
+        <button class="btn secondary small" id="logoutBtn">🚪 Гарах</button>
+      </div>
+    </div>
+
+    <div id="backendWarn" class="warn" style="display:none;">
+      ⚠️ Supabase backend тохируулаагүй тул зөвхөн энэ browser дээр код хадгалагдана.
+    </div>
+
+    <div class="stats">
+      <div class="stat"><div class="stat-num" id="statTotal">0</div><div class="stat-lbl">Нийт код</div></div>
+      <div class="stat"><div class="stat-num" id="statFree">0</div><div class="stat-lbl">Ашиглагдаагүй</div></div>
+      <div class="stat"><div class="stat-num" id="statUsed">0</div><div class="stat-lbl">Ашиглагдсан</div></div>
+      <div class="stat"><div class="stat-num" id="statToday">0</div><div class="stat-lbl">Өнөөдрийн ашиглалт</div></div>
+    </div>
+
+    <div class="card">
+      <h3 style="margin:0 0 12px; font-family:'Comfortaa',sans-serif;">➕ Шинэ код үүсгэх</h3>
+      <div class="row">
+        <div>
+          <label>Тоо</label>
+          <input id="qty" type="number" min="1" max="100" value="1" />
+        </div>
+        <div>
+          <label>Тэмдэглэл (заавал биш)</label>
+          <input id="note" type="text" placeholder="жишээ: Дулмаа — 5000₮ — @dulmaa_ig" />
+        </div>
+      </div>
+      <div class="toolbar" style="margin-top:14px;">
+        <button class="btn" id="genBtn">💫 Үүсгэх</button>
+        <button class="btn secondary small" id="refreshBtn">🔄 Шинэчлэх</button>
+      </div>
+      <div id="newCodes" class="newcodes" style="display:none;"></div>
+      <div class="status" id="genStatus"></div>
+    </div>
+
+    <div class="card">
+      <h3 style="margin:0 0 12px; font-family:'Comfortaa',sans-serif;">📋 Бүх кодууд</h3>
+      <div id="tableWrap"></div>
+    </div>
+  </div>
+</div>
+
+<script src="assets/config.js"></script>
+<script src="assets/api.js"></script>
+<script>
+(function(){
+  var $ = function(id){ return document.getElementById(id); };
+  var lockView = $('lockView'), mainView = $('mainView');
+  var kind = window.BolzooAPI ? window.BolzooAPI.backendKind : 'localStorage';
+  if(kind === 'localStorage'){ $('backendWarn').style.display = 'block'; }
+
+  function getPw(){ return sessionStorage.getItem('bolzoo:admin_pw') || ''; }
+  function setPw(v){ sessionStorage.setItem('bolzoo:admin_pw', v); }
+  function clearPw(){ sessionStorage.removeItem('bolzoo:admin_pw'); }
+
+  function showLocked(msg){
+    mainView.style.display = 'none';
+    lockView.style.display = 'block';
+    if(msg){ $('loginStatus').textContent = msg; }
+  }
+  function showMain(){
+    lockView.style.display = 'none';
+    mainView.style.display = 'block';
+    loadCodes();
+  }
+
+  async function tryLogin(pw){
+    $('loginStatus').textContent = '⏳ шалгаж байна…';
+    try{
+      // A list call with the pw acts as auth check
+      await BolzooAPI.adminListCodes(pw);
+      setPw(pw);
+      showMain();
+    }catch(e){
+      $('loginStatus').textContent = '❌ ' + (e.message || 'Нэвтэрч чадсангүй');
+    }
+  }
+
+  $('loginBtn').addEventListener('click', function(){ tryLogin($('pwInput').value); });
+  $('pwInput').addEventListener('keydown', function(e){ if(e.key==='Enter') tryLogin($('pwInput').value); });
+  $('logoutBtn').addEventListener('click', function(){ clearPw(); showLocked('Гарлаа.'); });
+
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function fmtWhen(iso){ if(!iso) return '—'; return new Date(iso).toLocaleString('mn-MN'); }
+  function isToday(iso){ if(!iso) return false; var d=new Date(iso), n=new Date(); return d.toDateString()===n.toDateString(); }
+
+  function renderTable(rows){
+    var wrap = $('tableWrap');
+    if(!rows.length){ wrap.innerHTML = '<div class="empty">Одоохондоо код байхгүй байна. Дээрх формоор эхнийхээ үүсгээрэй.</div>'; return; }
+    var html = '<table><thead><tr>'
+      + '<th>Код</th>'
+      + '<th>Төлөв</th>'
+      + '<th>Үүсгэсэн</th>'
+      + '<th>Ашигласан</th>'
+      + '<th>Тэмдэглэл</th>'
+      + '<th></th>'
+    + '</tr></thead><tbody>';
+    rows.forEach(function(r){
+      html += '<tr class="'+(r.used?'used':'')+'">'
+        + '<td class="code-cell">'+esc(r.code)+'</td>'
+        + '<td>'+(r.used ? '<span class="badge used">Ашигласан</span>' : '<span class="badge free">Хоосон</span>')+'</td>'
+        + '<td>'+esc(fmtWhen(r.created_at))+'</td>'
+        + '<td>'+(r.used ? esc(fmtWhen(r.used_at)) + (r.used_for_invite_id ? '<br><span style="font-size:11px; color:var(--muted); font-family:ui-monospace,Menlo,monospace;">→ '+esc(r.used_for_invite_id)+'</span>' : '') : '—')+'</td>'
+        + '<td>'+esc(r.note || '—')+'</td>'
+        + '<td style="text-align:right; white-space:nowrap;">'
+          + '<button class="btn secondary small" data-copy="'+esc(r.code)+'">📋</button>'
+          + (r.used ? '' : ' <button class="btn danger small" data-del="'+esc(r.code)+'">🗑️</button>')
+        + '</td>'
+      + '</tr>';
+    });
+    html += '</tbody></table>';
+    wrap.innerHTML = html;
+  }
+  function updateStats(rows){
+    var used = rows.filter(function(r){ return r.used; });
+    $('statTotal').textContent = rows.length;
+    $('statFree').textContent  = rows.length - used.length;
+    $('statUsed').textContent  = used.length;
+    $('statToday').textContent = used.filter(function(r){ return isToday(r.used_at); }).length;
+  }
+
+  async function loadCodes(){
+    try{
+      var rows = await BolzooAPI.adminListCodes(getPw());
+      renderTable(rows);
+      updateStats(rows);
+    }catch(e){
+      var msg = e.message || String(e);
+      if(/password/i.test(msg)){ clearPw(); showLocked('Сессион дуусжээ. Дахин нэвтэрнэ үү.'); return; }
+      alert('Ачаалахад алдаа: ' + msg);
+    }
+  }
+
+  $('genBtn').addEventListener('click', async function(){
+    var qty = Math.max(1, Math.min(100, Number($('qty').value)||1));
+    var note = $('note').value.trim();
+    $('genBtn').disabled = true;
+    $('genStatus').textContent = '⏳ Үүсгэж байна…';
+    try{
+      var rows = await BolzooAPI.adminCreateCodes(getPw(), qty, note);
+      var box = $('newCodes');
+      box.style.display = 'block';
+      box.textContent = rows.map(function(r){ return r.code; }).join('\n');
+      $('genStatus').textContent = '✅ '+rows.length+' код үүслээ. Дээрхийг Messenger/Instagram-т хуулна уу.';
+      $('note').value = '';
+      loadCodes();
+    }catch(e){
+      $('genStatus').textContent = '❌ '+(e.message||e);
+    }finally{
+      $('genBtn').disabled = false;
+    }
+  });
+  $('refreshBtn').addEventListener('click', loadCodes);
+
+  document.addEventListener('click', function(e){
+    var copyBtn = e.target.closest('[data-copy]');
+    if(copyBtn){
+      var c = copyBtn.getAttribute('data-copy');
+      if(navigator.clipboard){
+        navigator.clipboard.writeText(c).then(function(){
+          var t=copyBtn.textContent; copyBtn.textContent='✅';
+          setTimeout(function(){ copyBtn.textContent=t; }, 1200);
+        });
+      }
+      return;
+    }
+    var delBtn = e.target.closest('[data-del]');
+    if(delBtn){
+      var c2 = delBtn.getAttribute('data-del');
+      if(!confirm('Энэ кодыг устгах уу? ('+c2+')')) return;
+      BolzooAPI.adminDeleteCode(getPw(), c2).then(loadCodes).catch(function(err){
+        alert('Устгаж чадсангүй: '+(err.message||err));
+      });
+    }
+  });
+
+  // Bootstrap: check existing session
+  if(getPw()){
+    tryLogin(getPw());
+  } else {
+    showLocked();
+  }
+})();
+</script>
+</body>
+</html>

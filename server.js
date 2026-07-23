@@ -2,12 +2,17 @@
 /**
  * Bolzoo local dev server.
  *   - Serves static files from ./
- *   - Exposes PostgREST-compatible /rest/v1/invites endpoint (matches assets/api.js)
- *   - JSON file storage at ./data/invites.json (auto-created)
+ *   - Exposes PostgREST-compatible /rest/v1/invites + /rest/v1/access_codes endpoints
+ *   - RPC-like endpoints under /rest/v1/rpc/* to match Supabase functions
+ *   - JSON file storage at ./data/{invites,access_codes}.json (auto-created)
  *   - Zero npm dependencies
  *
- * Run:   node server.js       (default port 8080)
- *        PORT=3000 node server.js
+ * Env:
+ *   PORT              (default 8080)
+ *   ADMIN_PASSWORD    (default "admin123" — used by admin.html for local dev)
+ *
+ * Run:   node server.js
+ *        PORT=3000 ADMIN_PASSWORD=hunter2 node server.js
  */
 'use strict';
 
@@ -17,23 +22,33 @@ const path = require('path');
 const crypto = require('crypto');
 
 const PORT = Number(process.env.PORT || 8080);
+const ADMIN_PASSWORD = String(process.env.ADMIN_PASSWORD || 'admin123');
 const ROOT = __dirname;
 const DATA_DIR = path.join(ROOT, 'data');
-const DATA_FILE = path.join(DATA_DIR, 'invites.json');
+const INVITES_FILE = path.join(DATA_DIR, 'invites.json');
+const CODES_FILE = path.join(DATA_DIR, 'access_codes.json');
 
 fs.mkdirSync(DATA_DIR, { recursive: true });
-let invites = {};
-try { invites = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8')); } catch (_) { invites = {}; }
 
-let savePending = false;
-function save() {
-  if (savePending) return;
-  savePending = true;
-  setImmediate(() => {
-    savePending = false;
-    fs.writeFileSync(DATA_FILE, JSON.stringify(invites, null, 2));
-  });
+function loadJSON(file, fallback) {
+  try { return JSON.parse(fs.readFileSync(file, 'utf8')); } catch (_) { return fallback; }
 }
+let invites = loadJSON(INVITES_FILE, {});
+let codes   = loadJSON(CODES_FILE, {});
+
+function makeSaver(file, getData) {
+  let pending = false;
+  return function save() {
+    if (pending) return;
+    pending = true;
+    setImmediate(() => {
+      pending = false;
+      fs.writeFileSync(file, JSON.stringify(getData(), null, 2));
+    });
+  };
+}
+const saveInvites = makeSaver(INVITES_FILE, () => invites);
+const saveCodes   = makeSaver(CODES_FILE,   () => codes);
 
 const MIME = {
   '.html': 'text/html; charset=utf-8',
@@ -62,6 +77,9 @@ function send(res, code, body, headers = {}) {
 }
 function sendJSON(res, code, obj, headers = {}) {
   send(res, code, JSON.stringify(obj), Object.assign({ 'Content-Type': 'application/json; charset=utf-8' }, headers));
+}
+function sendPGError(res, code, message) {
+  return sendJSON(res, code, { code: 'P0001', message: message, details: null, hint: null });
 }
 
 function readBody(req) {
@@ -107,8 +125,6 @@ function matches(row, filters) {
   return true;
 }
 function stripFieldsForSelect(row, select) {
-  // Supabase RLS in our schema forbids anon from seeing owner_token via SELECT.
-  // Simulate that: if `select` does not explicitly include owner_token, strip it.
   const clone = Object.assign({}, row);
   if (!select || !select.split(',').map(s => s.trim()).includes('owner_token')) {
     delete clone.owner_token;
@@ -116,37 +132,28 @@ function stripFieldsForSelect(row, select) {
   return clone;
 }
 
-/* ---------- API ---------- */
-async function handleAPI(req, res, url) {
+/* ---------- Code generation (matches SQL _gen_code) ---------- */
+function genCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let out = 'LOV-';
+  const buf = crypto.randomBytes(6);
+  for (let i = 0; i < 6; i++) out += chars[buf[i] % chars.length];
+  return out;
+}
+
+/* ---------- /rest/v1/invites ---------- */
+async function handleInvites(req, res, url) {
   const method = req.method;
   const filters = parseFilters(url);
   const select = url.searchParams.get('select');
   const order  = url.searchParams.get('order');
-  const prefer = String(req.headers.prefer || '');
-  const wantsReturn = prefer.includes('return=representation');
   const bodyText = ['POST', 'PATCH', 'PUT'].includes(method) ? await readBody(req) : '';
   let body = null;
   if (bodyText) { try { body = JSON.parse(bodyText); } catch (e) { return sendJSON(res, 400, { error: 'Invalid JSON body' }); } }
 
   if (method === 'POST') {
-    // POST /rest/v1/invites — insert a row
-    const b = Array.isArray(body) ? body[0] : body;
-    if (!b || !b.id) return sendJSON(res, 400, { error: 'id is required' });
-    if (invites[b.id]) return sendJSON(res, 409, { error: 'id conflict' });
-    const now = new Date().toISOString();
-    const rec = {
-      id:            b.id,
-      owner_token:   b.owner_token || crypto.randomUUID(),
-      config:        b.config || {},
-      response:      null,
-      opened_at:     null,
-      responded_at:  null,
-      created_at:    now
-    };
-    invites[rec.id] = rec;
-    save();
-    if (wantsReturn) return sendJSON(res, 201, [rec]); // return with owner_token for creator
-    return sendJSON(res, 201, []);
+    // Direct anon inserts are blocked — must use /rpc/create_invite_with_code
+    return sendPGError(res, 403, 'Direct invite insert not allowed. Use rpc/create_invite_with_code.');
   }
 
   if (method === 'GET') {
@@ -165,25 +172,112 @@ async function handleAPI(req, res, url) {
   if (method === 'PATCH') {
     const targets = Object.values(invites).filter(r => matches(r, filters));
     for (const r of targets) {
-      // Anon cannot modify owner_token or id
       const { id: _1, owner_token: _2, created_at: _3, ...rest } = body || {};
       Object.assign(r, rest);
     }
-    save();
+    saveInvites();
     return sendJSON(res, 200, targets.map(r => stripFieldsForSelect(r, select)));
   }
 
   if (method === 'DELETE') {
-    // Requires owner_token filter to match (schema-level check)
     const hasToken = filters.owner_token && filters.owner_token.op === 'eq';
     if (!hasToken) return sendJSON(res, 403, { error: 'owner_token required to delete' });
     const targets = Object.values(invites).filter(r => matches(r, filters));
     targets.forEach(r => { delete invites[r.id]; });
-    save();
+    saveInvites();
     return sendJSON(res, 204, '');
   }
 
   return sendJSON(res, 405, { error: 'Method not allowed' });
+}
+
+/* ---------- /rest/v1/access_codes ---------- */
+async function handleCodes(req, res, url) {
+  const method = req.method;
+  const filters = parseFilters(url);
+
+  if (method === 'GET') {
+    let rows = Object.values(codes).filter(r => matches(r, filters));
+    return sendJSON(res, 200, rows);
+  }
+  // No anon insert/update/delete — must use RPCs
+  return sendPGError(res, 403, 'access_codes mutations must go through admin RPCs.');
+}
+
+/* ---------- /rest/v1/rpc/* ---------- */
+async function handleRPC(req, res, url) {
+  if (req.method !== 'POST') return sendJSON(res, 405, { error: 'RPC requires POST' });
+  const name = url.pathname.replace(/^\/rest\/v1\/rpc\//, '');
+  const bodyText = await readBody(req);
+  let body = {};
+  try { body = bodyText ? JSON.parse(bodyText) : {}; } catch (_) { return sendJSON(res, 400, { error: 'Invalid JSON' }); }
+
+  if (name === 'create_invite_with_code') {
+    const invId = body.p_invite_id;
+    const cfg   = body.p_config;
+    const code  = body.p_access_code;
+    if (!invId || String(invId).length < 4) return sendPGError(res, 400, 'Invalid invite id');
+    if (!code) return sendPGError(res, 400, 'Access code required');
+    const codeRow = codes[code];
+    if (!codeRow) return sendPGError(res, 400, 'Invalid access code');
+    if (codeRow.used) return sendPGError(res, 400, 'Access code already used');
+    if (invites[invId]) return sendPGError(res, 409, 'invite id conflict');
+
+    const nowTs = new Date().toISOString();
+    const ownerToken = crypto.randomUUID();
+    invites[invId] = {
+      id:            invId,
+      owner_token:   ownerToken,
+      config:        cfg || {},
+      response:      null,
+      opened_at:     null,
+      responded_at:  null,
+      created_at:    nowTs
+    };
+    codeRow.used = true;
+    codeRow.used_at = nowTs;
+    codeRow.used_for_invite_id = invId;
+
+    saveInvites();
+    saveCodes();
+
+    // Supabase returns array of {id, owner_token, created_at}
+    return sendJSON(res, 200, [{ id: invId, owner_token: ownerToken, created_at: nowTs }]);
+  }
+
+  if (name === 'admin_create_codes') {
+    if (body.admin_pw !== ADMIN_PASSWORD) return sendPGError(res, 401, 'Invalid admin password');
+    const qty = Math.max(1, Math.min(100, Number(body.qty || 1)));
+    const note = body.note_ != null ? String(body.note_) : null;
+    const created = [];
+    for (let i = 0; i < qty; i++) {
+      let c;
+      do { c = genCode(); } while (codes[c]);
+      const row = { code: c, used: false, used_at: null, used_for_invite_id: null, note: note, created_at: new Date().toISOString() };
+      codes[c] = row;
+      created.push(row);
+    }
+    saveCodes();
+    return sendJSON(res, 200, created);
+  }
+
+  if (name === 'admin_list_codes') {
+    if (body.admin_pw !== ADMIN_PASSWORD) return sendPGError(res, 401, 'Invalid admin password');
+    const rows = Object.values(codes).sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''));
+    return sendJSON(res, 200, rows);
+  }
+
+  if (name === 'admin_delete_code') {
+    if (body.admin_pw !== ADMIN_PASSWORD) return sendPGError(res, 401, 'Invalid admin password');
+    const c = body.p_code;
+    if (!codes[c]) return sendPGError(res, 404, 'Code not found');
+    if (codes[c].used) return sendPGError(res, 400, 'Cannot delete used code');
+    delete codes[c];
+    saveCodes();
+    return sendJSON(res, 200, null);
+  }
+
+  return sendPGError(res, 404, 'Unknown RPC: ' + name);
 }
 
 /* ---------- Static files ---------- */
@@ -191,7 +285,6 @@ function serveStatic(req, res, url) {
   let rel = decodeURIComponent(url.pathname);
   if (rel === '/' || rel === '') rel = '/create.html';
   const filePath = path.join(ROOT, rel);
-  // Prevent path traversal
   if (!filePath.startsWith(ROOT)) return send(res, 403, 'Forbidden');
   fs.stat(filePath, (err, st) => {
     if (err || !st.isFile()) return send(res, 404, 'Not found: ' + rel);
@@ -207,10 +300,10 @@ const server = http.createServer(async (req, res) => {
   try {
     if (req.method === 'OPTIONS') return send(res, 204, '');
     const url = new URL(req.url, `http://${req.headers.host}`);
-    if (url.pathname === '/rest/v1/invites' || url.pathname.startsWith('/rest/v1/invites/')) {
-      return await handleAPI(req, res, url);
-    }
-    if (url.pathname === '/api/health') return sendJSON(res, 200, { ok: true, invites: Object.keys(invites).length });
+    if (url.pathname.startsWith('/rest/v1/rpc/')) return await handleRPC(req, res, url);
+    if (url.pathname === '/rest/v1/invites' || url.pathname.startsWith('/rest/v1/invites/')) return await handleInvites(req, res, url);
+    if (url.pathname === '/rest/v1/access_codes' || url.pathname.startsWith('/rest/v1/access_codes/')) return await handleCodes(req, res, url);
+    if (url.pathname === '/api/health') return sendJSON(res, 200, { ok: true, invites: Object.keys(invites).length, codes: Object.keys(codes).length });
     return serveStatic(req, res, url);
   } catch (e) {
     console.error('Server error:', e);
@@ -225,9 +318,10 @@ server.listen(PORT, () => {
   console.log('  ─────────────────────────────────────');
   console.log('  Create page :  ' + url + '/create.html');
   console.log('  Dashboard   :  ' + url + '/dashboard.html');
+  console.log('  Admin page  :  ' + url + '/admin.html');
   console.log('  Invite (id) :  ' + url + '/bolzoo.html?id=<ID>');
   console.log('  API health  :  ' + url + '/api/health');
-  console.log('  Data file   :  ' + DATA_FILE);
+  console.log('  Admin pw    :  ' + ADMIN_PASSWORD + '  (set ADMIN_PASSWORD env to change)');
   console.log('');
   console.log('  Ctrl+C to stop.');
 });

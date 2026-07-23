@@ -10,3 +10,4 @@ data
 .agents
 .mcp.json
 skills-lock.json
+.admin-pw

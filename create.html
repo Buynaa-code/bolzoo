@@ -73,6 +73,17 @@
   .steps{display:flex; gap:6px; margin-bottom:18px; font-size:12px; color:var(--muted);}
   .step{background:#fff0e8; padding:5px 10px; border-radius:999px; font-weight:800;}
   .step.on{background:linear-gradient(135deg,var(--coral),var(--coral-deep)); color:#fff;}
+
+  .code-gate{background:linear-gradient(135deg,#fff8f4,#ffeef6); border:2px dashed var(--coral-soft); border-radius:18px; padding:16px 18px; margin-bottom:18px;}
+  .code-gate.ok{border-color:#7ecb8b; background:linear-gradient(135deg,#f2fff4,#eaffee);}
+  .code-gate.bad{border-color:#e46060; background:linear-gradient(135deg,#fff2f2,#ffe6e6);}
+  .code-gate label{color:var(--coral-deep);}
+  .code-gate .code-input{font-family:ui-monospace,Menlo,monospace; text-transform:uppercase; letter-spacing:2px; font-weight:800; font-size:16px;}
+  .code-gate .code-status{margin-top:6px; font-size:12px; font-weight:700; min-height:16px;}
+  .code-gate .code-status.ok{color:#3a8a4a;}
+  .code-gate .code-status.bad{color:#c74747;}
+  .code-gate .code-help{margin-top:8px; font-size:12px; color:var(--muted); line-height:1.5;}
+  .btn:disabled{opacity:.45; cursor:not-allowed; transform:none;}
 </style>
 </head>
 <body>
@@ -87,6 +98,15 @@
       <p class="subtitle">Формоо бөглөөд линкээ хүлээн авагчид илгээ. Тэр линкийг нээгээд хариу өгөх боломжтой.</p>
 
       <div class="card">
+        <div class="code-gate" id="codeGate">
+          <label>🔑 Нэвтрэх код *</label>
+          <input id="accessCode" class="code-input" type="text" placeholder="LOV-XXXXXX" maxlength="24" autocomplete="off" />
+          <div class="code-status" id="codeStatus"></div>
+          <div class="code-help">
+            Кодгүй бол Instagram/Messenger-ээр надтай холбогдоно уу.
+            Гүйлгээ хийсний дараа код илгээгдэнэ. Нэг код = нэг урилга.
+          </div>
+        </div>
         <div class="field">
           <label>Хүлээн авагчийн нэр *</label>
           <input id="recipientName" type="text" placeholder="жишээ: Аная" maxlength="30" />
@@ -123,10 +143,7 @@
           <div class="hint">Эхний дэлгэцэнд "тийм гэдэг хариу л авна" мэссежийн оронд гарна</div>
         </div>
 
-        <button class="btn wide" id="generate">💫 Богино линк үүсгэх</button>
-        <div style="margin-top:10px; text-align:center;">
-          <a href="#" id="offlineLink" style="font-size:12px; color:var(--muted); text-decoration:underline;">эсвэл backend-гүй линк үүсгэх (offline)</a>
-        </div>
+        <button class="btn wide" id="generate" disabled>💫 Богино линк үүсгэх</button>
 
         <div class="link-box" id="linkBox" style="display:none;"></div>
         <div class="link-actions" id="linkActions" style="display:none;">
@@ -219,7 +236,50 @@
 
   function setStatus(msg){ $('status').textContent = msg; }
 
+  /* ---------- Access code gate ---------- */
+  var codeIsValid = false;
+  var codeTimer = null;
+  var lastCheckedCode = '';
+
+  function normalizeCode(v){
+    return String(v||'').toUpperCase().replace(/[^A-Z0-9-]/g,'').trim();
+  }
+  function setCodeUI(state, msg){
+    var gate = $('codeGate'), status = $('codeStatus');
+    gate.classList.remove('ok','bad');
+    status.classList.remove('ok','bad');
+    if(state==='ok'){ gate.classList.add('ok'); status.classList.add('ok'); }
+    if(state==='bad'){ gate.classList.add('bad'); status.classList.add('bad'); }
+    status.textContent = msg || '';
+    codeIsValid = (state==='ok');
+    $('generate').disabled = !codeIsValid;
+  }
+  async function checkCode(){
+    var code = normalizeCode($('accessCode').value);
+    $('accessCode').value = code;
+    if(!code){ setCodeUI('', ''); return; }
+    if(code === lastCheckedCode) return;
+    lastCheckedCode = code;
+    setCodeUI('', '⏳ шалгаж байна…');
+    try{
+      var r = await BolzooAPI.validateCode(code);
+      if(lastCheckedCode !== code) return; // race: newer check in flight
+      if(r.ok){ setCodeUI('ok', '✅ Код хүчинтэй — үргэлжлүүлээрэй'); return; }
+      if(r.reason === 'used')      setCodeUI('bad', '❌ Энэ код нэгэнт ашиглагдсан байна');
+      else if(r.reason === 'not_found') setCodeUI('bad', '❌ Ийм код олдсонгүй');
+      else                          setCodeUI('bad', '❌ Шалгах үед алдаа гарлаа');
+    }catch(e){
+      setCodeUI('bad', '❌ Шалгах үед алдаа: ' + (e.message||e));
+    }
+  }
+  $('accessCode').addEventListener('input', function(){
+    if(codeTimer) clearTimeout(codeTimer);
+    codeTimer = setTimeout(checkCode, 350);
+  });
+  $('accessCode').addEventListener('blur', checkCode);
+
   function validate(cfg){
+    if(!codeIsValid){ setStatus('⚠️ Хүчинтэй код оруулна уу'); return false; }
     if(!cfg.recipientName){ setStatus('⚠️ Хүлээн авагчийн нэрийг заавал бөглөнө үү'); return false; }
     if(!cfg.responseEmail || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(cfg.responseEmail)){
       setStatus('⚠️ Зөв Gmail хаяг оруулна уу'); return false;
@@ -240,30 +300,24 @@
   $('generate').addEventListener('click', async function(){
     var cfg = collectConfig();
     if(!validate(cfg)) return;
+    var code = normalizeCode($('accessCode').value);
     $('generate').disabled = true;
     setStatus('⏳ Хадгалж байна...');
     try{
-      var res = await BolzooAPI.createInvite(cfg);
+      var res = await BolzooAPI.createInvite(cfg, code);
       var url = buildShortUrl(res.id, true);
-      showLink(url,
-        BolzooAPI.hasBackend
-          ? '✅ Урилга үүслээ! Богино линк бэлэн ('+res.id+')'
-          : '✅ Урилга үүслээ! Backend байхгүй тул зөвхөн энэ browser дээр ажиллана ('+res.id+')'
-      );
+      showLink(url, '✅ Урилга үүслээ! Богино линк бэлэн ('+res.id+')');
+      setCodeUI('bad', '⚠️ Энэ код ашиглагдлаа. Дараагийн урилгад шинэ код авна уу.');
+      $('accessCode').value = '';
+      lastCheckedCode = '';
       updatePreview();
     }catch(e){
-      setStatus('❌ Алдаа: '+ (e.message||e));
-    }finally{
-      $('generate').disabled = false;
+      var msg = e.message || String(e);
+      if(/already used/i.test(msg)) setCodeUI('bad', '❌ Энэ код нэгэнт ашиглагдсан байна');
+      else if(/Invalid access code/i.test(msg)) setCodeUI('bad', '❌ Ийм код олдсонгүй');
+      setStatus('❌ Алдаа: '+ msg);
+      $('generate').disabled = !codeIsValid;
     }
-  });
-
-  $('offlineLink').addEventListener('click', function(e){
-    e.preventDefault();
-    var cfg = collectConfig();
-    if(!validate(cfg)) return;
-    var url = buildUrl(cfg, true);
-    showLink(url, '📎 Offline (backend-гүй) линк бэлэн. URL урт байх болно.');
   });
 
   $('copyLink').addEventListener('click', function(){
