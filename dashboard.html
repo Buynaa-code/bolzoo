@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Миний урилгууд 📊</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Comfortaa:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --coral:#ff8fa6; --coral-deep:#f76a8e; --coral-soft:#ffb3c0;
+    --ink:#5a2a46; --muted:#9a6b84; --chip:#fff0e8;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0; padding:0;}
+  body{
+    min-height:100vh; font-family:'Nunito',system-ui,sans-serif; color:var(--ink);
+    background:
+      radial-gradient(900px 620px at 12% 8%, #ffe6d6 0%, transparent 52%),
+      radial-gradient(820px 560px at 88% 14%, #ffdce8 0%, transparent 50%),
+      radial-gradient(760px 640px at 50% 108%, #ece0ff 0%, transparent 55%),
+      linear-gradient(158deg,#fff6ef 0%, #fff0f2 55%, #fdeef6 100%);
+  }
+  .wrap{max-width:900px; margin:0 auto; padding:32px 20px 60px;}
+  header{display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:22px;}
+  h1{font-family:'Comfortaa',sans-serif; font-weight:700; font-size:26px; margin:0;}
+  .subtitle{color:var(--muted); font-size:14px;}
+  .btn{border:none; cursor:pointer; font-family:'Nunito',sans-serif; font-weight:800; font-size:14px;
+    padding:11px 20px; border-radius:999px; color:#fff;
+    background:linear-gradient(135deg,var(--coral),var(--coral-deep));
+    box-shadow:0 8px 20px -8px rgba(247,106,142,.55);
+    text-decoration:none; display:inline-block;
+  }
+  .btn.secondary{background:#fff; color:var(--coral-deep); border:2px solid var(--coral-soft); box-shadow:none;}
+  .btn.small{padding:7px 14px; font-size:12px;}
+  .btn.danger{background:linear-gradient(135deg,#ffa3a3,#e46060);}
+  .stats{display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:22px;}
+  @media (max-width:520px){ .stats{grid-template-columns:1fr;} }
+  .stat{background:#fffdfb; border-radius:18px; padding:18px 20px; box-shadow:0 12px 30px -18px rgba(247,106,142,.35);}
+  .stat-num{font-family:'Comfortaa',sans-serif; font-weight:700; font-size:28px; color:var(--coral-deep);}
+  .stat-lbl{font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.6px; font-weight:800;}
+  .list{display:flex; flex-direction:column; gap:14px;}
+  .empty{text-align:center; background:#fffdfb; border-radius:20px; padding:40px 20px; box-shadow:0 12px 30px -18px rgba(247,106,142,.35);}
+  .empty h2{font-family:'Comfortaa',sans-serif; margin:0 0 6px;}
+  .card{background:#fffdfb; border-radius:20px; padding:18px 20px; box-shadow:0 12px 30px -18px rgba(247,106,142,.35); display:grid; grid-template-columns:1fr auto; gap:12px;}
+  .card-title{font-family:'Comfortaa',sans-serif; font-weight:700; font-size:17px; margin:0 0 4px;}
+  .card-meta{font-size:12px; color:var(--muted);}
+  .badge{display:inline-block; font-size:11px; font-weight:800; padding:4px 10px; border-radius:999px; letter-spacing:.4px;}
+  .badge.pending{background:#f3e6ec; color:var(--muted);}
+  .badge.opened{background:#fff1cf; color:#b47f16;}
+  .badge.responded{background:#dcffde; color:#3a8a4a;}
+  .response{margin-top:10px; padding:10px 14px; background:#fff8f4; border:1px dashed var(--coral-soft); border-radius:12px; font-size:13px; line-height:1.5;}
+  .response b{color:var(--coral-deep);}
+  .card-actions{display:flex; flex-direction:column; gap:6px; align-items:flex-end;}
+  .backend-warn{background:#fff1cf; color:#8a6a20; padding:10px 14px; border-radius:12px; margin-bottom:18px; font-size:13px; font-weight:700;}
+  .id-mono{font-family:ui-monospace, Menlo, monospace; font-size:12px; color:var(--muted);}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>📊 Миний урилгууд</h1>
+        <div class="subtitle">Энэ browser-с үүсгэсэн урилгууд ба хариунууд</div>
+      </div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <a class="btn secondary" href="create.html">+ Шинэ урилга</a>
+        <button class="btn secondary" id="refresh">🔄 Шинэчлэх</button>
+      </div>
+    </header>
+
+    <div class="backend-warn" id="backendWarn" style="display:none;">
+      ⚠️ Supabase backend тохируулаагүй тул зөвхөн энэ browser дээрх урилгууд харагдана. Backend тохируулбал бүх төхөөрөмжөөс харах, хариу цуглуулах боломжтой болно (assets/config.js).
+    </div>
+
+    <div class="stats">
+      <div class="stat"><div class="stat-num" id="statTotal">0</div><div class="stat-lbl">Нийт урилга</div></div>
+      <div class="stat"><div class="stat-num" id="statOpened">0</div><div class="stat-lbl">Нээгдсэн</div></div>
+      <div class="stat"><div class="stat-num" id="statResponded">0</div><div class="stat-lbl">Хариу ирсэн</div></div>
+    </div>
+
+    <div class="list" id="list">
+      <div class="empty" id="empty" style="display:none;">
+        <h2>Урилга байхгүй байна 💌</h2>
+        <p class="subtitle">Эхний урилгаа үүсгээд туршиж үзье!</p>
+        <a class="btn" href="create.html" style="margin-top:10px;">+ Шинэ урилга үүсгэх</a>
+      </div>
+    </div>
+  </div>
+
+<script src="assets/config.js"></script>
+<script src="assets/api.js"></script>
+<script>
+(function(){
+  var $ = function(id){ return document.getElementById(id); };
+  var list = $('list'), empty = $('empty');
+
+  var kind = window.BolzooAPI ? window.BolzooAPI.backendKind : 'localStorage';
+  if(kind === 'localStorage'){
+    $('backendWarn').style.display = 'block';
+  }
+
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function fmtWhen(iso){
+    if(!iso) return '';
+    var d = new Date(iso);
+    return d.toLocaleString('mn-MN');
+  }
+  function inviteUrl(id){
+    return new URL('bolzoo.html', window.location.href).href + '?id=' + encodeURIComponent(id);
+  }
+
+  function statusBadge(inv){
+    if(inv.responded_at) return '<span class="badge responded">✅ Хариу ирсэн</span>';
+    if(inv.opened_at)    return '<span class="badge opened">👀 Нээсэн</span>';
+    return '<span class="badge pending">⏳ Хүлээгдэж буй</span>';
+  }
+
+  function renderResponse(inv){
+    if(!inv.response) return '';
+    var r = inv.response;
+    return '<div class="response">'
+      + '<b>📅 Өдөр:</b> ' + esc(r.date) + '<br>'
+      + '<b>🕐 Цаг:</b> ' + esc(r.time) + '<br>'
+      + '<b>💝 Төрөл:</b> ' + esc(r.kind) + '<br>'
+      + '<b>🎫 Ticket:</b> ' + esc(r.ticketNo) + '<br>'
+      + '<span class="card-meta">Хариу ирсэн: ' + esc(fmtWhen(inv.responded_at)) + '</span>'
+      + '</div>';
+  }
+
+  function render(list_){
+    var main = $('list');
+    // Clear
+    while(main.firstChild) main.removeChild(main.firstChild);
+    if(!list_.length){
+      var e = empty.cloneNode(true);
+      e.style.display='block';
+      main.appendChild(e);
+      return;
+    }
+    list_.forEach(function(inv){
+      var cfg = inv.config || {};
+      var el = document.createElement('div');
+      el.className = 'card';
+      el.innerHTML =
+        '<div>'
+          + '<h3 class="card-title">' + esc(cfg.recipientName || '(нэргүй)') + '</h3>'
+          + '<div class="card-meta">'
+            + (cfg.senderName ? 'Илгээгч: <b>'+esc(cfg.senderName)+'</b> · ' : '')
+            + 'Үүсгэсэн: ' + esc(fmtWhen(inv.created_at))
+            + ' · <span class="id-mono">' + esc(inv.id) + '</span>'
+          + '</div>'
+          + '<div style="margin-top:8px;">' + statusBadge(inv) + '</div>'
+          + renderResponse(inv)
+        + '</div>'
+        + '<div class="card-actions">'
+          + '<a class="btn small secondary" href="' + esc(inviteUrl(inv.id)) + '" target="_blank">🔗 Нээх</a>'
+          + '<button class="btn small secondary" data-copy="' + esc(inviteUrl(inv.id)) + '">📋 Хуулах</button>'
+          + '<button class="btn small danger" data-del="' + esc(inv.id) + '">🗑️ Устгах</button>'
+        + '</div>';
+      main.appendChild(el);
+    });
+  }
+
+  function updateStats(list_){
+    $('statTotal').textContent = list_.length;
+    $('statOpened').textContent = list_.filter(function(i){ return !!i.opened_at; }).length;
+    $('statResponded').textContent = list_.filter(function(i){ return !!i.responded_at; }).length;
+  }
+
+  async function load(){
+    $('refresh').disabled = true;
+    try{
+      var invs = await BolzooAPI.listMyInvites();
+      // sort newest first
+      invs.sort(function(a,b){ return (b.created_at||'').localeCompare(a.created_at||''); });
+      render(invs);
+      updateStats(invs);
+    }catch(e){
+      alert('Ачаалахад алдаа: '+(e.message||e));
+    }finally{
+      $('refresh').disabled = false;
+    }
+  }
+
+  document.addEventListener('click', function(e){
+    var copyBtn = e.target.closest('[data-copy]');
+    if(copyBtn){
+      var url = copyBtn.getAttribute('data-copy');
+      if(navigator.clipboard){
+        navigator.clipboard.writeText(url).then(function(){
+          var t=copyBtn.textContent; copyBtn.textContent='✅ Хуулсан';
+          setTimeout(function(){ copyBtn.textContent=t; }, 1500);
+        });
+      }
+      return;
+    }
+    var delBtn = e.target.closest('[data-del]');
+    if(delBtn){
+      var id = delBtn.getAttribute('data-del');
+      if(!confirm('Энэ урилгыг устгах уу? Буцаах боломжгүй.')) return;
+      BolzooAPI.deleteInvite(id).then(load).catch(function(err){
+        alert('Устгаж чадсангүй: '+(err.message||err));
+      });
+    }
+  });
+
+  $('refresh').addEventListener('click', load);
+  load();
+  // auto-refresh every 30s to catch new responses
+  setInterval(load, 30000);
+})();
+</script>
+</body>
+</html>

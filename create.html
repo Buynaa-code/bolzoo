@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Болзооны урилга үүсгэх 💌</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Comfortaa:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --coral:#ff8fa6; --coral-deep:#f76a8e; --coral-soft:#ffb3c0;
+    --ink:#5a2a46; --muted:#9a6b84; --chip:#fff0e8;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0; padding:0;}
+  body{
+    min-height:100vh; font-family:'Nunito',system-ui,sans-serif; color:var(--ink);
+    background:
+      radial-gradient(900px 620px at 12% 8%, #ffe6d6 0%, transparent 52%),
+      radial-gradient(820px 560px at 88% 14%, #ffdce8 0%, transparent 50%),
+      radial-gradient(760px 640px at 50% 108%, #ece0ff 0%, transparent 55%),
+      linear-gradient(158deg,#fff6ef 0%, #fff0f2 55%, #fdeef6 100%);
+  }
+  .wrap{max-width:1100px; margin:0 auto; padding:32px 20px 60px; display:grid; grid-template-columns:1fr 380px; gap:28px;}
+  @media (max-width:900px){ .wrap{grid-template-columns:1fr;} }
+  h1{font-family:'Comfortaa',sans-serif; font-weight:700; font-size:28px; margin:0 0 6px;}
+  .subtitle{color:var(--muted); margin:0 0 22px;}
+  .card{background:#fffdfb; border-radius:24px; padding:24px; box-shadow:0 22px 60px -22px rgba(247,106,142,.35), 0 4px 14px -6px rgba(247,106,142,.2);}
+  .field{margin-bottom:16px;}
+  label{display:block; font-weight:800; font-size:13px; letter-spacing:.4px; text-transform:uppercase; color:var(--coral-deep); margin-bottom:6px;}
+  input, textarea, select{
+    width:100%; padding:12px 14px; border:1px solid #ffd7c9; border-radius:14px;
+    font-family:'Nunito',sans-serif; font-size:15px; color:var(--ink); background:#fff;
+    transition:border-color .15s, box-shadow .15s;
+  }
+  input:focus, textarea:focus, select:focus{
+    outline:none; border-color:var(--coral-deep); box-shadow:0 0 0 3px rgba(247,106,142,.15);
+  }
+  textarea{min-height:70px; resize:vertical;}
+  .hint{font-size:12px; color:var(--muted); margin-top:4px;}
+  .themes{display:grid; grid-template-columns:repeat(5,1fr); gap:8px;}
+  .theme{cursor:pointer; height:52px; border-radius:14px; border:3px solid transparent; transition:transform .15s, border-color .15s;}
+  .theme:hover{transform:translateY(-2px);}
+  .theme.on{border-color:var(--ink);}
+  .theme[data-theme="coral"]{background:linear-gradient(135deg,#ff8fa6,#f76a8e);}
+  .theme[data-theme="lavender"]{background:linear-gradient(135deg,#c9b6e4,#8e6dcf);}
+  .theme[data-theme="peach"]{background:linear-gradient(135deg,#ffb38a,#f78e5a);}
+  .theme[data-theme="mint"]{background:linear-gradient(135deg,#8ed7c1,#4fb99f);}
+  .theme[data-theme="sky"]{background:linear-gradient(135deg,#8ec5ff,#5b9bff);}
+
+  .btn{border:none; cursor:pointer; font-family:'Nunito',sans-serif; font-weight:800; font-size:15px;
+    padding:14px 22px; border-radius:999px; color:#fff;
+    background:linear-gradient(135deg,var(--coral),var(--coral-deep));
+    box-shadow:0 12px 24px -8px rgba(247,106,142,.6);
+    transition:transform .15s, box-shadow .15s;
+  }
+  .btn:hover{transform:translateY(-2px);}
+  .btn:active{transform:translateY(0) scale(.96);}
+  .btn.secondary{background:#fff; color:var(--coral-deep); border:2px solid var(--coral-soft); box-shadow:none;}
+  .btn.wide{width:100%;}
+  .btn.small{padding:9px 16px; font-size:13px;}
+
+  .link-box{margin-top:14px; background:#fff8f4; border:1px dashed var(--coral-soft); border-radius:14px; padding:12px; word-break:break-all; font-size:12px; color:var(--ink); font-family:ui-monospace, Menlo, monospace;}
+  .link-actions{display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;}
+  .status{margin-top:10px; min-height:20px; font-weight:800; font-size:13px; color:var(--coral-deep);}
+
+  .preview-wrap{position:sticky; top:20px;}
+  .preview-frame{width:100%; height:720px; border:none; border-radius:22px; background:#fffdfb; box-shadow:0 22px 60px -22px rgba(247,106,142,.4);}
+  .preview-label{font-family:'Caveat',cursive; font-size:20px; color:var(--muted); text-align:center; margin-bottom:8px;}
+  .refresh{margin-bottom:10px; text-align:right;}
+
+  .steps{display:flex; gap:6px; margin-bottom:18px; font-size:12px; color:var(--muted);}
+  .step{background:#fff0e8; padding:5px 10px; border-radius:999px; font-weight:800;}
+  .step.on{background:linear-gradient(135deg,var(--coral),var(--coral-deep)); color:#fff;}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div>
+      <div class="steps">
+        <span class="step on">1. Мэдээлэл бөглөх</span>
+        <span class="step">2. Preview харах</span>
+        <span class="step">3. Линк илгээх</span>
+      </div>
+      <h1>💌 Болзооны урилга үүсгэх</h1>
+      <p class="subtitle">Формоо бөглөөд линкээ хүлээн авагчид илгээ. Тэр линкийг нээгээд хариу өгөх боломжтой.</p>
+
+      <div class="card">
+        <div class="field">
+          <label>Хүлээн авагчийн нэр *</label>
+          <input id="recipientName" type="text" placeholder="жишээ: Аная" maxlength="30" />
+          <div class="hint">Урилгын мэндчилгээнд орно ("Аная минь, надтай болзоонд явах уу?")</div>
+        </div>
+        <div class="field">
+          <label>Таны нэр (илгээгч)</label>
+          <input id="senderName" type="text" placeholder="жишээ: Мики" maxlength="30" />
+          <div class="hint">Ticket дээр "X очиж авна" гэж харагдана</div>
+        </div>
+        <div class="field">
+          <label>Хариу хүлээн авах Gmail *</label>
+          <input id="responseEmail" type="email" placeholder="you@gmail.com" />
+          <div class="hint">Хүлээн авагч "Тийм" гэвэл энэ хаяг руу мэйл очно</div>
+        </div>
+        <div class="field">
+          <label>YouTube дуу (URL эсвэл ID)</label>
+          <input id="videoId" type="text" placeholder="https://youtu.be/qsPzEsxyzB8" />
+          <div class="hint">Хоосон орхивол default дуу тоглоно</div>
+        </div>
+        <div class="field">
+          <label>Тема</label>
+          <div class="themes" id="themes">
+            <div class="theme on" data-theme="coral" title="Coral"></div>
+            <div class="theme" data-theme="lavender" title="Lavender"></div>
+            <div class="theme" data-theme="peach" title="Peach"></div>
+            <div class="theme" data-theme="mint" title="Mint"></div>
+            <div class="theme" data-theme="sky" title="Sky"></div>
+          </div>
+        </div>
+        <div class="field">
+          <label>Нэмэлт зурвас (заавал биш)</label>
+          <textarea id="customNote" placeholder="жишээ: чиний хариу л надад бүх зүйл" maxlength="120"></textarea>
+          <div class="hint">Эхний дэлгэцэнд "тийм гэдэг хариу л авна" мэссежийн оронд гарна</div>
+        </div>
+
+        <button class="btn wide" id="generate">💫 Богино линк үүсгэх</button>
+        <div style="margin-top:10px; text-align:center;">
+          <a href="#" id="offlineLink" style="font-size:12px; color:var(--muted); text-decoration:underline;">эсвэл backend-гүй линк үүсгэх (offline)</a>
+        </div>
+
+        <div class="link-box" id="linkBox" style="display:none;"></div>
+        <div class="link-actions" id="linkActions" style="display:none;">
+          <button class="btn small" id="copyLink">📋 Хуулах</button>
+          <button class="btn small secondary" id="openLink">🔗 Нээж үзэх</button>
+          <button class="btn small secondary" id="shareLink">📲 Хуваалцах</button>
+        </div>
+        <div class="status" id="status"></div>
+
+        <div style="margin-top:20px; padding-top:16px; border-top:1px solid #ffe2d6; display:flex; gap:10px; flex-wrap:wrap;">
+          <a href="dashboard.html" class="btn small secondary">📊 Миний урилгууд</a>
+          <span id="backendBadge" style="font-size:11px; color:var(--muted); align-self:center;"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="preview-wrap">
+      <div class="preview-label">✨ preview</div>
+      <div class="refresh"><button class="btn small secondary" id="refreshPreview">🔄 preview шинэчлэх</button></div>
+      <iframe class="preview-frame" id="preview" title="preview"></iframe>
+    </div>
+  </div>
+
+<script src="assets/config.js"></script>
+<script src="assets/api.js"></script>
+<script>
+(function(){
+  var $ = function(id){ return document.getElementById(id); };
+  var currentTheme = 'coral';
+
+  // Backend status badge
+  var badge = $('backendBadge');
+  var kind = window.BolzooAPI ? window.BolzooAPI.backendKind : 'localStorage';
+  var kindMsg = {
+    'supabase':    '✅ Supabase backend',
+    'custom':      '✅ Custom API backend',
+    'same-origin': '✅ Локал сервер холбогдсон',
+    'localStorage':'⚠️ Backend байхгүй — line зөвхөн энэ browser дээр ажиллана (node server.js эсвэл Supabase холбоно уу)'
+  };
+  badge.textContent = kindMsg[kind] || '';
+  badge.style.color = (kind==='localStorage') ? '' : '#4fa15b';
+  $('themes').addEventListener('click', function(e){
+    var t = e.target.closest('.theme'); if(!t) return;
+    currentTheme = t.getAttribute('data-theme');
+    var kids = $('themes').children;
+    for(var i=0;i<kids.length;i++){ kids[i].classList.toggle('on', kids[i]===t); }
+    schedulePreview();
+  });
+
+  function collectConfig(){
+    return {
+      recipientName: $('recipientName').value.trim(),
+      senderName:    $('senderName').value.trim(),
+      responseEmail: $('responseEmail').value.trim(),
+      videoId:       $('videoId').value.trim(),
+      theme:         currentTheme,
+      customNote:    $('customNote').value.trim()
+    };
+  }
+
+  function encodeConfig(cfg){
+    var clean = {};
+    for(var k in cfg){ if(cfg[k]) clean[k]=cfg[k]; }
+    var json = JSON.stringify(clean);
+    // handle unicode via encodeURIComponent+unescape trick
+    var b64 = btoa(unescape(encodeURIComponent(json)));
+    return encodeURIComponent(b64);
+  }
+
+  function buildUrl(cfg, absolute){
+    var base = 'bolzoo.html';
+    if(absolute){ base = new URL('bolzoo.html', window.location.href).href; }
+    return base + '#c=' + encodeConfig(cfg);
+  }
+
+  var previewTimer = null;
+  function schedulePreview(){
+    if(previewTimer) clearTimeout(previewTimer);
+    previewTimer = setTimeout(updatePreview, 400);
+  }
+  function updatePreview(){
+    var cfg = collectConfig();
+    $('preview').src = buildUrl(cfg, false);
+  }
+
+  ['recipientName','senderName','responseEmail','videoId','customNote'].forEach(function(id){
+    $(id).addEventListener('input', schedulePreview);
+  });
+  $('refreshPreview').addEventListener('click', updatePreview);
+
+  function setStatus(msg){ $('status').textContent = msg; }
+
+  function validate(cfg){
+    if(!cfg.recipientName){ setStatus('⚠️ Хүлээн авагчийн нэрийг заавал бөглөнө үү'); return false; }
+    if(!cfg.responseEmail || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(cfg.responseEmail)){
+      setStatus('⚠️ Зөв Gmail хаяг оруулна уу'); return false;
+    }
+    return true;
+  }
+  function showLink(url, msg){
+    $('linkBox').textContent = url;
+    $('linkBox').style.display = 'block';
+    $('linkActions').style.display = 'flex';
+    setStatus(msg || '✅ Линк бэлэн!');
+  }
+  function buildShortUrl(id, absolute){
+    var base = absolute ? new URL('bolzoo.html', window.location.href).href : 'bolzoo.html';
+    return base + '?id=' + encodeURIComponent(id);
+  }
+
+  $('generate').addEventListener('click', async function(){
+    var cfg = collectConfig();
+    if(!validate(cfg)) return;
+    $('generate').disabled = true;
+    setStatus('⏳ Хадгалж байна...');
+    try{
+      var res = await BolzooAPI.createInvite(cfg);
+      var url = buildShortUrl(res.id, true);
+      showLink(url,
+        BolzooAPI.hasBackend
+          ? '✅ Урилга үүслээ! Богино линк бэлэн ('+res.id+')'
+          : '✅ Урилга үүслээ! Backend байхгүй тул зөвхөн энэ browser дээр ажиллана ('+res.id+')'
+      );
+      updatePreview();
+    }catch(e){
+      setStatus('❌ Алдаа: '+ (e.message||e));
+    }finally{
+      $('generate').disabled = false;
+    }
+  });
+
+  $('offlineLink').addEventListener('click', function(e){
+    e.preventDefault();
+    var cfg = collectConfig();
+    if(!validate(cfg)) return;
+    var url = buildUrl(cfg, true);
+    showLink(url, '📎 Offline (backend-гүй) линк бэлэн. URL урт байх болно.');
+  });
+
+  $('copyLink').addEventListener('click', function(){
+    var text = $('linkBox').textContent;
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(function(){
+        setStatus('📋 Хуулагдлаа! Одоо Messenger/Instagram-т paste хий');
+      });
+    } else {
+      var t = document.createElement('textarea'); t.value=text; document.body.appendChild(t); t.select(); document.execCommand('copy'); t.remove();
+      setStatus('📋 Хуулагдлаа!');
+    }
+  });
+
+  $('openLink').addEventListener('click', function(){
+    window.open($('linkBox').textContent, '_blank');
+  });
+
+  $('shareLink').addEventListener('click', function(){
+    var url = $('linkBox').textContent;
+    var cfg = collectConfig();
+    var text = (cfg.recipientName?cfg.recipientName+' минь, ':'')+'чамд болзооны урилга ирлээ 💌';
+    if(navigator.share){
+      navigator.share({title:'Болзооны урилга', text:text, url:url}).catch(function(){});
+    } else {
+      window.location.href = 'mailto:?subject='+encodeURIComponent('Болзооны урилга 💌')+'&body='+encodeURIComponent(text+'\n\n'+url);
+    }
+  });
+
+  // Fill defaults for demo
+  $('recipientName').value = '';
+  $('senderName').value = '';
+  $('responseEmail').value = '';
+  updatePreview();
+})();
+</script>
+</body>
+</html>

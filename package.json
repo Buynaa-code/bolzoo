@@ -1,0 +1,13 @@
+{
+  "name": "bolzoo",
+  "version": "0.2.0",
+  "private": true,
+  "description": "Personalised Mongolian date invitation web app",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

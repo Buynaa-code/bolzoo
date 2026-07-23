@@ -1,0 +1,12 @@
+node_modules
+data
+.DS_Store
+.vercel
+.env
+.env.local
+
+# Claude Code local files
+.claude
+.agents
+.mcp.json
+skills-lock.json
