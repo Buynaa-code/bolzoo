@@ -14,9 +14,13 @@
 (function(){
   var C = window.BOLZOO_CONFIG || {};
   var IS_FILE = (typeof location !== 'undefined') && location.protocol === 'file:';
-  var HAS_SUPABASE = !!(C.supabaseUrl && C.supabaseAnonKey);
-  var HAS_CUSTOM_API = !!C.apiUrl;
-  var HAS_SAME_ORIGIN = !HAS_SUPABASE && !HAS_CUSTOM_API && !IS_FILE;
+  // Локал dev/LAN дээр ажиллах үед Supabase config байсан ч же локал server-руу хандах.
+  // Учир: /api/checkout төлбөрөөс үүсгэсэн код нь локал JSON-т хадгалагддаг тул
+  // Supabase руу шалгавал "олдсонгүй" болно.
+  var IS_LOCAL_DEV = (typeof location !== 'undefined') && /^(localhost|127\.0\.0\.1|0\.0\.0\.0|192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|172\.(1[6-9]|2\d|3[01])\.\d+\.\d+)$/.test(location.hostname);
+  var HAS_SUPABASE   = !IS_LOCAL_DEV && !!(C.supabaseUrl && C.supabaseAnonKey);
+  var HAS_CUSTOM_API = !IS_LOCAL_DEV && !!C.apiUrl;
+  var HAS_SAME_ORIGIN = IS_LOCAL_DEV || (!HAS_SUPABASE && !HAS_CUSTOM_API && !IS_FILE);
   var HAS_BACKEND = HAS_SUPABASE || HAS_CUSTOM_API || HAS_SAME_ORIGIN;
   var BACKEND_KIND = HAS_SUPABASE ? 'supabase' : HAS_CUSTOM_API ? 'custom' : HAS_SAME_ORIGIN ? 'same-origin' : 'localStorage';
   var API =

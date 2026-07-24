@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Төлбөр төлөх · Bolzoo 💌</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@500;600;700&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --hot:#ff4d82;
+    --violet:#9d63e6;
+    --line:#f8d7e2;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Nunito', sans-serif;
+    background:linear-gradient(135deg,#fff7f8 0%,#fffaf8 54%,#fff2f8 100%);
+    color:#3e1738;
+    min-height:100vh;
+    padding:24px 16px;
+  }
+  .wrap{
+    max-width:460px;
+    margin:20px auto;
+    padding:28px 26px;
+    background:rgba(255,255,255,.85);
+    border:1px solid rgba(255,214,226,.72);
+    border-radius:20px;
+    box-shadow:0 28px 70px -34px rgba(105,39,78,.35);
+    backdrop-filter:blur(14px);
+  }
+  h1{
+    font-family:'Comfortaa', sans-serif;
+    font-weight:700;
+    font-size:24px;
+    margin:0 0 8px;
+    color:#4b173f;
+  }
+  .subtitle{color:#816e82; margin:0 0 22px; font-size:14px; font-weight:700; line-height:1.5;}
+  .price{
+    text-align:center;
+    padding:22px 18px;
+    margin:0 0 22px;
+    background:linear-gradient(135deg,#fff6f9,#ffe8f0);
+    border:1px solid #ffcbd9;
+    border-radius:14px;
+  }
+  .price .amt{font-family:'Comfortaa', sans-serif; font-size:42px; font-weight:700; color:var(--hot); line-height:1; margin:0 0 6px;}
+  .price .amt small{font-size:22px; margin-left:2px;}
+  .price .lbl{color:#6d536b; font-size:12px; font-weight:900; letter-spacing:.05em;}
+  .btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    width:100%;
+    min-height:54px;
+    padding:14px 22px;
+    border:0;
+    border-radius:12px;
+    background:linear-gradient(100deg,#ff4f86,#ff5f93 54%,#ff4d82);
+    color:#fff;
+    font-family:'Nunito', sans-serif;
+    font-size:15px;
+    font-weight:900;
+    cursor:pointer;
+    text-decoration:none;
+    box-shadow:0 16px 30px -18px rgba(247,106,142,.72);
+  }
+  .btn:disabled{opacity:.6; cursor:not-allowed;}
+  .btn.secondary{background:#fff; color:#6a4062; border:1px solid rgba(248,215,226,.9); box-shadow:none;}
+  .qr-shell{
+    text-align:center;
+    padding:24px;
+    margin:0 0 16px;
+    background:#fff;
+    border:1px solid #efd4de;
+    border-radius:14px;
+  }
+  .qr-box{
+    width:240px;
+    height:240px;
+    margin:0 auto 14px;
+    display:grid;
+    place-items:center;
+    background:#fff;
+    border:1px solid #f4d7e0;
+    border-radius:12px;
+    color:#a44f6d;
+    font-size:13px;
+    font-weight:900;
+    line-height:1.4;
+    padding:0;
+    overflow:hidden;
+  }
+  .qr-box.loading{background:repeating-linear-gradient(45deg, #ffe7ee 0 10px, #fff 10px 20px);}
+  .qr-box img{width:100%; height:100%; object-fit:contain; border:0; border-radius:0; background:#fff; display:block;}
+  .qr-box iframe{width:100%; height:100%; border:0;}
+  .qr-hint{font-size:13px; color:#7d687d; font-weight:700; line-height:1.5; margin:0;}
+  .banks{margin-top:14px; display:grid; grid-template-columns:repeat(4,1fr); gap:10px;}
+  .bank-link{display:flex; flex-direction:column; align-items:center; gap:4px; padding:8px 4px; border:1px solid #efd4de; border-radius:10px; background:#fff; text-decoration:none; color:#4b173f; font-size:10px; font-weight:800; line-height:1.15; text-align:center; transition:transform .1s, box-shadow .1s; cursor:pointer;}
+  .bank-link:hover{transform:translateY(-1px); box-shadow:0 6px 12px -8px rgba(90,42,70,.4);}
+  .bank-link.primary{grid-column:1/-1; flex-direction:row; justify-content:center; padding:12px 16px; border:2px solid #6e4dc8; background:linear-gradient(135deg,#f8f4ff,#efe6ff); color:#3d2270; font-size:14px;}
+  .bank-link.primary img{width:36px; height:36px;}
+  .bank-link img{width:32px; height:32px; border-radius:8px; object-fit:cover; background:#f7f0f5;}
+  .banks-title{margin:16px 0 10px; font-size:12px; color:#6d536b; font-weight:900; letter-spacing:.05em; text-align:center;}
+  .bank-hint{margin-top:12px; padding:10px 14px; background:#fff8e1; border:1px dashed #d4a53b; border-radius:10px; font-size:12px; color:#6b5216; font-weight:800; text-align:center; line-height:1.4;}
+  .banks-toggle{margin-top:10px; text-align:center; font-size:12px; color:var(--hot); font-weight:900; cursor:pointer; text-decoration:underline; background:none; border:0; padding:6px;}
+  @media (max-width:520px){
+    .banks{grid-template-columns:repeat(3,1fr); gap:8px;}
+    .bank-link{font-size:9px;}
+    .bank-link img{width:28px; height:28px;}
+    .bank-link.primary{font-size:13px;}
+  }
+  .status-row{text-align:center; margin:8px 0 18px;}
+  .pill{display:inline-block; padding:6px 16px; border-radius:999px; font-size:12px; font-weight:900; letter-spacing:.03em;}
+  .pill.pending{background:#fff1d9; color:#c88318;}
+  .pill.succeeded{background:#d9f5df; color:#2e8b3e;}
+  .pill.failed, .pill.canceled{background:#ffdcdc; color:#c74747;}
+  .pill.new, .pill.requires_action, .pill.processing, .pill.requires_payment_method, .pill.requires_capture{background:#fff1d9; color:#c88318;}
+  .code-box{
+    padding:22px 20px;
+    margin:0 0 18px;
+    background:linear-gradient(135deg,#fff6f9,#ffe8f0);
+    border:2px dashed var(--hot);
+    border-radius:14px;
+    text-align:center;
+  }
+  .code-box .warn{
+    display:block;
+    background:#fff2e6;
+    border:1px solid #ffb87a;
+    color:#a3531a;
+    font-size:11px;
+    font-weight:900;
+    padding:8px 12px;
+    border-radius:8px;
+    margin:0 0 14px;
+    letter-spacing:.03em;
+    line-height:1.4;
+  }
+  .code-box .lbl{font-size:12px; color:#6d536b; font-weight:900; margin:0 0 8px; letter-spacing:.05em;}
+  .code-box .val{
+    font-family:ui-monospace, Menlo, monospace;
+    font-size:28px;
+    font-weight:900;
+    color:#4b173f;
+    letter-spacing:3px;
+    padding:14px 8px;
+    background:#fff;
+    border:1px solid #ffcbd9;
+    border-radius:10px;
+    margin:0 0 14px;
+    user-select:all;
+    cursor:text;
+  }
+  .btn-copy{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    width:100%;
+    padding:14px 20px;
+    background:#fff;
+    color:var(--hot);
+    border:2px solid var(--hot);
+    border-radius:10px;
+    font-family:'Nunito', sans-serif;
+    font-size:14px;
+    font-weight:900;
+    cursor:pointer;
+    transition:all .15s;
+  }
+  .btn-copy:hover{background:var(--hot); color:#fff;}
+  .btn-copy.copied{background:#3a8a4a; color:#fff; border-color:#3a8a4a;}
+  .copy-feedback{font-size:12px; color:#3a8a4a; font-weight:900; margin-top:8px; min-height:16px;}
+  .dev-note{
+    margin-top:20px;
+    padding:14px 16px;
+    background:#fff8e1;
+    border:1px dashed #d4a53b;
+    border-radius:10px;
+    font-size:12px;
+    color:#6b5216;
+    font-weight:700;
+    text-align:center;
+    line-height:1.5;
+  }
+  .dev-note .dev-btn{
+    margin-top:10px;
+    background:#d4a53b;
+    color:#fff;
+    border:0;
+    padding:10px 16px;
+    border-radius:8px;
+    font-weight:900;
+    font-family:'Nunito', sans-serif;
+    cursor:pointer;
+    font-size:13px;
+  }
+  .dev-note .dev-btn:disabled{opacity:.6;}
+  .footer{text-align:center; margin-top:20px; font-size:13px; color:#7d687d; font-weight:700;}
+  .footer a{color:var(--hot); font-weight:900; text-decoration:none;}
+  .err{background:#ffdcdc; color:#c74747; padding:10px 14px; border-radius:10px; font-size:13px; font-weight:800; margin:0 0 14px;}
+  .action-json{margin-top:12px; padding:10px; background:#f7f0f5; border-radius:8px; font-size:11px; color:#5d3a58; font-family:ui-monospace, Menlo, monospace; word-break:break-all; text-align:left;}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>💌 Өөрийн урилгыг үүсгэх</h1>
+    <p class="subtitle">QPay-ээр төлбөрөө төлөөд шууд нэвтрэх кодоо аваарай. Дараа <b>create.html</b> хуудсанд урилгаа үүсгэнэ.</p>
+
+    <div class="price">
+      <p class="amt" id="priceAmt">…<small>₮</small></p>
+      <p class="lbl">1 БОЛЗООНЫ УРИЛГА · НЭГ УДААГИЙН КОД</p>
+    </div>
+
+    <div id="errBox" class="err" style="display:none;"></div>
+
+    <div id="beforeStart">
+      <button class="btn" id="startBtn">QPay-ээр төлбөр эхлүүлэх →</button>
+    </div>
+
+    <div id="afterStart" style="display:none;">
+      <div class="qr-shell">
+        <div class="qr-box loading" id="qrBox">QR хүлээж байна…</div>
+        <p class="qr-hint">Банк аппаараа QR-ыг уншуулж төлбөрөө хийнэ үү.</p>
+        <div id="banksTitle" class="banks-title" style="display:none;">эсвэл банкны аппаа шууд нээх:</div>
+        <div id="banks" class="banks" style="display:none;"></div>
+        <button id="banksToggle" class="banks-toggle" type="button" style="display:none;">Бүх банкыг харах ↓</button>
+        <div id="bankHint" class="bank-hint" style="display:none;"></div>
+        <div id="actionJson" class="action-json" style="display:none;"></div>
+      </div>
+      <div class="status-row">
+        Статус: <span id="statusPill" class="pill pending">Хүлээгдэж байна…</span>
+      </div>
+
+      <div id="devPanel" class="dev-note" style="display:none;">
+        🧪 <b>Local dev · mock mode</b><br>
+        wire.mn холбогдоогүй байна. Simulate дараад төлбөр амжилттай болсон гэж загварчилна.
+        <br><button class="dev-btn" id="simulateBtn">Simulate төлбөр амжилттай →</button>
+      </div>
+    </div>
+
+    <div id="successPanel" style="display:none;">
+      <div class="code-box">
+        <span class="warn">⚠️ ЗААВАЛ ХУУЛЖ АВНА УУ · Дараа сэргээх боломжгүй</span>
+        <p class="lbl">✅ ТАНЫ НЭВТРЭХ КОД</p>
+        <div class="val" id="codeValue">—</div>
+        <button class="btn-copy" id="copyBtn" type="button">📋 Кодыг хуулах</button>
+        <div class="copy-feedback" id="copyFeedback"></div>
+      </div>
+      <a href="#" class="btn" id="continueBtn">Урилга үүсгэх хуудас руу →</a>
+      <p class="footer" id="redirectHint">Кодоо хуулсны дараа "Урилга үүсгэх" товч дар</p>
+    </div>
+
+    <p class="footer">
+      Аль хэдийн код авсан уу? <a href="create.html">Урилга үүсгэх →</a>
+    </p>
+  </div>
+
+<script>
+(function(){
+  var $ = function(id){ return document.getElementById(id); };
+  var intentId  = null;
+  var pollTimer = null;
+  var mode      = 'unknown';
+
+  var isLocal = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+
+  function setPrice(mnt){
+    if (!mnt || isNaN(mnt)) return;
+    $('priceAmt').innerHTML = Number(mnt).toLocaleString('mn-MN') + '<small>₮</small>';
+  }
+  // Show configured price up-front via /api/health
+  fetch('/api/health').then(function(r){ return r.ok ? r.json() : null; }).then(function(d){
+    if (d && d.price) setPrice(d.price);
+  }).catch(function(){});
+
+  function showErr(msg){
+    var box = $('errBox');
+    box.style.display = 'block';
+    box.textContent = '⚠️ ' + msg;
+  }
+  function clearErr(){ $('errBox').style.display = 'none'; }
+  async function readAPIResponse(response){
+    var text = await response.text();
+    if(!text) return {};
+    try { return JSON.parse(text); }
+    catch(_){
+      return { error: text.replace(/\s+/g, ' ').trim().slice(0, 180) || ('HTTP ' + response.status) };
+    }
+  }
+
+  function setStatus(status){
+    var pill = $('statusPill');
+    pill.className = 'pill ' + (status || 'pending');
+    var labels = {
+      pending:                  'Хүлээгдэж байна…',
+      new:                      'Хүлээгдэж байна…',
+      requires_action:          'QR уншуулна уу…',
+      requires_payment_method:  'Төлбөрийн арга хүлээж байна…',
+      processing:               'Боловсруулж байна…',
+      succeeded:                '✅ Амжилттай',
+      canceled:                 '❌ Цуцлагдсан',
+      failed:                   '❌ Амжилтгүй'
+    };
+    pill.textContent = labels[status] || ('… ' + status);
+  }
+
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+
+  var renderedActionKey = null;
+  function renderNextAction(action){
+    var box       = $('qrBox');
+    var json      = $('actionJson');
+    var banksBox  = $('banks');
+    var banksTtl  = $('banksTitle');
+    if (!action){
+      if (renderedActionKey !== null){ box.textContent = 'QR хүлээж байна…'; renderedActionKey = null; }
+      json.style.display = 'none';
+      banksBox.style.display = 'none';
+      banksTtl.style.display = 'none';
+      return;
+    }
+    // Idempotent render — don't rewrite DOM on every poll
+    var qr = action.qr || {};
+    var key = (qr.text || qr.image_url || JSON.stringify(action)).slice(0, 64);
+    if (key === renderedActionKey) return;
+    renderedActionKey = key;
+
+    var img = qr.image_url || action.image_url || action.qr_image_url || action.qr_code_url || action.qr_url;
+    if (img){
+      box.innerHTML = '<img src="' + esc(img) + '" alt="QR" />';
+      box.classList.remove('loading');
+      json.style.display = 'none';
+    } else if (typeof action === 'string' && /^https?:\/\//.test(action)){
+      box.innerHTML = '<a href="' + esc(action) + '" target="_blank" rel="noopener" style="color:var(--hot); font-weight:900;">Банкны аппыг нээх →</a>';
+      box.classList.remove('loading');
+      json.style.display = 'none';
+    } else {
+      box.textContent = 'next_action';
+      json.textContent = JSON.stringify(action, null, 2);
+      json.style.display = 'block';
+    }
+
+    var deeplinks = qr.deeplinks || action.deeplinks || [];
+    var toggleBtn = $('banksToggle');
+    if (Array.isArray(deeplinks) && deeplinks.length){
+      // Sort: qPay Wallet first (universal), then major banks, then others
+      var TOP = ['qPay wallet', 'Khan bank', 'Social Pay', 'State bank 3.0', 'Trade and Development bank', 'Xac bank', 'Toki App', 'Monpay'];
+      var indexOfName = function(name){ var i = TOP.indexOf(name); return i < 0 ? 999 : i; };
+      deeplinks = deeplinks.slice().sort(function(a,b){ return indexOfName(a.name) - indexOfName(b.name); });
+
+      var html = '';
+      deeplinks.forEach(function(d, i){
+        if (!d || !d.link) return;
+        var cls = 'bank-link';
+        if (i === 0 && d.name && /qpay/i.test(d.name)) cls += ' primary';
+        if (i >= 7) cls += ' extra';
+        html += '<a class="' + cls + '" href="' + esc(d.link) + '" data-link="' + esc(d.link) + '">';
+        if (d.logo) html += '<img src="' + esc(d.logo) + '" alt="" />';
+        html += '<span>' + esc(d.name || d.description || '') + '</span>';
+        html += '</a>';
+      });
+      banksBox.innerHTML = html;
+      banksBox.style.display = 'grid';
+      banksTtl.style.display = 'block';
+
+      // Hide extras initially if more than 7
+      var extras = banksBox.querySelectorAll('.bank-link.extra');
+      if (extras.length > 0){
+        extras.forEach(function(el){ el.style.display = 'none'; });
+        toggleBtn.style.display = 'inline-block';
+        toggleBtn.textContent = 'Бүх банкыг харах (+' + extras.length + ') ↓';
+      } else {
+        toggleBtn.style.display = 'none';
+      }
+    } else {
+      banksBox.style.display = 'none';
+      banksTtl.style.display = 'none';
+      toggleBtn.style.display = 'none';
+    }
+  }
+
+  // Reliable deeplink open — some mobile browsers block plain <a href="scheme://">
+  function openBank(link){
+    var hint = $('bankHint');
+    // Try direct navigation (most reliable on user gesture)
+    try { window.location.href = link; } catch(_){}
+    // Fallback via hidden iframe for iOS Safari
+    setTimeout(function(){
+      try {
+        var f = document.createElement('iframe');
+        f.style.cssText = 'position:absolute; left:-9999px; width:1px; height:1px; opacity:0; border:0;';
+        f.src = link;
+        document.body.appendChild(f);
+        setTimeout(function(){ if (f.parentNode) f.parentNode.removeChild(f); }, 1500);
+      } catch(_){}
+    }, 100);
+    // Show fallback hint after delay if still visible (app didn't take over)
+    setTimeout(function(){
+      if (!document.hidden){
+        hint.style.display = 'block';
+        hint.innerHTML = '⏱ Апп нээгдэхгүй бол:<br>1) энэ банк утсанд суулгаагүй байж болно — өөр банкыг туршиж үзээрэй,<br>2) эсвэл QR-ыг банкны апп доторхи "Скан" функцээр уншуулна уу.';
+      }
+    }, 1800);
+  }
+
+  async function startCheckout(){
+    clearErr();
+    $('startBtn').disabled = true;
+    $('startBtn').textContent = '⏳ Үүсгэж байна…';
+    try {
+      var r = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({})
+      });
+      var data = await readAPIResponse(r);
+      if (!r.ok) throw new Error(data.user_error || data.error || ('HTTP ' + r.status));
+      intentId = data.intent_id;
+      mode     = data.mode || 'unknown';
+      if (data.amount) setPrice(data.amount);
+      $('beforeStart').style.display = 'none';
+      $('afterStart').style.display  = 'block';
+      setStatus(data.status || 'requires_action');
+      renderNextAction(data.next_action);
+
+      if (mode === 'mock' && isLocal) $('devPanel').style.display = 'block';
+
+      // Persist intent id in URL so page refresh keeps polling
+      try {
+        var u = new URL(location.href);
+        u.searchParams.set('intent', intentId);
+        history.replaceState(null, '', u.pathname + u.search);
+      } catch(_){}
+
+      startPolling();
+    } catch(e){
+      $('startBtn').disabled = false;
+      $('startBtn').textContent = 'QPay-ээр төлбөр эхлүүлэх →';
+      showErr(e.message);
+    }
+  }
+
+  function startPolling(){
+    if (pollTimer) clearInterval(pollTimer);
+    pollTimer = setInterval(checkStatus, 2500);
+    checkStatus();
+  }
+
+  async function checkStatus(){
+    if (!intentId) return;
+    try {
+      var r = await fetch('/api/payment-status?id=' + encodeURIComponent(intentId));
+      var data = await readAPIResponse(r);
+      if (!r.ok) return;
+      mode = data.mode || mode;
+      setStatus(data.status);
+      if (data.next_action) renderNextAction(data.next_action);
+      if (data.status === 'succeeded' && data.code){
+        clearInterval(pollTimer);
+        onSuccess(data.code);
+      } else if (data.status === 'canceled' || data.status === 'failed'){
+        clearInterval(pollTimer);
+      }
+    } catch(_){}
+  }
+
+  var successCode = null;
+  function onSuccess(code){
+    successCode = code;
+    $('afterStart').style.display    = 'none';
+    $('successPanel').style.display  = 'block';
+    $('codeValue').textContent       = code;
+    $('continueBtn').href = 'create.html?code=' + encodeURIComponent(code);
+    // No auto-redirect — user must copy + click continue
+  }
+
+  async function copyCode(){
+    if (!successCode) return;
+    var btn      = $('copyBtn');
+    var feedback = $('copyFeedback');
+    var ok = false;
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText){
+        await navigator.clipboard.writeText(successCode);
+        ok = true;
+      } else {
+        var ta = document.createElement('textarea');
+        ta.value = successCode;
+        ta.style.position = 'fixed';
+        ta.style.opacity  = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        ok = true;
+      }
+    } catch(_){}
+    if (ok){
+      btn.classList.add('copied');
+      btn.textContent = '✅ Хуулагдлаа';
+      feedback.textContent = 'Санамж: кодыг гар утасны notes-т ч давхар хадгалаарай.';
+      setTimeout(function(){
+        btn.classList.remove('copied');
+        btn.textContent = '📋 Дахин хуулах';
+      }, 2500);
+    } else {
+      feedback.textContent = '⚠️ Хуулж чадсангүй — кодыг гараар тэмдэглэж авна уу';
+    }
+  }
+
+  async function simulate(){
+    if (!intentId) return;
+    $('simulateBtn').disabled = true;
+    try {
+      var r = await fetch('/api/dev-mark-paid', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ intent_id: intentId })
+      });
+      var data = await readAPIResponse(r);
+      if (!r.ok) throw new Error(data.user_error || data.error || ('HTTP ' + r.status));
+      // Poll picks it up
+    } catch(e){
+      $('simulateBtn').disabled = false;
+      showErr('Simulate алдаа: ' + e.message);
+    }
+  }
+
+  $('startBtn').addEventListener('click', startCheckout);
+  $('simulateBtn').addEventListener('click', simulate);
+  $('copyBtn').addEventListener('click', copyCode);
+
+  // Bank deeplink clicks: intercept and use JS navigation (more reliable on mobile)
+  $('banks').addEventListener('click', function(e){
+    var a = e.target.closest('.bank-link');
+    if (!a) return;
+    e.preventDefault();
+    var link = a.getAttribute('data-link') || a.getAttribute('href');
+    if (link) openBank(link);
+  });
+
+  // Show all banks toggle
+  $('banksToggle').addEventListener('click', function(){
+    var extras = $('banks').querySelectorAll('.bank-link.extra');
+    var showing = extras.length && extras[0].style.display !== 'none';
+    extras.forEach(function(el){ el.style.display = showing ? 'none' : 'flex'; });
+    this.textContent = showing ? ('Бүх банкыг харах (+' + extras.length + ') ↓') : 'Цөөлөх ↑';
+  });
+
+  // Hide bank hint if user returns to page and status changed
+  document.addEventListener('visibilitychange', function(){
+    if (!document.hidden) $('bankHint').style.display = 'none';
+  });
+
+  // Resume mode if URL has ?intent=…
+  (function initResume(){
+    try{
+      var q = new URLSearchParams(location.search);
+      var existing = q.get('intent');
+      if (!existing) return;
+      intentId = existing;
+      $('beforeStart').style.display = 'none';
+      $('afterStart').style.display  = 'block';
+      setStatus('pending');
+      startPolling();
+    }catch(_){}
+  })();
+})();
+</script>
+</body>
+</html>

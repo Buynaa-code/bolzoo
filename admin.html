@@ -42,6 +42,9 @@
   .badge{display:inline-block; font-size:10px; font-weight:800; padding:3px 9px; border-radius:999px; letter-spacing:.4px; text-transform:uppercase;}
   .badge.free{background:#dcffde; color:#3a8a4a;}
   .badge.used{background:#f3e6ec; color:var(--muted);}
+  .badge.qpay{background:#e3ecff; color:#3050b0;}
+  .badge.mock{background:#fff0ce; color:#8a6a20;}
+  .badge.admin{background:#f3e6f8; color:#7040a0;}
   .status{margin-top:10px; min-height:20px; font-weight:800; font-size:13px; color:var(--coral-deep);}
   .newcodes{background:#fff8ee; border:1px dashed var(--coral-soft); border-radius:12px; padding:12px; margin-top:10px; font-family:ui-monospace,Menlo,monospace; font-size:13px; white-space:pre-wrap; word-break:break-all;}
   .empty{color:var(--muted); text-align:center; padding:30px 10px; font-size:14px;}
@@ -89,6 +92,7 @@
       <div class="stat"><div class="stat-num" id="statTotal">0</div><div class="stat-lbl">Нийт код</div></div>
       <div class="stat"><div class="stat-num" id="statFree">0</div><div class="stat-lbl">Ашиглагдаагүй</div></div>
       <div class="stat"><div class="stat-num" id="statUsed">0</div><div class="stat-lbl">Ашиглагдсан</div></div>
+      <div class="stat"><div class="stat-num" id="statQpay">0</div><div class="stat-lbl">💳 QPay-ээр</div></div>
       <div class="stat"><div class="stat-num" id="statToday">0</div><div class="stat-lbl">Өнөөдрийн ашиглалт</div></div>
     </div>
 
@@ -167,6 +171,7 @@
     if(!rows.length){ wrap.innerHTML = '<div class="empty">Одоохондоо код байхгүй байна. Дээрх формоор эхнийхээ үүсгээрэй.</div>'; return; }
     var html = '<table><thead><tr>'
       + '<th>Код</th>'
+      + '<th>Эх сурвалж</th>'
       + '<th>Төлөв</th>'
       + '<th>Үүсгэсэн</th>'
       + '<th>Ашигласан</th>'
@@ -174,8 +179,14 @@
       + '<th></th>'
     + '</tr></thead><tbody>';
     rows.forEach(function(r){
+      var src = r.source || 'admin';
+      var srcBadge;
+      if (src === 'self_service')      srcBadge = '<span class="badge qpay">💳 QPay</span>';
+      else if (src === 'self_service_mock') srcBadge = '<span class="badge mock">🧪 Mock</span>';
+      else                              srcBadge = '<span class="badge admin">👤 Гараар</span>';
       html += '<tr class="'+(r.used?'used':'')+'">'
         + '<td class="code-cell" data-label="Код">'+esc(r.code)+'</td>'
+        + '<td data-label="Эх сурвалж">'+srcBadge+'</td>'
         + '<td data-label="Төлөв">'+(r.used ? '<span class="badge used">Ашигласан</span>' : '<span class="badge free">Хоосон</span>')+'</td>'
         + '<td data-label="Үүсгэсэн">'+esc(fmtWhen(r.created_at))+'</td>'
         + '<td data-label="Ашигласан">'+(r.used ? esc(fmtWhen(r.used_at)) + (r.used_for_invite_id ? '<br><span style="font-size:11px; color:var(--muted); font-family:ui-monospace,Menlo,monospace;">→ '+esc(r.used_for_invite_id)+'</span>' : '') : '—')+'</td>'
@@ -194,6 +205,7 @@
     $('statTotal').textContent = rows.length;
     $('statFree').textContent  = rows.length - used.length;
     $('statUsed').textContent  = used.length;
+    $('statQpay').textContent  = rows.filter(function(r){ return r.source === 'self_service'; }).length;
     $('statToday').textContent = used.filter(function(r){ return isToday(r.used_at); }).length;
   }
 

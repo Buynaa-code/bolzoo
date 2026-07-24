@@ -277,17 +277,81 @@
   .code-gate .code-status.bad{color:#c74747;}
   .code-gate .code-help{
     margin-top:14px;
-    padding:16px 18px;
-    border:1px solid #ffcbd9;
-    border-left:4px solid var(--hot);
-    border-radius:10px;
-    background:linear-gradient(135deg,#fff7fa,#fff1f6);
+    padding:16px;
+    border:1px solid rgba(255,145,176,.46);
+    border-radius:14px;
+    background:linear-gradient(135deg,#fff8fb,#fff1f6);
     color:#735f73;
     font-size:13px;
-    line-height:1.6;
+    line-height:1.45;
     font-weight:700;
   }
+  .code-help-top{
+    display:grid;
+    grid-template-columns:36px minmax(0,1fr);
+    gap:12px;
+    align-items:start;
+  }
+  .code-help-icon{
+    width:36px;
+    height:36px;
+    border-radius:12px;
+    display:grid;
+    place-items:center;
+    background:#fff;
+    border:1px solid rgba(255,203,217,.82);
+    box-shadow:0 10px 22px -18px rgba(90,42,70,.52);
+    font-size:18px;
+  }
   .code-gate .code-help strong{display:block; color:#5d3a58; margin-bottom:5px; font-weight:900;}
+  .code-gate .code-help p{margin:0; color:#806d80;}
+  .qpay-choice{
+    margin-top:14px;
+    padding:14px;
+    display:grid;
+    grid-template-columns:minmax(0,1fr) auto;
+    gap:14px;
+    align-items:center;
+    border:1px solid rgba(255,77,130,.22);
+    border-radius:12px;
+    background:rgba(255,255,255,.82);
+    box-shadow:0 14px 30px -26px rgba(90,42,70,.45);
+  }
+  .qpay-choice > div > span{display:block; color:#806d80; font-size:12px; font-weight:800;}
+  .qpay-cta{
+    min-height:48px;
+    padding:12px 18px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    border-radius:12px;
+    background:linear-gradient(100deg,#ff4d82,#9d63e6);
+    color:#fff;
+    font-weight:900;
+    text-decoration:none;
+    white-space:nowrap;
+    box-shadow:0 16px 32px -20px rgba(157,99,230,.9);
+    transition:transform .16s ease, box-shadow .16s ease;
+  }
+  .qpay-cta:hover{transform:translateY(-1px); box-shadow:0 20px 38px -22px rgba(255,77,130,.86);}
+  .qpay-cta:focus-visible{outline:3px solid rgba(255,77,130,.26); outline-offset:3px;}
+  .qpay-cta span{color:#fff; font-size:18px; line-height:1;}
+  .qpay-steps{
+    margin-top:10px;
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+  }
+  .qpay-steps span{
+    padding:6px 10px;
+    border-radius:999px;
+    background:#fff;
+    border:1px solid rgba(255,203,217,.72);
+    color:#8a7087;
+    font-size:11px;
+    font-weight:900;
+  }
   #videoPreview.video-preview{
     margin-top:14px !important;
     padding:12px !important;
@@ -300,6 +364,80 @@
   .video-status{font-weight:900; font-size:14px; color:#34a853;}
   .video-id{font-family:ui-monospace,Menlo,monospace; font-size:12px; color:#8b7b8d; word-break:break-all; margin:2px 0;}
   .video-open{font-size:12px; color:var(--hot); font-weight:900; text-decoration:none;}
+  .song-search-row{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) 118px;
+    gap:10px;
+    align-items:center;
+  }
+  .song-search-row .btn{width:100%; box-shadow:0 12px 24px -22px rgba(90,42,70,.5);}
+  .song-status{min-height:18px; margin-top:8px; color:#8b7b8d; font-size:12px; font-weight:800;}
+  .song-results{display:grid; gap:8px; margin-top:12px;}
+  .song-result{
+    width:100%;
+    min-height:74px;
+    display:grid;
+    grid-template-columns:96px minmax(0,1fr);
+    gap:12px;
+    align-items:center;
+    padding:8px;
+    border:1px solid rgba(248,215,226,.8);
+    border-radius:12px;
+    background:#fff;
+    color:#3e1738;
+    text-align:left;
+    cursor:pointer;
+    font-family:'Nunito',sans-serif;
+    box-shadow:0 12px 24px -22px rgba(90,42,70,.45);
+    transition:border-color .15s ease, transform .15s ease;
+  }
+  .song-result:hover{border-color:#ff9aba; transform:translateY(-1px);}
+  .song-result.selected{border-color:var(--hot); box-shadow:0 16px 30px -24px rgba(255,77,130,.75);}
+  .song-result img{
+    width:96px;
+    aspect-ratio:16/9;
+    object-fit:cover;
+    border-radius:8px;
+    background:#f4edf2;
+  }
+  .song-title{
+    display:-webkit-box;
+    -webkit-line-clamp:2;
+    -webkit-box-orient:vertical;
+    overflow:hidden;
+    color:#4b173f;
+    font-size:13px;
+    line-height:1.25;
+    font-weight:900;
+  }
+  .song-channel{
+    margin-top:4px;
+    color:#8b7b8d;
+    font-size:12px;
+    line-height:1.25;
+    font-weight:800;
+  }
+  .video-tools{display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-top:10px;}
+  .video-play{
+    min-height:34px;
+    padding:8px 12px;
+    border:1px solid rgba(248,215,226,.9);
+    border-radius:10px;
+    background:#fff;
+    color:#6a4062;
+    font-size:12px;
+    font-weight:900;
+    cursor:pointer;
+  }
+  .video-player{
+    margin-top:12px;
+    overflow:hidden;
+    border-radius:12px;
+    border:1px solid rgba(248,215,226,.9);
+    background:#111;
+    aspect-ratio:16/9;
+  }
+  .video-player iframe{width:100%; height:100%; border:0; display:block;}
 
   .preview-wrap{position:sticky; top:20px; align-self:start;}
   .refresh{text-align:right; margin:0 0 18px;}
@@ -402,6 +540,13 @@
     .title-block{margin-top:16px;}
     h1{font-size:24px;}
     .form-card,.preview-card,.side-card,.music-card{padding:20px 16px; border-radius:16px;}
+    .code-help-top{grid-template-columns:32px minmax(0,1fr);}
+    .code-help-icon{width:32px; height:32px;}
+    .qpay-choice{grid-template-columns:1fr; gap:12px;}
+    .qpay-cta{width:100%;}
+    .song-search-row{grid-template-columns:1fr;}
+    .song-result{grid-template-columns:86px minmax(0,1fr);}
+    .song-result img{width:86px;}
     .themes{grid-template-columns:repeat(4,1fr); gap:10px;}
     .theme{height:54px;}
     .form-actions{grid-template-columns:1fr;}
@@ -436,9 +581,25 @@
           <input id="accessCode" class="code-input" type="text" placeholder="LOV-XXXXXX" maxlength="24" autocomplete="off" />
           <div class="code-status" id="codeStatus"></div>
           <div class="code-help">
-            <strong>💡 Энэ код ашиглагдана. Дараагийн урилгаа шинэ кодоор үүсгэнэ үү.</strong>
-            Кодгүй бол Instagram/Messenger-ээр надтай холбогдоно уу. Гүйлгээ хийсний дараа код илгээгдэнэ.<br>
-            Нэг код = нэг урилга.
+            <div class="code-help-top">
+              <span class="code-help-icon">💡</span>
+              <div>
+                <strong>Энэ код нэг урилгад ашиглагдана.</strong>
+                <p>Кодтой бол дээр оруулаад үргэлжлүүлнэ. Шинэ урилга бүрт шинэ код хэрэгтэй.</p>
+              </div>
+            </div>
+            <div class="qpay-choice">
+              <div>
+                <strong>Код байхгүй юу?</strong>
+                <span>QPay-ээр төлөөд эрхээ үүсгээд, кодоо шууд аваарай.</span>
+              </div>
+              <a class="qpay-cta" href="pay.html" aria-label="QPay-ээр эрх авах">QPay-ээр эрх авах <span>→</span></a>
+            </div>
+            <div class="qpay-steps" aria-label="QPay эрх авах алхам">
+              <span>1. Төлөх</span>
+              <span>2. Код авах</span>
+              <span>3. Урилга үүсгэх</span>
+            </div>
           </div>
         </div>
         <div class="field">
@@ -457,18 +618,28 @@
           <div class="hint">Хүлээн авагч “тийм” эсвэл “үгүй” хариу имэйлээр ирнэ</div>
         </div>
         <div class="field">
-          <label><span class="label-icon">🎵</span>5.YOUTUBE ДУУ (URL эсвэл ID)</label>
-          <input id="videoId" type="text" placeholder="https://youtu.be/qsPzEsxyzB8" />
-          <div class="hint">Хүссэн дуугаа YouTube URL эсвэл ID-оор нэмнэ. Жишээ: youtube, watch?v=..., shorts, music.</div>
+          <label><span class="label-icon">🎵</span>5.YOUTUBE ДУУ ХАЙХ</label>
+          <div class="song-search-row">
+            <input id="songSearch" type="search" placeholder="Дууны нэр бичих" autocomplete="off" />
+            <button class="btn small secondary" id="songSearchBtn" type="button">Хайх</button>
+          </div>
+          <div id="songStatus" class="song-status"></div>
+          <div id="songResults" class="song-results" style="display:none;"></div>
+          <input id="videoId" type="text" placeholder="Сонгосон дууны холбоос энд орно" readonly />
+          <div class="hint">Хайлтын үр дүнгээс нэг дуу сонгоход холбоос нь автоматаар бөглөгдөнө.</div>
           <div id="videoPreview" class="video-preview" style="display:none;">
             <div id="videoThumbBox" class="video-thumbbox">
               <img id="videoThumb" src="" alt="" />
               <div style="flex:1; min-width:0;">
                 <div id="videoStatus" class="video-status">Видео танигдлаа ✅</div>
                 <div id="videoIdShow" class="video-id"></div>
-                <a id="videoOpen" class="video-open" href="#" target="_blank" rel="noopener">▶ YouTube дээр нээж шалгах</a>
+                <div class="video-tools">
+                  <a id="videoOpen" class="video-open" href="#" target="_blank" rel="noopener">▶ YouTube дээр нээж шалгах</a>
+                  <button id="videoPlayToggle" class="video-play" type="button">Энд тоглуулах</button>
+                </div>
               </div>
             </div>
+            <div id="videoPlayer" class="video-player" style="display:none;"></div>
             <div id="videoErr" style="display:none; font-size:12px; color:#c05252; font-weight:700;">⚠️ Энэ линк YouTube-т таарахгүй байна. URL-аа шалгана уу.</div>
           </div>
         </div>
@@ -567,6 +738,54 @@
   var $ = BolzooUtils.$;
   var currentTheme = 'coral';
 
+  /* ---------- Persistent session: URL ?code=... + localStorage draft ---------- */
+  var STORAGE_CODE_KEY = 'bolzoo:pending_code';
+  var STORAGE_DRAFT_KEY = 'bolzoo:pending_draft';
+  var YOUTUBE_CACHE_KEY = 'bolzoo:youtube_search_cache:v1';
+  var YOUTUBE_CACHE_TTL = 24 * 60 * 60 * 1000;
+  var DRAFT_FIELDS = ['recipientName','senderName','responseEmail','videoId','customNote','locationName','locationUrl','specialLetter'];
+
+  function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
+  function lsSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+  function lsRemove(k){ try{ localStorage.removeItem(k); }catch(e){} }
+  function urlGetCode(){
+    try{ return new URLSearchParams(window.location.search).get('code'); }
+    catch(e){ return null; }
+  }
+  function urlSetCode(code){
+    try{
+      var u = new URL(window.location.href);
+      if(code) u.searchParams.set('code', code);
+      else u.searchParams.delete('code');
+      history.replaceState(null,'', u.pathname + u.search + u.hash);
+    }catch(e){}
+  }
+  function saveDraft(){
+    var d = { theme: currentTheme };
+    DRAFT_FIELDS.forEach(function(id){ d[id] = $(id).value; });
+    lsSet(STORAGE_DRAFT_KEY, JSON.stringify(d));
+  }
+  function restoreDraft(){
+    var raw = lsGet(STORAGE_DRAFT_KEY);
+    if(!raw) return;
+    try{
+      var d = JSON.parse(raw);
+      DRAFT_FIELDS.forEach(function(id){ if(d[id] != null) $(id).value = d[id]; });
+      if(d.theme){
+        currentTheme = d.theme;
+        var kids = $('themes').children;
+        for(var i=0;i<kids.length;i++){
+          kids[i].classList.toggle('on', kids[i].getAttribute('data-theme') === currentTheme);
+        }
+      }
+    }catch(e){}
+  }
+  function clearPersistence(){
+    lsRemove(STORAGE_CODE_KEY);
+    lsRemove(STORAGE_DRAFT_KEY);
+    urlSetCode(null);
+  }
+
   // Backend status badge
   var badge = $('backendBadge');
   var kind = window.BolzooAPI ? window.BolzooAPI.backendKind : 'localStorage';
@@ -579,6 +798,7 @@
     var kids = $('themes').children;
     for(var i=0;i<kids.length;i++){ kids[i].classList.toggle('on', kids[i]===t); }
     schedulePreview();
+    saveDraft();
   });
 
   function collectConfig(){
@@ -607,7 +827,7 @@
   function buildUrl(cfg, absolute){
     var base = 'bolzoo.html';
     if(absolute){ base = new URL('bolzoo.html', window.location.href).href; }
-    return base + '#c=' + encodeConfig(cfg);
+    return base + '?preview=1#c=' + encodeConfig(cfg);
   }
 
   var previewTimer = null;
@@ -637,8 +857,8 @@
     setTimeout(settlePreview, 3400);
   });
 
-  ['recipientName','senderName','responseEmail','videoId','customNote','locationName','locationUrl','specialLetter'].forEach(function(id){
-    $(id).addEventListener('input', schedulePreview);
+  DRAFT_FIELDS.forEach(function(id){
+    $(id).addEventListener('input', function(){ schedulePreview(); saveDraft(); });
   });
   $('refreshPreview').addEventListener('click', updatePreview);
 
@@ -649,10 +869,107 @@
     var m = v.match(/(?:v=|youtu\.be\/|embed\/|shorts\/)([a-zA-Z0-9_-]{11})/);
     return m ? m[1] : '';
   }
+  function setSongStatus(msg, tone){
+    var el = $('songStatus');
+    el.textContent = msg || '';
+    el.style.color = tone === 'bad' ? '#c05252' : tone === 'ok' ? '#34a853' : '#8b7b8d';
+  }
+  function readYoutubeCache(){
+    try{ return JSON.parse(localStorage.getItem(YOUTUBE_CACHE_KEY) || '{}'); }
+    catch(e){ return {}; }
+  }
+  function writeYoutubeCache(cache){
+    try{ localStorage.setItem(YOUTUBE_CACHE_KEY, JSON.stringify(cache)); }catch(e){}
+  }
+  function getCachedYoutube(query){
+    var key = query.toLowerCase();
+    var hit = readYoutubeCache()[key];
+    if(!hit || Date.now() - hit.at > YOUTUBE_CACHE_TTL) return null;
+    return hit.items || null;
+  }
+  function setCachedYoutube(query, items){
+    var cache = readYoutubeCache();
+    cache[query.toLowerCase()] = { at: Date.now(), items: items || [] };
+    var keys = Object.keys(cache).sort(function(a,b){ return cache[b].at - cache[a].at; });
+    keys.slice(30).forEach(function(k){ delete cache[k]; });
+    writeYoutubeCache(cache);
+  }
+  function renderSongResults(items, selectedId){
+    var box = $('songResults');
+    if(!items || !items.length){
+      box.style.display = 'none';
+      box.innerHTML = '';
+      return;
+    }
+    box.style.display = 'grid';
+    box.innerHTML = items.map(function(item){
+      var isOn = selectedId && item.videoId === selectedId;
+      return '<button class="song-result '+(isOn?'selected':'')+'" type="button" data-video-id="'+BolzooUtils.esc(item.videoId)+'" data-title="'+BolzooUtils.esc(item.title || '')+'">'
+        + '<img src="'+BolzooUtils.esc(item.thumbnail || 'https://img.youtube.com/vi/'+item.videoId+'/mqdefault.jpg')+'" alt="" loading="lazy" />'
+        + '<span>'
+          + '<span class="song-title">'+BolzooUtils.esc(item.title || 'Untitled')+'</span>'
+          + '<span class="song-channel">'+BolzooUtils.esc(item.channelTitle || 'YouTube')+'</span>'
+        + '</span>'
+      + '</button>';
+    }).join('');
+  }
+  async function searchYoutube(){
+    var query = $('songSearch').value.trim();
+    if(query.length < 2){ setSongStatus('Хайх үг хамгийн багадаа 2 тэмдэгт байна.', 'bad'); return; }
+    var selectedId = extractYtId($('videoId').value);
+    var cached = getCachedYoutube(query);
+    if(cached){
+      renderSongResults(cached, selectedId);
+      setSongStatus('Кэшээс '+cached.length+' үр дүн харуулж байна.', 'ok');
+      return;
+    }
+    $('songSearchBtn').disabled = true;
+    setSongStatus('YouTube-ээс хайж байна...');
+    try{
+      var res = await fetch('/api/youtube-search?q='+encodeURIComponent(query)+'&maxResults=10');
+      var data = await res.json().catch(function(){ return {}; });
+      if(!res.ok) throw new Error(data.user_error || data.error || ('HTTP '+res.status));
+      var items = data.items || [];
+      setCachedYoutube(query, items);
+      renderSongResults(items, selectedId);
+      setSongStatus(items.length ? items.length+' үр дүн олдлоо.' : 'Илэрц олдсонгүй.', items.length ? 'ok' : '');
+    }catch(e){
+      setSongStatus(e.message || 'YouTube хайлт хийх үед алдаа гарлаа.', 'bad');
+    }finally{
+      $('songSearchBtn').disabled = false;
+    }
+  }
+  function selectVideo(videoId){
+    var youtubeUrl = 'https://www.youtube.com/watch?v=' + videoId;
+    $('videoId').value = youtubeUrl;
+    renderSongResults((getCachedYoutube($('songSearch').value.trim()) || []), videoId);
+    updateVideoPreview();
+    schedulePreview();
+    saveDraft();
+    setSongStatus('Дуу сонгогдлоо.', 'ok');
+  }
+  window.selectVideo = selectVideo;
+  function hideVideoPlayer(){
+    $('videoPlayer').style.display = 'none';
+    $('videoPlayer').innerHTML = '';
+    $('videoPlayToggle').textContent = 'Энд тоглуулах';
+  }
+  function toggleVideoPlayer(){
+    var id = extractYtId($('videoId').value);
+    if(!id) return;
+    var player = $('videoPlayer');
+    if(player.style.display === 'none' || !player.style.display){
+      player.innerHTML = '<iframe title="YouTube player" src="https://www.youtube.com/embed/'+encodeURIComponent(id)+'" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>';
+      player.style.display = 'block';
+      $('videoPlayToggle').textContent = 'Player хаах';
+    } else {
+      hideVideoPlayer();
+    }
+  }
   function updateVideoPreview(){
     var raw = $('videoId').value.trim();
     var box = $('videoPreview');
-    if(!raw){ box.style.display='none'; return; }
+    if(!raw){ box.style.display='none'; hideVideoPlayer(); return; }
     var id = extractYtId(raw);
     box.style.display = 'block';
     if(id){
@@ -661,11 +978,20 @@
       $('videoThumb').src = 'https://img.youtube.com/vi/'+id+'/mqdefault.jpg';
       $('videoIdShow').textContent = 'ID: '+id;
       $('videoOpen').href = 'https://youtu.be/'+id;
+      hideVideoPlayer();
     } else {
       $('videoThumbBox').style.display = 'none';
       $('videoErr').style.display = 'block';
+      hideVideoPlayer();
     }
   }
+  $('songSearchBtn').addEventListener('click', searchYoutube);
+  $('songSearch').addEventListener('keydown', function(e){ if(e.key === 'Enter'){ e.preventDefault(); searchYoutube(); } });
+  $('songResults').addEventListener('click', function(e){
+    var item = e.target.closest('.song-result');
+    if(item) selectVideo(item.getAttribute('data-video-id'));
+  });
+  $('videoPlayToggle').addEventListener('click', toggleVideoPlayer);
   $('videoId').addEventListener('input', updateVideoPreview);
 
   function setStatus(msg){ $('status').textContent = msg; }
@@ -682,8 +1008,17 @@
     var gate = $('codeGate'), status = $('codeStatus');
     gate.classList.remove('ok','bad');
     status.classList.remove('ok','bad');
-    if(state==='ok'){ gate.classList.add('ok'); status.classList.add('ok'); }
-    if(state==='bad'){ gate.classList.add('bad'); status.classList.add('bad'); }
+    var codeNow = normalizeCode($('accessCode').value);
+    if(state==='ok'){
+      gate.classList.add('ok'); status.classList.add('ok');
+      urlSetCode(codeNow);
+      lsSet(STORAGE_CODE_KEY, codeNow);
+    }
+    if(state==='bad'){
+      gate.classList.add('bad'); status.classList.add('bad');
+      urlSetCode(null);
+      lsRemove(STORAGE_CODE_KEY);
+    }
     status.textContent = msg || '';
     codeIsValid = (state==='ok');
     $('generate').disabled = !codeIsValid;
@@ -707,6 +1042,9 @@
     }
   }
   $('accessCode').addEventListener('input', function(){
+    var c = normalizeCode($('accessCode').value);
+    if(c) lsSet(STORAGE_CODE_KEY, c);
+    else  lsRemove(STORAGE_CODE_KEY);
     if(codeTimer) clearTimeout(codeTimer);
     codeTimer = setTimeout(checkCode, 350);
   });
@@ -744,6 +1082,7 @@
       setCodeUI('bad', '⚠️ Энэ код ашиглагдлаа. Дараагийн урилгад шинэ код авна уу.');
       $('accessCode').value = '';
       lastCheckedCode = '';
+      clearPersistence();
       updatePreview();
     }catch(e){
       var msg = e.message || String(e);
@@ -786,6 +1125,11 @@
     ['accessCode','recipientName','senderName','responseEmail','videoId','customNote','locationName','locationUrl','specialLetter'].forEach(function(id){
       $(id).value = '';
     });
+    $('songSearch').value = '';
+    $('songResults').style.display = 'none';
+    $('songResults').innerHTML = '';
+    setSongStatus('');
+    hideVideoPlayer();
     currentTheme = 'coral';
     var kids = $('themes').children;
     for(var i=0;i<kids.length;i++){ kids[i].classList.toggle('on', kids[i].getAttribute('data-theme') === 'coral'); }
@@ -795,14 +1139,21 @@
     $('linkBox').style.display = 'none';
     $('linkActions').style.display = 'none';
     setStatus('');
+    clearPersistence();
     updatePreview();
   });
 
-  // Fill defaults for demo
-  $('recipientName').value = '';
-  $('senderName').value = '';
-  $('responseEmail').value = '';
-  updatePreview();
+  // Restore session on load: draft form + code from URL (?code=…) or localStorage
+  (function initRestore(){
+    restoreDraft();
+    updateVideoPreview();
+    var savedCode = urlGetCode() || lsGet(STORAGE_CODE_KEY);
+    if(savedCode){
+      $('accessCode').value = normalizeCode(savedCode);
+      checkCode();
+    }
+    updatePreview();
+  })();
 })();
 </script>
 </body>

@@ -281,5 +281,56 @@ $$;
 
 grant execute on function public.admin_delete_code(text, text) to anon;
 
+/* ---------- payments (self-serve QPay via wire.mn) ---------- */
+
+create table if not exists public.payments (
+  id                  text primary key,               -- wire.mn payment_intent id (жишээ: obj_1a2b3c)
+  status              text not null default 'pending',-- new | requires_action | processing | succeeded | canceled | failed
+  amount              integer not null,               -- MNT ₮ (minor units)
+  currency            text not null default 'MNT',
+  provider            text not null default 'wire',   -- 'wire' | 'mock'
+  provider_intent_id  text,                           -- wire.mn intent id (id-тай ижил)
+  client_secret       text,
+  next_action         jsonb,                          -- QR / deeplink payload
+  code                text references public.access_codes(code) on delete set null,
+  email               text,
+  raw_event           jsonb,
+  created_at          timestamptz not null default now(),
+  updated_at          timestamptz not null default now(),
+  expires_at          timestamptz
+);
+
+create index if not exists payments_status_idx     on public.payments (status);
+create index if not exists payments_created_at_idx on public.payments (created_at desc);
+
+alter table public.payments enable row level security;
+
+-- Anon can SELECT (frontend polling: /api/payment-status)
+drop policy if exists "anon can select payments" on public.payments;
+create policy "anon can select payments"
+  on public.payments for select
+  to anon
+  using (true);
+
+-- No anon insert/update/delete — backend endpoint-ууд (server.js эсвэл Vercel function) service_role-оор гүйцэтгэнэ.
+
+/* ---------- webhook_events (idempotency) ---------- */
+
+create table if not exists public.webhook_events (
+  id            text primary key,   -- wire.mn event id
+  type          text not null,
+  intent_id     text,
+  raw           jsonb,
+  processed_at  timestamptz not null default now()
+);
+
+alter table public.webhook_events enable row level security;
+-- Backend only (service_role). Anon-д ямар ч policy байхгүй.
+
+/* ---------- access_codes нэмэлт талбар (self-serve tracking) ---------- */
+
+alter table public.access_codes add column if not exists source     text;    -- 'admin' | 'self_service'
+alter table public.access_codes add column if not exists payment_id text references public.payments(id) on delete set null;
+
 -- Force PostgREST to reload its schema cache so new tables/functions are picked up immediately.
 NOTIFY pgrst, 'reload schema';

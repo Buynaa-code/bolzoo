@@ -257,6 +257,8 @@
   }
   body[data-screen="done"] .progress,
   body[data-screen="done"] .sound-dock{display:none;}
+  body.preview-mode .progress,
+  body.preview-mode .sound-dock{display:none;}
   .invite-card{
     border-radius:34px;
     padding:34px 42px 30px;
@@ -463,6 +465,26 @@
   .action-tile strong{font-size:14px; line-height:1.15; font-weight:900;}
   .invite-note{max-width:360px; margin:10px auto 2px; color:#8b8092; font-size:17px; line-height:1.32; font-weight:800;}
   .screen[data-screen="done"] .restart{margin-top:12px;}
+  .own-cta{
+    display:none;
+    margin:14px auto 0;
+    padding:11px 20px;
+    background:linear-gradient(135deg,#fff6f9,#ffe8f0);
+    border:1px solid rgba(255,182,203,.75);
+    border-radius:999px;
+    color:#c93670;
+    font-family:'Nunito',sans-serif;
+    font-size:12px;
+    font-weight:900;
+    text-decoration:none;
+    letter-spacing:.02em;
+    box-shadow:0 10px 22px -18px rgba(201,54,112,.6);
+    transition:transform .15s ease, box-shadow .15s ease;
+    text-align:center;
+  }
+  .own-cta:hover{transform:translateY(-1px); box-shadow:0 14px 26px -18px rgba(201,54,112,.75);}
+  .screen[data-screen="done"] .own-cta{display:inline-block;}
+  body.preview-mode .own-cta{display:none !important;}
   .screen[data-screen="done"] .letter-modal{
     background:rgba(255,238,244,.92);
     backdrop-filter:blur(10px);
@@ -764,6 +786,7 @@
         </div>
 
         <button class="restart" id="restart">эхнээс нь үзэх 🔁</button>
+        <a class="own-cta" href="pay.html">💌 Өөрийн урилгаа үүсгэх · QPay-ээр →</a>
       </div>
     </section>
     <div class="sound-dock">
@@ -808,7 +831,10 @@
       var m=v.match(/(?:v=|youtu\.be\/|embed\/|shorts\/)([a-zA-Z0-9_-]{11})/);
       return m?m[1]:'';
     }
-    var INVITE_ID = new URLSearchParams(window.location.search).get('id') || null;
+    var SEARCH_PARAMS = new URLSearchParams(window.location.search);
+    var INVITE_ID = SEARCH_PARAMS.get('id') || null;
+    var IS_PREVIEW = SEARCH_PARAMS.get('preview') === '1';
+    if(IS_PREVIEW){ document.body.classList.add('preview-mode'); }
     var CONFIG = (function(){
       var defaults = {
         recipientName: '',
@@ -906,6 +932,10 @@
     (function(){
       var overlay = document.getElementById('introOverlay');
       if(!overlay) return;
+      if(IS_PREVIEW){
+        overlay.style.display = 'none';
+        return;
+      }
       var dismissed = false;
       function dismiss(){
         if(dismissed) return;
