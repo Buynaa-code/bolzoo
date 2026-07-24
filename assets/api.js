@@ -207,10 +207,7 @@
   async function markOpened(id){
     if(!id) return;
     if(HAS_BACKEND){
-      try{
-        await req('PATCH', '/invites?id=eq.'+encodeURIComponent(id)+'&opened_at=is.null',
-                  { opened_at: new Date().toISOString() });
-      }catch(e){}
+      try{ await rpc('mark_opened', { p_invite_id: id }); }catch(e){}
     } else {
       var s = lsGet('bolzoo:invites:'+id);
       if(s && !s.opened_at){ s.opened_at = new Date().toISOString(); lsSet('bolzoo:invites:'+id, s); }
@@ -219,13 +216,12 @@
 
   async function saveResponse(id, response){
     if(!id) return;
-    var patch = { response: response, responded_at: new Date().toISOString() };
     if(HAS_BACKEND){
-      await req('PATCH', '/invites?id=eq.'+encodeURIComponent(id), patch);
+      await rpc('save_response', { p_invite_id: id, p_response: response });
     } else {
       var s = lsGet('bolzoo:invites:'+id) || { config:null, response:null, opened_at:null };
       s.response = response;
-      s.responded_at = patch.responded_at;
+      s.responded_at = new Date().toISOString();
       lsSet('bolzoo:invites:'+id, s);
     }
   }
@@ -251,7 +247,7 @@
     if(HAS_BACKEND){
       var token = getOwnerToken(id);
       if(!token) throw new Error('No owner token for this invite on this device');
-      await req('DELETE', '/invites?id=eq.'+encodeURIComponent(id)+'&owner_token=eq.'+encodeURIComponent(token));
+      await rpc('delete_own_invite', { p_invite_id: id, p_owner_token: token });
     } else {
       lsDel('bolzoo:invites:'+id);
     }

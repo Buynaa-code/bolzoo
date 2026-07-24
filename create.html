@@ -7,184 +7,572 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Comfortaa:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/styles.css">
 <style>
   :root{
-    --coral:#ff8fa6; --coral-deep:#f76a8e; --coral-soft:#ffb3c0;
-    --ink:#5a2a46; --muted:#9a6b84; --chip:#fff0e8;
+    --page:#fff7f8;
+    --panel:#ffffffd9;
+    --line:#f8d7e2;
+    --field:#fffefe;
+    --hot:#ff4d82;
+    --violet:#9d63e6;
+    --soft-shadow:0 28px 70px -34px rgba(105,39,78,.35);
   }
-  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
-  html,body{margin:0; padding:0;}
   body{
-    min-height:100vh; font-family:'Nunito',system-ui,sans-serif; color:var(--ink);
-    background:
-      radial-gradient(900px 620px at 12% 8%, #ffe6d6 0%, transparent 52%),
-      radial-gradient(820px 560px at 88% 14%, #ffdce8 0%, transparent 50%),
-      radial-gradient(760px 640px at 50% 108%, #ece0ff 0%, transparent 55%),
-      linear-gradient(158deg,#fff6ef 0%, #fff0f2 55%, #fdeef6 100%);
+    background:linear-gradient(135deg,#fff7f8 0%,#fffaf8 54%,#fff2f8 100%);
   }
-  .wrap{max-width:1100px; margin:0 auto; padding:32px 20px 60px; display:grid; grid-template-columns:1fr 380px; gap:28px;}
-  @media (max-width:900px){ .wrap{grid-template-columns:1fr;} }
-  h1{font-family:'Comfortaa',sans-serif; font-weight:700; font-size:28px; margin:0 0 6px;}
-  .subtitle{color:var(--muted); margin:0 0 22px;}
-  .card{background:#fffdfb; border-radius:24px; padding:24px; box-shadow:0 22px 60px -22px rgba(247,106,142,.35), 0 4px 14px -6px rgba(247,106,142,.2);}
-  .field{margin-bottom:16px;}
-  label{display:block; font-weight:800; font-size:13px; letter-spacing:.4px; text-transform:uppercase; color:var(--coral-deep); margin-bottom:6px;}
+  html,body{width:100%; overflow-x:hidden;}
+  *,*::before,*::after{min-width:0;}
+  h1{
+    font-family:'Comfortaa',sans-serif;
+    font-weight:700;
+    font-size:30px;
+    line-height:1.18;
+    margin:0 0 8px;
+    letter-spacing:0;
+  }
+  .wrap{
+    width:min(1360px, calc(100% - 28px));
+    max-width:1360px;
+    margin:14px auto;
+    padding:28px;
+    display:grid;
+    grid-template-columns:minmax(0,1fr) 490px;
+    gap:30px;
+    background:rgba(255,255,255,.72);
+    border:1px solid rgba(255,214,226,.72);
+    border-radius:20px;
+    box-shadow:var(--soft-shadow);
+  }
+  .topbar{
+    grid-column:1/-1;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:18px;
+  }
+  .main-col{min-width:0;}
+  .preview-wrap,
+  .form-card,
+  .preview-card,
+  .side-card,
+  .music-card{max-width:100%; min-width:0;}
+  .steps{
+    display:flex;
+    align-items:center;
+    gap:0;
+    color:#8b7489;
+    font-size:15px;
+    font-weight:800;
+  }
+  .step{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    min-height:34px;
+    padding:0 22px 0 0;
+    margin-right:18px;
+    border-right:1px solid rgba(248,215,226,.9);
+    white-space:nowrap;
+  }
+  .step:last-child{border-right:0; margin-right:0;}
+  .step-num{
+    width:32px;
+    height:32px;
+    border-radius:50%;
+    display:grid;
+    place-items:center;
+    background:#fff;
+    color:#6e5a6d;
+    border:1px solid rgba(248,215,226,.9);
+    box-shadow:0 8px 18px -16px rgba(90,42,70,.45);
+  }
+  .step.on{color:var(--hot);}
+  .step.on .step-num{
+    color:#fff;
+    border-color:transparent;
+    background:linear-gradient(135deg,#ff7ca4,#ff4d82);
+  }
+  .preview-kicker{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    color:#61305a;
+    font-size:17px;
+    font-weight:900;
+    white-space:nowrap;
+  }
+  .title-block{
+    display:flex;
+    align-items:flex-start;
+    gap:16px;
+    margin:22px 0 28px;
+  }
+  .title-icon{
+    width:48px;
+    height:48px;
+    border-radius:14px;
+    display:grid;
+    place-items:center;
+    background:linear-gradient(145deg,#fff,#ffe8f0);
+    border:1px solid rgba(248,215,226,.8);
+    box-shadow:0 14px 28px -22px rgba(90,42,70,.5);
+    font-size:24px;
+    flex:0 0 auto;
+  }
+  .subtitle{
+    color:#816e82;
+    margin:0;
+    font-size:14px;
+    line-height:1.55;
+    font-weight:700;
+  }
+  .card,
+  .form-card,
+  .preview-card,
+  .side-card{
+    border-radius:18px;
+    border:1px solid rgba(248,215,226,.78);
+    background:var(--panel);
+    box-shadow:0 24px 54px -38px rgba(105,39,78,.36);
+    backdrop-filter:blur(14px);
+  }
+  .form-card{padding:28px 30px;}
+  .field{margin:0 0 26px;}
+  label{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin:0 0 12px;
+    color:var(--hot);
+    font-size:14px;
+    font-weight:900;
+    text-transform:uppercase;
+    letter-spacing:0;
+  }
+  .label-icon{font-size:18px; line-height:1;}
   input, textarea, select{
-    width:100%; padding:12px 14px; border:1px solid #ffd7c9; border-radius:14px;
-    font-family:'Nunito',sans-serif; font-size:15px; color:var(--ink); background:#fff;
-    transition:border-color .15s, box-shadow .15s;
+    width:100%;
+    min-height:58px;
+    padding:15px 18px;
+    border:1px solid #efd4de;
+    border-radius:10px;
+    color:#3e1738;
+    background:var(--field);
+    font-family:'Nunito',sans-serif;
+    font-size:15px;
+    font-weight:800;
+    letter-spacing:0;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.85);
   }
+  textarea{min-height:64px; resize:vertical;}
   input:focus, textarea:focus, select:focus{
-    outline:none; border-color:var(--coral-deep); box-shadow:0 0 0 3px rgba(247,106,142,.15);
+    outline:none;
+    border-color:#ff74a0;
+    box-shadow:0 0 0 4px rgba(255,77,130,.12);
   }
-  textarea{min-height:70px; resize:vertical;}
-  .hint{font-size:12px; color:var(--muted); margin-top:4px;}
-  .themes{display:grid; grid-template-columns:repeat(5,1fr); gap:8px;}
-  .theme{cursor:pointer; height:52px; border-radius:14px; border:3px solid transparent; transition:transform .15s, border-color .15s;}
+  .hint{
+    margin-top:8px;
+    color:#8b7b8d;
+    font-size:12px;
+    line-height:1.45;
+    font-weight:700;
+  }
+  .themes{display:grid; grid-template-columns:repeat(8,minmax(42px,1fr)); gap:14px;}
+  .theme{
+    position:relative;
+    cursor:pointer;
+    height:62px;
+    border-radius:12px;
+    border:1px solid rgba(248,215,226,.75);
+    transition:transform .15s, border-color .15s, box-shadow .15s;
+    overflow:hidden;
+  }
   .theme:hover{transform:translateY(-2px);}
-  .theme.on{border-color:var(--ink);}
+  .theme.on{border:2px solid var(--hot); box-shadow:0 14px 28px -20px rgba(255,77,130,.75);}
+  .theme.on::after{
+    content:"✓";
+    position:absolute;
+    inset:auto auto 50% 50%;
+    transform:translate(-50%,50%);
+    width:24px;
+    height:24px;
+    display:grid;
+    place-items:center;
+    border-radius:50%;
+    color:#ff5c8c;
+    background:#fff;
+    font-size:15px;
+    font-weight:900;
+  }
   .theme[data-theme="coral"]{background:linear-gradient(135deg,#ff8fa6,#f76a8e);}
   .theme[data-theme="lavender"]{background:linear-gradient(135deg,#c9b6e4,#8e6dcf);}
   .theme[data-theme="peach"]{background:linear-gradient(135deg,#ffb38a,#f78e5a);}
   .theme[data-theme="mint"]{background:linear-gradient(135deg,#8ed7c1,#4fb99f);}
   .theme[data-theme="sky"]{background:linear-gradient(135deg,#8ec5ff,#5b9bff);}
-
-  .btn{border:none; cursor:pointer; font-family:'Nunito',sans-serif; font-weight:800; font-size:15px;
-    padding:14px 22px; border-radius:999px; color:#fff;
-    background:linear-gradient(135deg,var(--coral),var(--coral-deep));
-    box-shadow:0 12px 24px -8px rgba(247,106,142,.6);
-    transition:transform .15s, box-shadow .15s;
+  .theme[data-theme="sunset"]{background:linear-gradient(135deg,#ffb066,#e75d5d);}
+  .theme[data-theme="galaxy"]{background:linear-gradient(135deg,#b19cff,#6b47d9);}
+  .theme[data-theme="aurora"]{background:linear-gradient(135deg,#7ee1c0,#4b9bcf);}
+  .btn{
+    min-height:54px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    border-radius:10px;
+    font-size:15px;
+    padding:14px 22px;
+    box-shadow:0 16px 30px -18px rgba(247,106,142,.72);
   }
-  .btn:hover{transform:translateY(-2px);}
-  .btn:active{transform:translateY(0) scale(.96);}
-  .btn.secondary{background:#fff; color:var(--coral-deep); border:2px solid var(--coral-soft); box-shadow:none;}
-  .btn.wide{width:100%;}
-  .btn.small{padding:9px 16px; font-size:13px;}
+  .btn.small{min-height:42px; padding:9px 16px; font-size:13px;}
+  .btn.secondary{
+    color:#6a4062;
+    background:#fff;
+    border:1px solid rgba(248,215,226,.9);
+    box-shadow:0 12px 24px -22px rgba(90,42,70,.5);
+  }
+  .btn.wide{
+    width:100%;
+    background:linear-gradient(100deg,#ff4f86,#ff5f93 54%,#ff4d82);
+  }
+  .form-actions{display:grid; grid-template-columns:1fr 1fr 1.6fr; gap:14px; margin-top:22px;}
+  .link-box{
+    margin-top:8px;
+    background:linear-gradient(135deg,#fff6f9,#ffe8f0);
+    border:1px solid #ffcbd9;
+    border-radius:12px;
+    padding:14px 16px;
+    word-break:break-all;
+    color:#3e1738;
+    font-family:ui-monospace, Menlo, monospace;
+    font-size:13px;
+    line-height:1.45;
+    font-weight:800;
+  }
+  .link-box::before{
+    content:"Таны урилгын линк";
+    display:block;
+    margin:0 0 5px;
+    color:#6d536b;
+    font-family:'Nunito',sans-serif;
+    font-size:12px;
+    font-weight:900;
+  }
+  .link-actions{display:flex; gap:10px; margin-top:10px; flex-wrap:wrap;}
+  .status{margin-top:14px; min-height:20px; font-weight:900; font-size:13px; color:var(--hot); text-align:center;}
+  .backend-row{margin-top:22px; padding-top:18px; border-top:1px solid rgba(248,215,226,.78); display:flex; align-items:center; justify-content:center; gap:10px; flex-wrap:wrap;}
+  #backendBadge{font-size:12px; color:#8b7b8d; font-weight:800;}
 
-  .link-box{margin-top:14px; background:#fff8f4; border:1px dashed var(--coral-soft); border-radius:14px; padding:12px; word-break:break-all; font-size:12px; color:var(--ink); font-family:ui-monospace, Menlo, monospace;}
-  .link-actions{display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;}
-  .status{margin-top:10px; min-height:20px; font-weight:800; font-size:13px; color:var(--coral-deep);}
-
-  .preview-wrap{position:sticky; top:20px;}
-  .preview-frame{width:100%; height:720px; border:none; border-radius:22px; background:#fffdfb; box-shadow:0 22px 60px -22px rgba(247,106,142,.4);}
-  .preview-label{font-family:'Caveat',cursive; font-size:20px; color:var(--muted); text-align:center; margin-bottom:8px;}
-  .refresh{margin-bottom:10px; text-align:right;}
-
-  .steps{display:flex; gap:6px; margin-bottom:18px; font-size:12px; color:var(--muted);}
-  .step{background:#fff0e8; padding:5px 10px; border-radius:999px; font-weight:800;}
-  .step.on{background:linear-gradient(135deg,var(--coral),var(--coral-deep)); color:#fff;}
-
-  .code-gate{background:linear-gradient(135deg,#fff8f4,#ffeef6); border:2px dashed var(--coral-soft); border-radius:18px; padding:16px 18px; margin-bottom:18px;}
-  .code-gate.ok{border-color:#7ecb8b; background:linear-gradient(135deg,#f2fff4,#eaffee);}
-  .code-gate.bad{border-color:#e46060; background:linear-gradient(135deg,#fff2f2,#ffe6e6);}
-  .code-gate label{color:var(--coral-deep);}
-  .code-gate .code-input{font-family:ui-monospace,Menlo,monospace; text-transform:uppercase; letter-spacing:2px; font-weight:800; font-size:16px;}
-  .code-gate .code-status{margin-top:6px; font-size:12px; font-weight:700; min-height:16px;}
+  .code-gate{
+    margin:0 0 26px;
+    padding:0;
+    border:0;
+    background:transparent;
+  }
+  .code-gate.ok .code-input{border-color:#7ecb8b; box-shadow:0 0 0 4px rgba(126,203,139,.13);}
+  .code-gate.bad .code-input{border-color:#e46060; box-shadow:0 0 0 4px rgba(228,96,96,.12);}
+  .code-gate .code-input{font-family:ui-monospace,Menlo,monospace; text-transform:uppercase; letter-spacing:0; font-weight:900; font-size:16px;}
+  .code-gate .code-status{margin-top:8px; font-size:12px; font-weight:800; min-height:16px;}
   .code-gate .code-status.ok{color:#3a8a4a;}
   .code-gate .code-status.bad{color:#c74747;}
-  .code-gate .code-help{margin-top:8px; font-size:12px; color:var(--muted); line-height:1.5;}
-  .btn:disabled{opacity:.45; cursor:not-allowed; transform:none;}
+  .code-gate .code-help{
+    margin-top:14px;
+    padding:16px 18px;
+    border:1px solid #ffcbd9;
+    border-left:4px solid var(--hot);
+    border-radius:10px;
+    background:linear-gradient(135deg,#fff7fa,#fff1f6);
+    color:#735f73;
+    font-size:13px;
+    line-height:1.6;
+    font-weight:700;
+  }
+  .code-gate .code-help strong{display:block; color:#5d3a58; margin-bottom:5px; font-weight:900;}
+  #videoPreview.video-preview{
+    margin-top:14px !important;
+    padding:12px !important;
+    border:1px solid #ffd8b5 !important;
+    border-radius:12px !important;
+    background:linear-gradient(135deg,#fffaf5,#fff7ed) !important;
+  }
+  .video-thumbbox{display:flex; gap:12px; align-items:center;}
+  #videoThumb{width:110px; height:62px; object-fit:cover; border-radius:8px; background:#eee; box-shadow:0 8px 18px -14px rgba(90,42,70,.45);}
+  .video-status{font-weight:900; font-size:14px; color:#34a853;}
+  .video-id{font-family:ui-monospace,Menlo,monospace; font-size:12px; color:#8b7b8d; word-break:break-all; margin:2px 0;}
+  .video-open{font-size:12px; color:var(--hot); font-weight:900; text-decoration:none;}
+
+  .preview-wrap{position:sticky; top:20px; align-self:start;}
+  .refresh{text-align:right; margin:0 0 18px;}
+  .refresh .btn{border-radius:999px; color:var(--hot); padding-inline:20px;}
+  .preview-card{padding:28px;}
+  .preview-title{margin:0 0 20px; color:#4b173f; font-size:15px; font-weight:900;}
+  .phone-shell{
+    width:min(355px,100%);
+    margin:0 auto 16px;
+    padding:8px;
+    border-radius:46px;
+    background:linear-gradient(145deg,#ffc4d3,#fff 36%,#ff8fb0);
+    box-shadow:0 28px 54px -30px rgba(255,77,130,.68);
+  }
+  .phone-screen{
+    position:relative;
+    aspect-ratio:9/17.5;
+    overflow:hidden;
+    border-radius:38px;
+    background:#fff;
+  }
+  .phone-status{
+    position:absolute;
+    z-index:3;
+    top:14px;
+    left:18px;
+    right:18px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    color:#111;
+    font-size:12px;
+    font-weight:900;
+    pointer-events:none;
+  }
+  .phone-camera{
+    position:absolute;
+    z-index:4;
+    top:0;
+    left:50%;
+    width:78px;
+    height:6px;
+    border-radius:0 0 999px 999px;
+    background:#5c183a;
+    transform:translateX(-50%);
+    opacity:.9;
+  }
+  .preview-frame{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    border:0;
+    background:#fffdfb;
+  }
+  .phone-dots{display:flex; justify-content:center; gap:10px; margin-top:10px;}
+  .phone-dots i{width:11px; height:11px; border-radius:50%; background:#e9dfe5;}
+  .phone-dots i:first-child{background:#ff5d93;}
+  .side-card{padding:26px; margin-top:34px;}
+  .side-card h2{
+    margin:0 0 18px;
+    color:#4b173f;
+    font-family:'Nunito',sans-serif;
+    font-size:19px;
+    line-height:1.2;
+    font-weight:900;
+  }
+  .tip-row{display:grid; grid-template-columns:34px minmax(0,1fr); gap:14px; align-items:center; color:#7d687d; font-size:13px; line-height:1.45; font-weight:700; margin-top:18px;}
+  .tip-row span:first-child{width:28px; height:28px; display:grid; place-items:center; border-radius:50%; background:#fff1d9; color:#c88318;}
+  .tip-row:nth-child(3) span:first-child{background:#f5dcff; color:#9d63e6;}
+  .tip-row:nth-child(4) span:first-child{background:#ffe1dc; color:#ff6f61;}
+  .music-card{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) 58px;
+    gap:16px;
+    align-items:center;
+    padding:26px;
+    margin-top:28px;
+    background:linear-gradient(135deg,#fff,#fbf3ff);
+  }
+  .music-card h2{margin:0 0 8px; color:#7a4dcf; font-size:19px; font-weight:900;}
+  .music-card p{margin:0 0 16px; color:#7d687d; font-size:13px; line-height:1.45; font-weight:700;}
+  .music-heart{width:58px; height:58px; border-radius:50%; display:grid; place-items:center; background:#ffe1ef; font-size:24px;}
+  .wave{height:34px; display:flex; align-items:center; gap:4px;}
+  .wave i{width:4px; border-radius:999px; background:linear-gradient(180deg,#9d63e6,#ff8fb0); opacity:.7;}
+  .wave i:nth-child(1){height:10px}.wave i:nth-child(2){height:18px}.wave i:nth-child(3){height:25px}.wave i:nth-child(4){height:13px}.wave i:nth-child(5){height:30px}.wave i:nth-child(6){height:16px}.wave i:nth-child(7){height:22px}.wave i:nth-child(8){height:12px}.wave i:nth-child(9){height:26px}.wave i:nth-child(10){height:15px}.wave i:nth-child(11){height:20px}.wave i:nth-child(12){height:11px}
+  .footer-note{margin:20px 0 0; color:#9a6b84; text-align:center; font-size:13px; font-weight:800;}
+
+  @media (max-width:1120px){
+    .wrap{grid-template-columns:1fr; max-width:860px;}
+    .preview-wrap{position:relative; top:auto;}
+    .preview-kicker{display:none;}
+  }
+  @media (max-width:720px){
+    .wrap{width:100%; max-width:none; margin:0; padding:18px 12px 28px; border-radius:0; border-left:0; border-right:0;}
+    .topbar{align-items:flex-start;}
+    .steps{width:100%; display:grid; grid-template-columns:repeat(3,1fr); gap:8px; overflow:visible; padding-bottom:4px;}
+    .step{justify-content:center; gap:5px; margin:0; padding:0; border-right:0; font-size:11px; line-height:1.2; text-align:center; white-space:normal;}
+    .step-num{width:24px; height:24px; flex:0 0 24px; font-size:11px;}
+    .title-block{margin-top:16px;}
+    h1{font-size:24px;}
+    .form-card,.preview-card,.side-card,.music-card{padding:20px 16px; border-radius:16px;}
+    .themes{grid-template-columns:repeat(4,1fr); gap:10px;}
+    .theme{height:54px;}
+    .form-actions{grid-template-columns:1fr;}
+    .preview-wrap{order:3;}
+    .phone-shell{width:min(330px,100%);}
+  }
 </style>
 </head>
 <body>
   <div class="wrap">
-    <div>
+    <header class="topbar">
       <div class="steps">
-        <span class="step on">1. Мэдээлэл бөглөх</span>
-        <span class="step">2. Preview харах</span>
-        <span class="step">3. Линк илгээх</span>
+        <span class="step on"><span class="step-num">1</span>Мэдээлэл бөглөх</span>
+        <span class="step"><span class="step-num">2</span>Preview харах</span>
+        <span class="step"><span class="step-num">3</span>Линк илгээх</span>
       </div>
-      <h1>💌 Болзооны урилга үүсгэх</h1>
-      <p class="subtitle">Формоо бөглөөд линкээ хүлээн авагчид илгээ. Тэр линкийг нээгээд хариу өгөх боломжтой.</p>
+      <div class="preview-kicker">✨ Preview</div>
+    </header>
 
-      <div class="card">
+    <main class="main-col">
+      <div class="title-block">
+        <div class="title-icon">💌</div>
+        <div>
+          <h1>Болзооны урилга үүсгэх</h1>
+          <p class="subtitle">Формоо бөглөөд линкээ хүлээн авагчид илгээ. Тэр линкийг нээгээд хариу өгөх боломжтой.</p>
+        </div>
+      </div>
+
+      <section class="form-card">
         <div class="code-gate" id="codeGate">
-          <label>🔑 Нэвтрэх код *</label>
+          <label><span class="label-icon">🔑</span>1.НЭВТРЭХ КОД *</label>
           <input id="accessCode" class="code-input" type="text" placeholder="LOV-XXXXXX" maxlength="24" autocomplete="off" />
           <div class="code-status" id="codeStatus"></div>
           <div class="code-help">
-            Кодгүй бол Instagram/Messenger-ээр надтай холбогдоно уу.
-            Гүйлгээ хийсний дараа код илгээгдэнэ. Нэг код = нэг урилга.
+            <strong>💡 Энэ код ашиглагдана. Дараагийн урилгаа шинэ кодоор үүсгэнэ үү.</strong>
+            Кодгүй бол Instagram/Messenger-ээр надтай холбогдоно уу. Гүйлгээ хийсний дараа код илгээгдэнэ.<br>
+            Нэг код = нэг урилга.
           </div>
         </div>
         <div class="field">
-          <label>Хүлээн авагчийн нэр *</label>
+          <label><span class="label-icon">♙</span>2.УРИЛГЫН АВАГЧИЙН НЭР *</label>
           <input id="recipientName" type="text" placeholder="жишээ: Аная" maxlength="30" />
-          <div class="hint">Урилгын мэндчилгээнд орно ("Аная минь, надтай болзоонд явах уу?")</div>
+          <div class="hint">Урилгыг хэнд илгээх вэ? (Жишээ нь: надтай болзоонд явах уу?)</div>
         </div>
         <div class="field">
-          <label>Таны нэр (илгээгч)</label>
+          <label><span class="label-icon">💗</span>3.ТАНЫ НЭР (ИЛГЭЭГЧ)</label>
           <input id="senderName" type="text" placeholder="жишээ: Мики" maxlength="30" />
-          <div class="hint">Ticket дээр "X очиж авна" гэж харагдана</div>
+          <div class="hint">Ticket дээр “X”-ийн нэрийг тань харуулна</div>
         </div>
         <div class="field">
-          <label>Хариу хүлээн авах Gmail *</label>
+          <label><span class="label-icon">✉️</span>4.ХАРИУ ХҮЛЭЭН АВАХ EMAIL *</label>
           <input id="responseEmail" type="email" placeholder="you@gmail.com" />
-          <div class="hint">Хүлээн авагч "Тийм" гэвэл энэ хаяг руу мэйл очно</div>
+          <div class="hint">Хүлээн авагч “тийм” эсвэл “үгүй” хариу имэйлээр ирнэ</div>
         </div>
         <div class="field">
-          <label>YouTube дуу (URL эсвэл ID)</label>
+          <label><span class="label-icon">🎵</span>5.YOUTUBE ДУУ (URL эсвэл ID)</label>
           <input id="videoId" type="text" placeholder="https://youtu.be/qsPzEsxyzB8" />
-          <div class="hint">Хоосон орхивол default дуу тоглоно</div>
+          <div class="hint">Хүссэн дуугаа YouTube URL эсвэл ID-оор нэмнэ. Жишээ: youtube, watch?v=..., shorts, music.</div>
+          <div id="videoPreview" class="video-preview" style="display:none;">
+            <div id="videoThumbBox" class="video-thumbbox">
+              <img id="videoThumb" src="" alt="" />
+              <div style="flex:1; min-width:0;">
+                <div id="videoStatus" class="video-status">Видео танигдлаа ✅</div>
+                <div id="videoIdShow" class="video-id"></div>
+                <a id="videoOpen" class="video-open" href="#" target="_blank" rel="noopener">▶ YouTube дээр нээж шалгах</a>
+              </div>
+            </div>
+            <div id="videoErr" style="display:none; font-size:12px; color:#c05252; font-weight:700;">⚠️ Энэ линк YouTube-т таарахгүй байна. URL-аа шалгана уу.</div>
+          </div>
         </div>
         <div class="field">
-          <label>Тема</label>
+          <label><span class="label-icon">🎟</span>ТЕМА ӨНГӨ</label>
           <div class="themes" id="themes">
             <div class="theme on" data-theme="coral" title="Coral"></div>
             <div class="theme" data-theme="lavender" title="Lavender"></div>
             <div class="theme" data-theme="peach" title="Peach"></div>
             <div class="theme" data-theme="mint" title="Mint"></div>
             <div class="theme" data-theme="sky" title="Sky"></div>
+            <div class="theme" data-theme="sunset" title="Sunset ✨"></div>
+            <div class="theme" data-theme="galaxy" title="Galaxy ✨"></div>
+            <div class="theme" data-theme="aurora" title="Aurora ✨"></div>
           </div>
         </div>
         <div class="field">
-          <label>Нэмэлт зурвас (заавал биш)</label>
+          <label><span class="label-icon">🖊</span>7.НЭМЭЛТ ЗУРВАС (ЗААВАЛ БИШ)</label>
           <textarea id="customNote" placeholder="жишээ: чиний хариу л надад бүх зүйл" maxlength="120"></textarea>
-          <div class="hint">Эхний дэлгэцэнд "тийм гэдэг хариу л авна" мэссежийн оронд гарна</div>
+          <div class="hint">Энэ текст урилгын доод хэсэгт харагдана 💕</div>
         </div>
-
-        <button class="btn wide" id="generate" disabled>💫 Богино линк үүсгэх</button>
+        <div class="field">
+          <label><span class="label-icon">📍</span>8.УУЛЗАХ ГАЗАР (ЗААВАЛ БИШ)</label>
+          <input id="locationName" type="text" placeholder="жишээ: Café Bene, State Circus" maxlength="60" />
+          <div class="hint">Тийм газарт үүссэн бол энэ хэсэгт харагдана</div>
+        </div>
+        <div class="field">
+          <label><span class="label-icon">🗺</span>9.GOOGLE MAPS ЛИНК (ЗААВАЛ БИШ)</label>
+          <input id="locationUrl" type="text" placeholder="https://maps.app.goo.gl/..." />
+          <div class="hint">Google Maps share линкээ оруулна уу ✨</div>
+        </div>
+        <div class="field">
+          <label><span class="label-icon">💌</span>10.ТУСГАЙ ЗАХИДАЛ (ЗААВАЛ БИШ)</label>
+          <textarea id="specialLetter" placeholder="жишээ: Чамайг анх харснаас хойш..." maxlength="300"></textarea>
+          <div class="hint">Таны хайртад зориулсан захидал энэ хэсэгт харагдана ❤️</div>
+        </div>
 
         <div class="link-box" id="linkBox" style="display:none;"></div>
         <div class="link-actions" id="linkActions" style="display:none;">
-          <button class="btn small" id="copyLink">📋 Хуулах</button>
-          <button class="btn small secondary" id="openLink">🔗 Нээж үзэх</button>
-          <button class="btn small secondary" id="shareLink">📲 Хуваалцах</button>
+          <button class="btn small secondary" id="copyLink">🔗 Хуулах</button>
+          <button class="btn small secondary" id="openLink">Нээж үзэх</button>
+        </div>
+
+        <div class="form-actions">
+          <button class="btn secondary" id="resetForm" type="button">＋ Нэмж шинэ</button>
+          <button class="btn secondary" id="shareLink" type="button">🔗 Хуваалцах</button>
+          <button class="btn wide" id="generate" disabled>Линк илгээх →</button>
         </div>
         <div class="status" id="status"></div>
 
-        <div style="margin-top:20px; padding-top:16px; border-top:1px solid #ffe2d6; display:flex; gap:10px; flex-wrap:wrap;">
+        <div class="backend-row">
           <a href="dashboard.html" class="btn small secondary">📊 Миний урилгууд</a>
-          <span id="backendBadge" style="font-size:11px; color:var(--muted); align-self:center;"></span>
+          <span id="backendBadge"></span>
         </div>
-      </div>
-    </div>
+        <p class="footer-note">💞 Хийсэнээ! Одоо Messenger/Instagram-р паст хийгээрэй 💌</p>
+      </section>
+    </main>
 
-    <div class="preview-wrap">
-      <div class="preview-label">✨ preview</div>
-      <div class="refresh"><button class="btn small secondary" id="refreshPreview">🔄 preview шинэчлэх</button></div>
-      <iframe class="preview-frame" id="preview" title="preview"></iframe>
-    </div>
+    <aside class="preview-wrap">
+      <div class="refresh"><button class="btn small secondary" id="refreshPreview">🔄 Preview шинэчлэх</button></div>
+      <section class="preview-card">
+        <p class="preview-title">Урилгын харагдац (preview)</p>
+        <div class="phone-shell">
+          <div class="phone-screen">
+            <div class="phone-camera"></div>
+            <div class="phone-status"><span>9:41</span><span>••• Wi‑Fi ▰</span></div>
+            <iframe class="preview-frame" id="preview" title="preview"></iframe>
+          </div>
+        </div>
+        <div class="phone-dots" aria-hidden="true"><i></i><i></i><i></i></div>
+      </section>
+
+      <section class="side-card">
+        <h2>💡 Туслах зөвлөгөө</h2>
+        <div class="tip-row"><span>🔑</span><p>Кодоо хадгал — дараагийн урилгад ашиглана.</p></div>
+        <div class="tip-row"><span>🎟</span><p>Preview хийж хараад линкээ илгээнэ үү.</p></div>
+        <div class="tip-row"><span>💌</span><p>Хариу ирсэн даруйд таны имэйл рүү мэдэгдэх болно.</p></div>
+      </section>
+
+      <section class="side-card music-card">
+        <div>
+          <h2>🎵 Дуу танилцуулга</h2>
+          <p>Сайн дуу нь урилгыг илүү дурсамжтай болгодог.</p>
+          <div class="wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        </div>
+        <div class="music-heart">💗</div>
+      </section>
+    </aside>
   </div>
 
+<script src="assets/utils.js"></script>
 <script src="assets/config.js"></script>
 <script src="assets/api.js"></script>
 <script>
 (function(){
-  var $ = function(id){ return document.getElementById(id); };
+  var $ = BolzooUtils.$;
   var currentTheme = 'coral';
 
   // Backend status badge
   var badge = $('backendBadge');
   var kind = window.BolzooAPI ? window.BolzooAPI.backendKind : 'localStorage';
-  var kindMsg = {
-    'supabase':    '✅ Supabase backend',
-    'custom':      '✅ Custom API backend',
-    'same-origin': '✅ Локал сервер холбогдсон',
-    'localStorage':'⚠️ Backend байхгүй — line зөвхөн энэ browser дээр ажиллана (node server.js эсвэл Supabase холбоно уу)'
-  };
-  badge.textContent = kindMsg[kind] || '';
-  badge.style.color = (kind==='localStorage') ? '' : '#4fa15b';
+  var lbl = BolzooUtils.backendLabel(kind);
+  badge.textContent = lbl.text;
+  badge.style.color = (lbl.tone === 'ok') ? '#4fa15b' : '';
   $('themes').addEventListener('click', function(e){
     var t = e.target.closest('.theme'); if(!t) return;
     currentTheme = t.getAttribute('data-theme');
@@ -200,7 +588,10 @@
       responseEmail: $('responseEmail').value.trim(),
       videoId:       $('videoId').value.trim(),
       theme:         currentTheme,
-      customNote:    $('customNote').value.trim()
+      customNote:    $('customNote').value.trim(),
+      locationName:  $('locationName').value.trim(),
+      locationUrl:   $('locationUrl').value.trim(),
+      specialLetter: $('specialLetter').value.trim()
     };
   }
 
@@ -228,11 +619,54 @@
     var cfg = collectConfig();
     $('preview').src = buildUrl(cfg, false);
   }
+  function settlePreview(){
+    var frame = $('preview');
+    try{
+      var doc = frame.contentDocument || (frame.contentWindow && frame.contentWindow.document);
+      if(!doc) return;
+      var overlay = doc.getElementById('introOverlay');
+      if(overlay) overlay.style.display = 'none';
+      var soundDock = doc.querySelector('.sound-dock');
+      if(soundDock) soundDock.style.display = 'none';
+      var progress = doc.querySelector('.progress');
+      if(progress) progress.style.display = 'none';
+    }catch(e){}
+  }
+  $('preview').addEventListener('load', function(){
+    setTimeout(settlePreview, 300);
+    setTimeout(settlePreview, 3400);
+  });
 
-  ['recipientName','senderName','responseEmail','videoId','customNote'].forEach(function(id){
+  ['recipientName','senderName','responseEmail','videoId','customNote','locationName','locationUrl','specialLetter'].forEach(function(id){
     $(id).addEventListener('input', schedulePreview);
   });
   $('refreshPreview').addEventListener('click', updatePreview);
+
+  function extractYtId(v){
+    if(!v) return '';
+    v = String(v).trim();
+    if(/^[a-zA-Z0-9_-]{11}$/.test(v)) return v;
+    var m = v.match(/(?:v=|youtu\.be\/|embed\/|shorts\/)([a-zA-Z0-9_-]{11})/);
+    return m ? m[1] : '';
+  }
+  function updateVideoPreview(){
+    var raw = $('videoId').value.trim();
+    var box = $('videoPreview');
+    if(!raw){ box.style.display='none'; return; }
+    var id = extractYtId(raw);
+    box.style.display = 'block';
+    if(id){
+      $('videoThumbBox').style.display = 'flex';
+      $('videoErr').style.display = 'none';
+      $('videoThumb').src = 'https://img.youtube.com/vi/'+id+'/mqdefault.jpg';
+      $('videoIdShow').textContent = 'ID: '+id;
+      $('videoOpen').href = 'https://youtu.be/'+id;
+    } else {
+      $('videoThumbBox').style.display = 'none';
+      $('videoErr').style.display = 'block';
+    }
+  }
+  $('videoId').addEventListener('input', updateVideoPreview);
 
   function setStatus(msg){ $('status').textContent = msg; }
 
@@ -337,7 +771,8 @@
   });
 
   $('shareLink').addEventListener('click', function(){
-    var url = $('linkBox').textContent;
+    var url = $('linkBox').textContent.trim();
+    if(!url){ setStatus('⚠️ Эхлээд линк үүсгэнэ үү'); return; }
     var cfg = collectConfig();
     var text = (cfg.recipientName?cfg.recipientName+' минь, ':'')+'чамд болзооны урилга ирлээ 💌';
     if(navigator.share){
@@ -345,6 +780,22 @@
     } else {
       window.location.href = 'mailto:?subject='+encodeURIComponent('Болзооны урилга 💌')+'&body='+encodeURIComponent(text+'\n\n'+url);
     }
+  });
+
+  $('resetForm').addEventListener('click', function(){
+    ['accessCode','recipientName','senderName','responseEmail','videoId','customNote','locationName','locationUrl','specialLetter'].forEach(function(id){
+      $(id).value = '';
+    });
+    currentTheme = 'coral';
+    var kids = $('themes').children;
+    for(var i=0;i<kids.length;i++){ kids[i].classList.toggle('on', kids[i].getAttribute('data-theme') === 'coral'); }
+    lastCheckedCode = '';
+    setCodeUI('', '');
+    $('videoPreview').style.display = 'none';
+    $('linkBox').style.display = 'none';
+    $('linkActions').style.display = 'none';
+    setStatus('');
+    updatePreview();
   });
 
   // Fill defaults for demo

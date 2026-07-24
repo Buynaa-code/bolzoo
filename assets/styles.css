@@ -1,0 +1,96 @@
+/**
+ * Bolzoo — shared styles.
+ * Ашиглагдаж буй хуудсууд: create.html, dashboard.html, admin.html
+ * (bolzoo.html өөрийн гэсэн animation/theme-тэй тул тусдаа CSS-тэй)
+ *
+ * Хуудас бүрийн өвөрмөц style-ыг тухайн HTML файлдаа inline үлдээв.
+ * Энд зөвхөн хамтын: өнгө, reset, background, товч, карт, стат, form input.
+ */
+
+:root{
+  --coral:#ff8fa6;
+  --coral-deep:#f76a8e;
+  --coral-soft:#ffb3c0;
+  --ink:#5a2a46;
+  --muted:#9a6b84;
+  --chip:#fff0e8;
+}
+
+*{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html,body{ margin:0; padding:0; }
+
+body{
+  min-height:100vh;
+  font-family:'Nunito',system-ui,sans-serif;
+  color:var(--ink);
+  background:
+    radial-gradient(900px 620px at 12% 8%, #ffe6d6 0%, transparent 52%),
+    radial-gradient(820px 560px at 88% 14%, #ffdce8 0%, transparent 50%),
+    radial-gradient(760px 640px at 50% 108%, #ece0ff 0%, transparent 55%),
+    linear-gradient(158deg,#fff6ef 0%, #fff0f2 55%, #fdeef6 100%);
+}
+
+.subtitle{ color:var(--muted); margin:0 0 22px; font-size:14px; }
+
+/* --- Card --- */
+.card{
+  background:#fffdfb;
+  border-radius:20px;
+  padding:20px 22px;
+  box-shadow:0 14px 40px -20px rgba(247,106,142,.35);
+}
+
+/* --- Buttons --- */
+.btn{
+  border:none; cursor:pointer;
+  font-family:'Nunito',sans-serif; font-weight:800; font-size:14px;
+  padding:11px 20px; border-radius:999px;
+  color:#fff;
+  background:linear-gradient(135deg,var(--coral),var(--coral-deep));
+  box-shadow:0 8px 20px -8px rgba(247,106,142,.55);
+  text-decoration:none; display:inline-block;
+  transition:transform .15s, box-shadow .15s;
+}
+.btn:hover{ transform:translateY(-2px); }
+.btn:active{ transform:translateY(0) scale(.96); }
+.btn:disabled{ opacity:.45; cursor:not-allowed; transform:none; }
+.btn.secondary{
+  background:#fff; color:var(--coral-deep);
+  border:2px solid var(--coral-soft); box-shadow:none;
+}
+.btn.small{ padding:7px 14px; font-size:12px; }
+.btn.wide{ width:100%; }
+.btn.danger{ background:linear-gradient(135deg,#ffa3a3,#e46060); }
+
+/* --- Form fields --- */
+label{
+  display:block; font-weight:800; font-size:12px;
+  letter-spacing:.4px; text-transform:uppercase;
+  color:var(--coral-deep); margin-bottom:6px;
+}
+input, textarea, select{
+  width:100%; padding:11px 14px;
+  border:1px solid #ffd7c9; border-radius:12px;
+  font-family:'Nunito',sans-serif; font-size:14px;
+  color:var(--ink); background:#fff;
+  transition:border-color .15s, box-shadow .15s;
+}
+input:focus, textarea:focus, select:focus{
+  outline:none; border-color:var(--coral-deep);
+  box-shadow:0 0 0 3px rgba(247,106,142,.15);
+}
+
+/* --- Stats block (used by dashboard & admin) --- */
+.stat{
+  background:#fffdfb; border-radius:14px;
+  padding:14px 16px;
+  box-shadow:0 10px 26px -18px rgba(247,106,142,.35);
+}
+.stat-num{
+  font-family:'Comfortaa',sans-serif; font-weight:700;
+  font-size:24px; color:var(--coral-deep);
+}
+.stat-lbl{
+  font-size:11px; color:var(--muted);
+  text-transform:uppercase; letter-spacing:.6px; font-weight:800;
+}

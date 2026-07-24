@@ -170,22 +170,11 @@ async function handleInvites(req, res, url) {
   }
 
   if (method === 'PATCH') {
-    const targets = Object.values(invites).filter(r => matches(r, filters));
-    for (const r of targets) {
-      const { id: _1, owner_token: _2, created_at: _3, ...rest } = body || {};
-      Object.assign(r, rest);
-    }
-    saveInvites();
-    return sendJSON(res, 200, targets.map(r => stripFieldsForSelect(r, select)));
+    return sendPGError(res, 403, 'Direct invite update not allowed. Use rpc/save_response or rpc/mark_opened.');
   }
 
   if (method === 'DELETE') {
-    const hasToken = filters.owner_token && filters.owner_token.op === 'eq';
-    if (!hasToken) return sendJSON(res, 403, { error: 'owner_token required to delete' });
-    const targets = Object.values(invites).filter(r => matches(r, filters));
-    targets.forEach(r => { delete invites[r.id]; });
-    saveInvites();
-    return sendJSON(res, 204, '');
+    return sendPGError(res, 403, 'Direct invite delete not allowed. Use rpc/delete_own_invite.');
   }
 
   return sendJSON(res, 405, { error: 'Method not allowed' });
@@ -243,6 +232,36 @@ async function handleRPC(req, res, url) {
 
     // Supabase returns array of {id, owner_token, created_at}
     return sendJSON(res, 200, [{ id: invId, owner_token: ownerToken, created_at: nowTs }]);
+  }
+
+  if (name === 'save_response') {
+    const invId = body.p_invite_id;
+    if (!invId) return sendPGError(res, 400, 'Invite id required');
+    const inv = invites[invId];
+    if (!inv) return sendPGError(res, 404, 'Invite not found');
+    inv.response = body.p_response == null ? null : body.p_response;
+    inv.responded_at = new Date().toISOString();
+    saveInvites();
+    return sendJSON(res, 200, null);
+  }
+
+  if (name === 'mark_opened') {
+    const invId = body.p_invite_id;
+    if (!invId) return sendJSON(res, 200, null);
+    const inv = invites[invId];
+    if (inv && !inv.opened_at) { inv.opened_at = new Date().toISOString(); saveInvites(); }
+    return sendJSON(res, 200, null);
+  }
+
+  if (name === 'delete_own_invite') {
+    const invId = body.p_invite_id;
+    const token = body.p_owner_token;
+    if (!invId || !token) return sendPGError(res, 400, 'invite id and owner token required');
+    const inv = invites[invId];
+    if (!inv || inv.owner_token !== token) return sendPGError(res, 404, 'Invite not found or wrong owner token');
+    delete invites[invId];
+    saveInvites();
+    return sendJSON(res, 200, null);
   }
 
   if (name === 'admin_create_codes') {

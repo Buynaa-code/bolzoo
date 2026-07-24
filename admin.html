@@ -8,50 +8,36 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Comfortaa:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/styles.css">
 <style>
-  :root{
-    --coral:#ff8fa6; --coral-deep:#f76a8e; --coral-soft:#ffb3c0;
-    --ink:#5a2a46; --muted:#9a6b84;
-  }
-  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
-  html,body{margin:0; padding:0;}
-  body{
-    min-height:100vh; font-family:'Nunito',system-ui,sans-serif; color:var(--ink);
-    background:
-      radial-gradient(900px 620px at 12% 8%, #ffe6d6 0%, transparent 52%),
-      radial-gradient(820px 560px at 88% 14%, #ffdce8 0%, transparent 50%),
-      linear-gradient(158deg,#fff6ef 0%, #fff0f2 55%, #fdeef6 100%);
-  }
   .wrap{max-width:960px; margin:0 auto; padding:32px 20px 60px;}
   h1{font-family:'Comfortaa',sans-serif; font-weight:700; font-size:26px; margin:0 0 4px;}
-  .subtitle{color:var(--muted); margin:0 0 22px; font-size:14px;}
-  .card{background:#fffdfb; border-radius:20px; padding:20px 22px; box-shadow:0 14px 40px -20px rgba(247,106,142,.35); margin-bottom:18px;}
-  label{display:block; font-weight:800; font-size:12px; letter-spacing:.4px; text-transform:uppercase; color:var(--coral-deep); margin-bottom:6px;}
-  input, textarea, select{
-    width:100%; padding:11px 14px; border:1px solid #ffd7c9; border-radius:12px;
-    font-family:'Nunito',sans-serif; font-size:14px; color:var(--ink); background:#fff;
-  }
-  input:focus, textarea:focus, select:focus{outline:none; border-color:var(--coral-deep); box-shadow:0 0 0 3px rgba(247,106,142,.15);}
+  .card{ margin-bottom:18px; }
   .row{display:grid; grid-template-columns:120px 1fr; gap:12px; align-items:end;}
   @media (max-width:600px){ .row{grid-template-columns:1fr;} }
-  .btn{border:none; cursor:pointer; font-family:'Nunito',sans-serif; font-weight:800; font-size:14px;
-    padding:11px 18px; border-radius:999px; color:#fff;
-    background:linear-gradient(135deg,var(--coral),var(--coral-deep));
-    box-shadow:0 8px 20px -8px rgba(247,106,142,.55);
-  }
-  .btn.secondary{background:#fff; color:var(--coral-deep); border:2px solid var(--coral-soft); box-shadow:none;}
+  /* Admin-д товч бага зэрэг өөр padding */
+  .btn{padding:11px 18px;}
   .btn.small{padding:6px 12px; font-size:12px;}
-  .btn.danger{background:linear-gradient(135deg,#ffa3a3,#e46060);}
-  .btn:disabled{opacity:.45; cursor:not-allowed;}
   .stats{display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:16px;}
   @media (max-width:640px){ .stats{grid-template-columns:repeat(2,1fr);} }
-  .stat{background:#fffdfb; border-radius:14px; padding:14px 16px; box-shadow:0 10px 26px -18px rgba(247,106,142,.35);}
-  .stat-num{font-family:'Comfortaa',sans-serif; font-weight:700; font-size:24px; color:var(--coral-deep);}
-  .stat-lbl{font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.6px; font-weight:800;}
+  #tableWrap{overflow-x:auto;}
   table{width:100%; border-collapse:collapse; font-size:13px;}
   th{text-align:left; font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; padding:8px 10px; border-bottom:2px solid #ffe6dc;}
   td{padding:10px; border-bottom:1px solid #fff0e6; vertical-align:middle;}
   tr.used td{opacity:.65;}
+  @media (max-width:640px){
+    table, thead, tbody, tr, td{display:block; width:100%;}
+    thead{display:none;}
+    tr{background:#fffdfb; border-radius:14px; padding:12px 14px; margin-bottom:12px; box-shadow:0 10px 26px -18px rgba(247,106,142,.35); border:1px solid #fff0e6;}
+    tr.used{opacity:1; background:#faf5f7;}
+    tr.used td{opacity:1;}
+    td{border-bottom:none; padding:6px 0; display:flex; justify-content:space-between; align-items:center; gap:12px;}
+    td::before{content:attr(data-label); font-size:11px; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; flex-shrink:0;}
+    td.code-cell{justify-content:flex-start; font-size:16px; padding-bottom:8px; border-bottom:1px dashed #ffe6dc; margin-bottom:6px;}
+    td.code-cell::before{display:none;}
+    td.actions{justify-content:flex-end; padding-top:10px; margin-top:6px; border-top:1px dashed #ffe6dc;}
+    td.actions::before{display:none;}
+  }
   .code-cell{font-family:ui-monospace,Menlo,monospace; font-weight:800; font-size:14px; color:var(--ink); letter-spacing:1px;}
   .badge{display:inline-block; font-size:10px; font-weight:800; padding:3px 9px; border-radius:999px; letter-spacing:.4px; text-transform:uppercase;}
   .badge.free{background:#dcffde; color:#3a8a4a;}
@@ -79,10 +65,6 @@
       </div>
       <button class="btn" id="loginBtn" style="width:100%;">Нэвтрэх</button>
       <div class="status" id="loginStatus"></div>
-      <p style="font-size:11px; color:var(--muted); margin-top:14px;">
-        Локал сервер горимд ADMIN_PASSWORD env var-аар тохируулна (default: <code>admin123</code>).
-        Supabase-д <code>admin_settings</code> хүснэгтэд хадгална.
-      </p>
     </div>
   </div>
 
@@ -137,11 +119,12 @@
   </div>
 </div>
 
+<script src="assets/utils.js"></script>
 <script src="assets/config.js"></script>
 <script src="assets/api.js"></script>
 <script>
 (function(){
-  var $ = function(id){ return document.getElementById(id); };
+  var $ = BolzooUtils.$, esc = BolzooUtils.esc, fmtWhen = BolzooUtils.fmtWhen;
   var lockView = $('lockView'), mainView = $('mainView');
   var kind = window.BolzooAPI ? window.BolzooAPI.backendKind : 'localStorage';
   if(kind === 'localStorage'){ $('backendWarn').style.display = 'block'; }
@@ -177,8 +160,6 @@
   $('pwInput').addEventListener('keydown', function(e){ if(e.key==='Enter') tryLogin($('pwInput').value); });
   $('logoutBtn').addEventListener('click', function(){ clearPw(); showLocked('Гарлаа.'); });
 
-  function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
-  function fmtWhen(iso){ if(!iso) return '—'; return new Date(iso).toLocaleString('mn-MN'); }
   function isToday(iso){ if(!iso) return false; var d=new Date(iso), n=new Date(); return d.toDateString()===n.toDateString(); }
 
   function renderTable(rows){
@@ -194,12 +175,12 @@
     + '</tr></thead><tbody>';
     rows.forEach(function(r){
       html += '<tr class="'+(r.used?'used':'')+'">'
-        + '<td class="code-cell">'+esc(r.code)+'</td>'
-        + '<td>'+(r.used ? '<span class="badge used">Ашигласан</span>' : '<span class="badge free">Хоосон</span>')+'</td>'
-        + '<td>'+esc(fmtWhen(r.created_at))+'</td>'
-        + '<td>'+(r.used ? esc(fmtWhen(r.used_at)) + (r.used_for_invite_id ? '<br><span style="font-size:11px; color:var(--muted); font-family:ui-monospace,Menlo,monospace;">→ '+esc(r.used_for_invite_id)+'</span>' : '') : '—')+'</td>'
-        + '<td>'+esc(r.note || '—')+'</td>'
-        + '<td style="text-align:right; white-space:nowrap;">'
+        + '<td class="code-cell" data-label="Код">'+esc(r.code)+'</td>'
+        + '<td data-label="Төлөв">'+(r.used ? '<span class="badge used">Ашигласан</span>' : '<span class="badge free">Хоосон</span>')+'</td>'
+        + '<td data-label="Үүсгэсэн">'+esc(fmtWhen(r.created_at))+'</td>'
+        + '<td data-label="Ашигласан">'+(r.used ? esc(fmtWhen(r.used_at)) + (r.used_for_invite_id ? '<br><span style="font-size:11px; color:var(--muted); font-family:ui-monospace,Menlo,monospace;">→ '+esc(r.used_for_invite_id)+'</span>' : '') : '—')+'</td>'
+        + '<td data-label="Тэмдэглэл">'+esc(r.note || '—')+'</td>'
+        + '<td class="actions" style="text-align:right; white-space:nowrap;">'
           + '<button class="btn secondary small" data-copy="'+esc(r.code)+'">📋</button>'
           + (r.used ? '' : ' <button class="btn danger small" data-del="'+esc(r.code)+'">🗑️</button>')
         + '</td>'
