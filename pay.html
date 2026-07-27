@@ -100,6 +100,35 @@
   .qr-box img{width:100%; height:100%; object-fit:contain; border:0; border-radius:0; background:#fff; display:block;}
   .qr-box iframe{width:100%; height:100%; border:0;}
   .qr-hint{font-size:13px; color:#7d687d; font-weight:700; line-height:1.5; margin:0;}
+  .transfer-note{font-size:12px; color:#6b5267; font-weight:800; line-height:1.45; margin:10px 0 0;}
+  .transfer-note strong{color:#4b173f; font-weight:900;}
+  .memo-row{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    justify-content:space-between;
+    margin:12px 0 0;
+    padding:10px 12px;
+    background:#fff;
+    border:1px dashed #d4a53b;
+    border-radius:10px;
+  }
+  .memo-row .memo-lbl{font-size:10px; color:#6b5216; font-weight:900; letter-spacing:.05em; text-transform:uppercase; margin:0 0 2px;}
+  .memo-row .memo-val{font-family:ui-monospace, Menlo, monospace; font-size:14px; font-weight:900; color:#4b173f; word-break:break-all; user-select:all;}
+  .memo-row .memo-copy{
+    flex-shrink:0;
+    background:var(--hot);
+    color:#fff;
+    border:0;
+    padding:10px 14px;
+    border-radius:8px;
+    font-family:'Nunito', sans-serif;
+    font-size:12px;
+    font-weight:900;
+    cursor:pointer;
+    min-height:40px;
+  }
+  .memo-row .memo-copy.copied{background:#3a8a4a;}
   .banks{margin-top:14px; display:grid; grid-template-columns:repeat(4,1fr); gap:10px;}
   .bank-link{display:flex; flex-direction:column; align-items:center; gap:4px; padding:8px 4px; border:1px solid #efd4de; border-radius:10px; background:#fff; text-decoration:none; color:#4b173f; font-size:10px; font-weight:800; line-height:1.15; text-align:center; transition:transform .1s, box-shadow .1s; cursor:pointer;}
   .bank-link:hover{transform:translateY(-1px); box-shadow:0 6px 12px -8px rgba(90,42,70,.4);}
@@ -211,11 +240,11 @@
 <body>
   <div class="wrap">
     <h1>💌 Өөрийн урилгыг үүсгэх</h1>
-    <p class="subtitle">QPay-ээр төлбөрөө төлөөд шууд нэвтрэх кодоо аваарай. Дараа <b>create.html</b> хуудсанд урилгаа үүсгэнэ.</p>
+    <p class="subtitle">QPay төлөөд 1 урилга үүсгэх эрхийн кодоо шууд аваарай.</p>
 
     <div class="price">
       <p class="amt" id="priceAmt">…<small>₮</small></p>
-      <p class="lbl">1 БОЛЗООНЫ УРИЛГА · НЭГ УДААГИЙН КОД</p>
+      <p class="lbl">1 УРИЛГА ҮҮСГЭХ ЭРХ · НЭГ УДААГИЙН КОД</p>
     </div>
 
     <div id="errBox" class="err" style="display:none;"></div>
@@ -228,6 +257,14 @@
       <div class="qr-shell">
         <div class="qr-box loading" id="qrBox">QR хүлээж байна…</div>
         <p class="qr-hint">Банк аппаараа QR-ыг уншуулж төлбөрөө хийнэ үү.</p>
+        <p class="transfer-note">Гүйлгээний утга нь ихэнх банкан дээр автоматаар бөглөгдөнө. Хэрэв гараар оруулах шаардлагатай бол:</p>
+        <div class="memo-row">
+          <div style="flex:1; min-width:0;">
+            <p class="memo-lbl">Гүйлгээний утга</p>
+            <div class="memo-val" id="paymentDescription">Bolzoo invite access</div>
+          </div>
+          <button type="button" class="memo-copy" id="copyMemoBtn">📋 Хуулах</button>
+        </div>
         <div id="banksTitle" class="banks-title" style="display:none;">эсвэл банкны аппаа шууд нээх:</div>
         <div id="banks" class="banks" style="display:none;"></div>
         <button id="banksToggle" class="banks-toggle" type="button" style="display:none;">Бүх банкыг харах ↓</button>
@@ -248,17 +285,17 @@
     <div id="successPanel" style="display:none;">
       <div class="code-box">
         <span class="warn">⚠️ ЗААВАЛ ХУУЛЖ АВНА УУ · Дараа сэргээх боломжгүй</span>
-        <p class="lbl">✅ ТАНЫ НЭВТРЭХ КОД</p>
+        <p class="lbl">✅ ТАНЫ УРИЛГА ҮҮСГЭХ ЭРХИЙН КОД</p>
         <div class="val" id="codeValue">—</div>
-        <button class="btn-copy" id="copyBtn" type="button">📋 Кодыг хуулах</button>
+        <button class="btn-copy" id="copyBtn" type="button">📋 Эрхийн код хуулах</button>
         <div class="copy-feedback" id="copyFeedback"></div>
       </div>
       <a href="#" class="btn" id="continueBtn">Урилга үүсгэх хуудас руу →</a>
-      <p class="footer" id="redirectHint">Кодоо хуулсны дараа "Урилга үүсгэх" товч дар</p>
+      <p class="footer" id="redirectHint">Эрхийн кодоо хуулсны дараа "Урилга үүсгэх" товч дар</p>
     </div>
 
     <p class="footer">
-      Аль хэдийн код авсан уу? <a href="create.html">Урилга үүсгэх →</a>
+      Аль хэдийн эрхийн код авсан уу? <a href="create.html">Урилга үүсгэх →</a>
     </p>
   </div>
 
@@ -268,6 +305,7 @@
   var intentId  = null;
   var pollTimer = null;
   var mode      = 'unknown';
+  var paymentDescription = 'Bolzoo invite access';
 
   var isLocal = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
 
@@ -275,9 +313,16 @@
     if (!mnt || isNaN(mnt)) return;
     $('priceAmt').innerHTML = Number(mnt).toLocaleString('mn-MN') + '<small>₮</small>';
   }
+  function setPaymentDescription(text){
+    text = String(text || '').trim();
+    if (!text) return;
+    paymentDescription = text;
+    $('paymentDescription').textContent = text;
+  }
   // Show configured price up-front via /api/health
   fetch('/api/health').then(function(r){ return r.ok ? r.json() : null; }).then(function(d){
     if (d && d.price) setPrice(d.price);
+    if (d && d.payment_description) setPaymentDescription(d.payment_description);
   }).catch(function(){});
 
   function showErr(msg){
@@ -405,7 +450,7 @@
     setTimeout(function(){
       if (!document.hidden){
         hint.style.display = 'block';
-        hint.innerHTML = '⏱ Апп нээгдэхгүй бол:<br>1) энэ банк утсанд суулгаагүй байж болно — өөр банкыг туршиж үзээрэй,<br>2) эсвэл QR-ыг банкны апп доторхи "Скан" функцээр уншуулна уу.';
+        hint.innerHTML = '⏱ Апп нээгдэхгүй бол:<br>1) энэ банк утсанд суулгаагүй байж болно — өөр банкыг туршиж үзээрэй,<br>2) эсвэл QR-ыг банкны апп доторхи "Скан" функцээр уншуулна уу.<br>Гүйлгээний утга автоматаар "' + esc(paymentDescription) + '" гэж бөглөгдөнө.';
       }
     }, 1800);
   }
@@ -425,6 +470,7 @@
       intentId = data.intent_id;
       mode     = data.mode || 'unknown';
       if (data.amount) setPrice(data.amount);
+      if (data.payment_description) setPaymentDescription(data.payment_description);
       $('beforeStart').style.display = 'none';
       $('afterStart').style.display  = 'block';
       setStatus(data.status || 'requires_action');
@@ -461,6 +507,7 @@
       if (!r.ok) return;
       mode = data.mode || mode;
       setStatus(data.status);
+      if (data.payment_description) setPaymentDescription(data.payment_description);
       if (data.next_action) renderNextAction(data.next_action);
       if (data.status === 'succeeded' && data.code){
         clearInterval(pollTimer);
@@ -505,13 +552,13 @@
     if (ok){
       btn.classList.add('copied');
       btn.textContent = '✅ Хуулагдлаа';
-      feedback.textContent = 'Санамж: кодыг гар утасны notes-т ч давхар хадгалаарай.';
+      feedback.textContent = 'Санамж: эрхийн кодыг гар утасны notes-т ч давхар хадгалаарай.';
       setTimeout(function(){
         btn.classList.remove('copied');
         btn.textContent = '📋 Дахин хуулах';
       }, 2500);
     } else {
-      feedback.textContent = '⚠️ Хуулж чадсангүй — кодыг гараар тэмдэглэж авна уу';
+      feedback.textContent = '⚠️ Хуулж чадсангүй — эрхийн кодыг гараар тэмдэглэж авна уу';
     }
   }
 
@@ -536,6 +583,37 @@
   $('startBtn').addEventListener('click', startCheckout);
   $('simulateBtn').addEventListener('click', simulate);
   $('copyBtn').addEventListener('click', copyCode);
+
+  async function copyMemo(){
+    var btn = $('copyMemoBtn');
+    var text = paymentDescription;
+    var ok = false;
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText){
+        await navigator.clipboard.writeText(text);
+        ok = true;
+      } else {
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.opacity  = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        ok = true;
+      }
+    } catch(_){}
+    if (ok){
+      btn.classList.add('copied');
+      btn.textContent = '✅ Хуулагдлаа';
+      setTimeout(function(){
+        btn.classList.remove('copied');
+        btn.textContent = '📋 Хуулах';
+      }, 2000);
+    }
+  }
+  $('copyMemoBtn').addEventListener('click', copyMemo);
 
   // Bank deeplink clicks: intercept and use JS navigation (more reliable on mobile)
   $('banks').addEventListener('click', function(e){

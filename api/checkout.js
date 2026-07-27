@@ -1,10 +1,12 @@
 'use strict';
 
 const {
+  PAYMENT_DESCRIPTION,
   PRICE_MNT,
   configMissing,
   crypto,
   handleOptions,
+  paymentMetadata,
   readJSON,
   sendConfigError,
   sendJSON,
@@ -28,7 +30,8 @@ module.exports = async function handler(req, res) {
       amount: PRICE_MNT,
       currency: 'MNT',
       automatic_operator: true,
-      metadata: { product: 'bolzoo_access_code', tier: 'single' }
+      description: PAYMENT_DESCRIPTION,
+      metadata: paymentMetadata()
     }, crypto.randomUUID());
 
     const confirmed = await wireAPI(
@@ -58,6 +61,7 @@ module.exports = async function handler(req, res) {
       intent_id: row.id,
       amount: row.amount,
       status: row.status,
+      payment_description: PAYMENT_DESCRIPTION,
       next_action: row.next_action,
       mode: 'live'
     });

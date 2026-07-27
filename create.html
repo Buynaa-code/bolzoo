@@ -20,6 +20,7 @@
   }
   body{
     background:linear-gradient(135deg,#fff7f8 0%,#fffaf8 54%,#fff2f8 100%);
+    padding-bottom:104px;
   }
   html,body{width:100%; overflow-x:hidden;}
   *,*::before,*::after{min-width:0;}
@@ -93,6 +94,33 @@
     border-color:transparent;
     background:linear-gradient(135deg,#ff7ca4,#ff4d82);
   }
+  .step.done{color:#7a3e6b;}
+  .step.done .step-num{
+    color:#fff;
+    border-color:transparent;
+    background:linear-gradient(135deg,#c9b6e4,#9d63e6);
+  }
+  .wizard-step{display:none; animation:stepIn .3s ease both;}
+  .wizard-step.active{display:block;}
+  @keyframes stepIn{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:none;}}
+  .step-back{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    margin:0 0 18px;
+    padding:8px 14px;
+    border:1px solid rgba(248,215,226,.9);
+    border-radius:999px;
+    background:#fff;
+    color:#7a4062;
+    font-family:'Nunito',sans-serif;
+    font-size:12px;
+    font-weight:900;
+    cursor:pointer;
+    box-shadow:0 8px 18px -18px rgba(90,42,70,.45);
+  }
+  .step-back:hover{border-color:#ff9aba; color:var(--hot);}
+  .dock-next:disabled{opacity:.55; cursor:not-allowed; box-shadow:none; transform:none;}
   .preview-kicker{
     display:flex;
     align-items:center;
@@ -439,6 +467,49 @@
   }
   .video-player iframe{width:100%; height:100%; border:0; display:block;}
 
+  .invite-teaser{
+    margin:-4px 0 26px;
+    padding:18px;
+    border:1px solid rgba(255,145,176,.46);
+    border-radius:14px;
+    background:linear-gradient(135deg,#fff8fb,#fff);
+    box-shadow:0 14px 30px -26px rgba(90,42,70,.45);
+  }
+  .invite-teaser p{
+    margin:0 0 12px;
+    color:#8b7b8d;
+    font-size:12px;
+    font-weight:900;
+    text-transform:uppercase;
+  }
+  .invite-teaser strong{
+    display:block;
+    color:#4b173f;
+    font-family:'Comfortaa',sans-serif;
+    font-size:20px;
+    line-height:1.25;
+  }
+  .invite-teaser span{
+    display:block;
+    margin:8px 0 16px;
+    color:#725d72;
+    font-size:14px;
+    line-height:1.4;
+    font-weight:800;
+  }
+  .invite-teaser button{
+    min-height:40px;
+    padding:10px 14px;
+    border:1px solid rgba(248,215,226,.9);
+    border-radius:10px;
+    background:#fff;
+    color:var(--hot);
+    font-family:'Nunito',sans-serif;
+    font-size:13px;
+    font-weight:900;
+    cursor:pointer;
+  }
+
   .preview-wrap{position:sticky; top:20px; align-self:start;}
   .refresh{text-align:right; margin:0 0 18px;}
   .refresh .btn{border-radius:999px; color:var(--hot); padding-inline:20px;}
@@ -526,17 +597,168 @@
   .wave i:nth-child(1){height:10px}.wave i:nth-child(2){height:18px}.wave i:nth-child(3){height:25px}.wave i:nth-child(4){height:13px}.wave i:nth-child(5){height:30px}.wave i:nth-child(6){height:16px}.wave i:nth-child(7){height:22px}.wave i:nth-child(8){height:12px}.wave i:nth-child(9){height:26px}.wave i:nth-child(10){height:15px}.wave i:nth-child(11){height:20px}.wave i:nth-child(12){height:11px}
   .footer-note{margin:20px 0 0; color:#9a6b84; text-align:center; font-size:13px; font-weight:800;}
 
+  .form-dock{
+    position:fixed;
+    left:0;
+    right:0;
+    bottom:0;
+    z-index:60;
+    padding:12px 16px calc(12px + env(safe-area-inset-bottom));
+    background:rgba(255,247,250,.92);
+    border-top:1px solid rgba(255,203,217,.92);
+    box-shadow:0 -18px 44px -28px rgba(90,42,70,.5);
+    backdrop-filter:blur(18px);
+  }
+  .form-dock-inner{
+    width:min(840px,100%);
+    margin:0 auto;
+    display:grid;
+    grid-template-columns:1fr 1.15fr;
+    gap:12px;
+  }
+  .dock-btn{
+    min-height:56px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:9px;
+    border-radius:14px;
+    border:1px solid rgba(248,215,226,.9);
+    font-family:'Nunito',sans-serif;
+    font-size:15px;
+    font-weight:900;
+    cursor:pointer;
+    transition:transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+  }
+  .dock-btn:active{transform:translateY(1px) scale(.99);}
+  .dock-preview{
+    position:relative;
+    color:#60365c;
+    background:#fff;
+    box-shadow:0 12px 26px -22px rgba(90,42,70,.52);
+  }
+  .dock-next{
+    color:#fff;
+    border-color:transparent;
+    background:linear-gradient(100deg,#ff4d82,#9d63e6);
+    box-shadow:0 18px 34px -22px rgba(157,99,230,.88);
+  }
+  .preview-dot{
+    width:8px;
+    height:8px;
+    border-radius:50%;
+    background:var(--hot);
+    box-shadow:0 0 0 4px rgba(255,77,130,.14);
+    opacity:0;
+    transform:scale(.65);
+    transition:opacity .18s ease, transform .18s ease;
+  }
+  body.preview-dirty .preview-dot{opacity:1; transform:scale(1);}
+
+  body.preview-modal-open{overflow:hidden;}
+  .preview-modal[hidden]{display:none;}
+  .preview-modal{
+    position:fixed;
+    inset:0;
+    z-index:100;
+    display:grid;
+    grid-template-rows:auto minmax(0,1fr) auto;
+    background:linear-gradient(160deg,#fff8f6,#fff0f5 58%,#fbf1ff);
+  }
+  .preview-modal-head,
+  .preview-modal-foot{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    padding:14px 18px;
+    background:rgba(255,255,255,.86);
+    border-color:rgba(248,215,226,.9);
+    backdrop-filter:blur(16px);
+  }
+  .preview-modal-head{border-bottom:1px solid rgba(248,215,226,.9);}
+  .preview-modal-foot{
+    border-top:1px solid rgba(248,215,226,.9);
+    padding-bottom:calc(14px + env(safe-area-inset-bottom));
+  }
+  .preview-modal-title{color:#4b173f; font-size:15px; font-weight:900;}
+  .modal-ghost,
+  .modal-pay{
+    min-height:48px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    border-radius:12px;
+    font-family:'Nunito',sans-serif;
+    font-size:14px;
+    font-weight:900;
+    text-decoration:none;
+    cursor:pointer;
+  }
+  .modal-ghost{
+    padding:10px 14px;
+    border:1px solid rgba(248,215,226,.9);
+    background:#fff;
+    color:#60365c;
+  }
+  .modal-pay{
+    flex:1;
+    padding:10px 16px;
+    border:0;
+    color:#fff;
+    background:linear-gradient(100deg,#ff4d82,#9d63e6);
+    box-shadow:0 16px 32px -22px rgba(157,99,230,.9);
+  }
+  .preview-modal-body{
+    min-height:0;
+    display:grid;
+    place-items:center;
+    padding:18px;
+    overflow:hidden;
+  }
+  .preview-modal-phone{
+    width:min(430px,100%);
+    height:min(100%,820px);
+    min-height:0;
+    border-radius:34px;
+    overflow:hidden;
+    border:1px solid rgba(248,215,226,.9);
+    background:#fff;
+    box-shadow:0 28px 70px -34px rgba(105,39,78,.55);
+  }
+  .preview-modal-frame{width:100%; height:100%; border:0; display:block; background:#fffdfb;}
+
+  .success-modal[hidden]{display:none;}
+  .success-modal{position:fixed; inset:0; z-index:110; display:grid; place-items:center; padding:20px; background:rgba(72,25,55,.55); backdrop-filter:blur(10px); animation:successFadeIn .3s ease;}
+  .success-card{position:relative; width:min(430px,100%); background:linear-gradient(135deg,#fff8fb,#fff); border-radius:22px; padding:30px 24px 24px; text-align:center; border:1px solid rgba(255,203,217,.72); box-shadow:0 28px 60px -24px rgba(105,39,78,.6); animation:successPopIn .42s cubic-bezier(.2,1.35,.4,1);}
+  .success-close{position:absolute; top:12px; right:12px; width:32px; height:32px; border:0; border-radius:50%; background:#fff; color:#6a4062; font-size:14px; cursor:pointer; box-shadow:0 6px 14px -8px rgba(90,42,70,.4); font-weight:900;}
+  .success-emoji{font-size:44px; margin:2px 0 10px; display:inline-block; animation:successFloat 2.4s ease-in-out infinite;}
+  .success-title{font-family:'Comfortaa',sans-serif; font-size:22px; line-height:1.25; margin:0 0 8px; color:#4b173f;}
+  .success-msg{color:#8b7b8d; font-size:14px; line-height:1.5; font-weight:800; margin:0 0 18px;}
+  .success-link{margin:0 0 16px; padding:14px 16px; border-radius:12px; border:1px solid #ffcbd9; background:linear-gradient(135deg,#fff6f9,#ffe8f0); color:#3e1738; font-family:ui-monospace,Menlo,monospace; font-size:13px; font-weight:800; line-height:1.4; word-break:break-all; text-align:left;}
+  .success-copy{width:100%; min-height:54px; border:0; border-radius:14px; color:#fff; font-family:'Nunito',sans-serif; font-size:15px; font-weight:900; cursor:pointer; background:linear-gradient(100deg,#ff4d82,#9d63e6); box-shadow:0 18px 34px -22px rgba(157,99,230,.88); transition:transform .16s ease, box-shadow .16s ease;}
+  .success-copy:hover{transform:translateY(-1px);}
+  .success-copy.copied{background:linear-gradient(100deg,#5aba7a,#3a8a4a);}
+  .success-hint{margin:12px 0 0; color:#a08699; font-size:12px; font-weight:800;}
+  .success-status{margin-top:10px; min-height:18px; color:#3a8a4a; font-size:13px; font-weight:900;}
+  @keyframes successFadeIn{from{opacity:0;} to{opacity:1;}}
+  @keyframes successPopIn{0%{opacity:0; transform:scale(.9) translateY(10px);} 100%{opacity:1; transform:none;}}
+  @keyframes successFloat{0%,100%{transform:translateY(0) scale(1);} 50%{transform:translateY(-6px) scale(1.05);}}
+
   @media (max-width:1120px){
     .wrap{grid-template-columns:1fr; max-width:860px;}
     .preview-wrap{position:relative; top:auto;}
+    .preview-wrap .refresh,
+    .preview-wrap .preview-card{display:none;}
     .preview-kicker{display:none;}
   }
   @media (max-width:720px){
     .wrap{width:100%; max-width:none; margin:0; padding:18px 12px 28px; border-radius:0; border-left:0; border-right:0;}
     .topbar{align-items:flex-start;}
-    .steps{width:100%; display:grid; grid-template-columns:repeat(3,1fr); gap:8px; overflow:visible; padding-bottom:4px;}
-    .step{justify-content:center; gap:5px; margin:0; padding:0; border-right:0; font-size:11px; line-height:1.2; text-align:center; white-space:normal;}
-    .step-num{width:24px; height:24px; flex:0 0 24px; font-size:11px;}
+    .steps{width:100%; display:grid; grid-template-columns:repeat(4,1fr); gap:6px; overflow:visible; padding-bottom:4px;}
+    .step{justify-content:center; gap:4px; margin:0; padding:0; border-right:0; font-size:10px; line-height:1.15; text-align:center; white-space:normal;}
+    .step-num{width:22px; height:22px; flex:0 0 22px; font-size:11px;}
     .title-block{margin-top:16px;}
     h1{font-size:24px;}
     .form-card,.preview-card,.side-card,.music-card{padding:20px 16px; border-radius:16px;}
@@ -552,6 +774,14 @@
     .form-actions{grid-template-columns:1fr;}
     .preview-wrap{order:3;}
     .phone-shell{width:min(330px,100%);}
+    .side-card{margin-top:18px;}
+    .form-dock{padding-inline:10px;}
+    .form-dock-inner{grid-template-columns:1fr 1.05fr; gap:8px;}
+    .dock-btn{min-height:52px; border-radius:12px; font-size:14px; padding-inline:10px;}
+    .preview-modal-body{padding:10px;}
+    .preview-modal-phone{width:100%; height:100%; border-radius:0; border:0; box-shadow:none;}
+    .preview-modal-foot{gap:8px;}
+    .modal-ghost,.modal-pay{min-height:46px; font-size:13px;}
   }
 </style>
 </head>
@@ -559,9 +789,10 @@
   <div class="wrap">
     <header class="topbar">
       <div class="steps">
-        <span class="step on"><span class="step-num">1</span>Мэдээлэл бөглөх</span>
-        <span class="step"><span class="step-num">2</span>Preview харах</span>
-        <span class="step"><span class="step-num">3</span>Линк илгээх</span>
+        <span class="step on" data-step="1"><span class="step-num">1</span>Эрх + Хэн</span>
+        <span class="step" data-step="2"><span class="step-num">2</span>Дуу + Тема</span>
+        <span class="step" data-step="3"><span class="step-num">3</span>Дэлгэрэнгүй</span>
+        <span class="step" data-step="4"><span class="step-num">4</span>Preview + Илгээх</span>
       </div>
       <div class="preview-kicker">✨ Preview</div>
     </header>
@@ -571,52 +802,57 @@
         <div class="title-icon">💌</div>
         <div>
           <h1>Болзооны урилга үүсгэх</h1>
-          <p class="subtitle">Формоо бөглөөд линкээ хүлээн авагчид илгээ. Тэр линкийг нээгээд хариу өгөх боломжтой.</p>
+          <p class="subtitle">Preview-гээ хараад, QPay-ээр эрхээ идэвхжүүл. Код гармагц урилгын линкээ үүсгэнэ.</p>
         </div>
       </div>
 
       <section class="form-card">
+        <div class="wizard-step active" data-step="1">
         <div class="code-gate" id="codeGate">
-          <label><span class="label-icon">🔑</span>1.НЭВТРЭХ КОД *</label>
+          <label><span class="label-icon">🔑</span>1. УРИЛГА ҮҮСГЭХ ЭРХИЙН КОД *</label>
           <input id="accessCode" class="code-input" type="text" placeholder="LOV-XXXXXX" maxlength="24" autocomplete="off" />
           <div class="code-status" id="codeStatus"></div>
           <div class="code-help">
             <div class="code-help-top">
               <span class="code-help-icon">💡</span>
               <div>
-                <strong>Энэ код нэг урилгад ашиглагдана.</strong>
-                <p>Кодтой бол дээр оруулаад үргэлжлүүлнэ. Шинэ урилга бүрт шинэ код хэрэгтэй.</p>
+                <strong>QPay төлбөр баталгаажмагц код гарна.</strong>
+                <p>1 код = 1 урилга. Кодтой бол оруулаад үргэлжлүүлээрэй.</p>
               </div>
             </div>
             <div class="qpay-choice">
               <div>
-                <strong>Код байхгүй юу?</strong>
-                <span>QPay-ээр төлөөд эрхээ үүсгээд, кодоо шууд аваарай.</span>
+                <strong>Кодгүй юу?</strong>
+                <span>QPay төлөөд кодоо шууд аваарай.</span>
               </div>
-              <a class="qpay-cta" href="pay.html" aria-label="QPay-ээр эрх авах">QPay-ээр эрх авах <span>→</span></a>
+              <a class="qpay-cta" href="pay.html" aria-label="QPay-ээр урилга үүсгэх эрх авах">QPay-ээр эрх авах <span>→</span></a>
             </div>
             <div class="qpay-steps" aria-label="QPay эрх авах алхам">
               <span>1. Төлөх</span>
               <span>2. Код авах</span>
-              <span>3. Урилга үүсгэх</span>
+              <span>3. Үүсгэх</span>
             </div>
           </div>
         </div>
         <div class="field">
-          <label><span class="label-icon">♙</span>2.УРИЛГЫН АВАГЧИЙН НЭР *</label>
+          <label><span class="label-icon">♙</span>2. УРИЛГА ХҮЛЭЭН АВАГЧИЙН НЭР *</label>
           <input id="recipientName" type="text" placeholder="жишээ: Аная" maxlength="30" />
-          <div class="hint">Урилгыг хэнд илгээх вэ? (Жишээ нь: надтай болзоонд явах уу?)</div>
+          <div class="hint">Хэн рүү урилгаа илгээх вэ? Энэ нэр урилгын эхлэл болон мэндчилгээнд харагдана.</div>
         </div>
         <div class="field">
-          <label><span class="label-icon">💗</span>3.ТАНЫ НЭР (ИЛГЭЭГЧ)</label>
+          <label><span class="label-icon">💗</span>3. ИЛГЭЭГЧИЙН НЭР</label>
           <input id="senderName" type="text" placeholder="жишээ: Мики" maxlength="30" />
-          <div class="hint">Ticket дээр “X”-ийн нэрийг тань харуулна</div>
+          <div class="hint">Урилга хэнээс очиж байгааг харуулна. Хоосон үлдээвэл “тусгай хэн нэгэн” гэж харагдана.</div>
         </div>
         <div class="field">
           <label><span class="label-icon">✉️</span>4.ХАРИУ ХҮЛЭЭН АВАХ EMAIL *</label>
           <input id="responseEmail" type="email" placeholder="you@gmail.com" />
           <div class="hint">Хүлээн авагч “тийм” эсвэл “үгүй” хариу имэйлээр ирнэ</div>
         </div>
+        </div>
+
+        <div class="wizard-step" data-step="2">
+        <button class="step-back" type="button" data-step-back>← Өмнөх алхам</button>
         <div class="field">
           <label><span class="label-icon">🎵</span>5.YOUTUBE ДУУ ХАЙХ</label>
           <div class="song-search-row">
@@ -656,6 +892,16 @@
             <div class="theme" data-theme="aurora" title="Aurora ✨"></div>
           </div>
         </div>
+        <div class="invite-teaser" id="inviteTeaser">
+          <p>Таны урилга ингэж эхэлнэ</p>
+          <strong id="teaserName">Ану,</strong>
+          <span id="teaserLine">Чамд нэг санал байна 💗</span>
+          <button id="teaserPreview" type="button">Бүтнээр харах</button>
+        </div>
+        </div>
+
+        <div class="wizard-step" data-step="3">
+        <button class="step-back" type="button" data-step-back>← Өмнөх алхам</button>
         <div class="field">
           <label><span class="label-icon">🖊</span>7.НЭМЭЛТ ЗУРВАС (ЗААВАЛ БИШ)</label>
           <textarea id="customNote" placeholder="жишээ: чиний хариу л надад бүх зүйл" maxlength="120"></textarea>
@@ -676,6 +922,11 @@
           <textarea id="specialLetter" placeholder="жишээ: Чамайг анх харснаас хойш..." maxlength="300"></textarea>
           <div class="hint">Таны хайртад зориулсан захидал энэ хэсэгт харагдана ❤️</div>
         </div>
+        </div>
+
+        <div class="wizard-step" data-step="4">
+        <button class="step-back" type="button" data-step-back>← Өмнөх алхам</button>
+        <p class="subtitle" style="margin-bottom:18px;">Preview дээрээ шалгаад, доорх товчоор урилгын линкээ үүсгэ 💌</p>
 
         <div class="link-box" id="linkBox" style="display:none;"></div>
         <div class="link-actions" id="linkActions" style="display:none;">
@@ -695,6 +946,7 @@
           <span id="backendBadge"></span>
         </div>
         <p class="footer-note">💞 Хийсэнээ! Одоо Messenger/Instagram-р паст хийгээрэй 💌</p>
+        </div>
       </section>
     </main>
 
@@ -714,7 +966,7 @@
 
       <section class="side-card">
         <h2>💡 Туслах зөвлөгөө</h2>
-        <div class="tip-row"><span>🔑</span><p>Кодоо хадгал — дараагийн урилгад ашиглана.</p></div>
+        <div class="tip-row"><span>🔑</span><p>Эрхийн код нэг урилгад нэг удаа ашиглагдана.</p></div>
         <div class="tip-row"><span>🎟</span><p>Preview хийж хараад линкээ илгээнэ үү.</p></div>
         <div class="tip-row"><span>💌</span><p>Хариу ирсэн даруйд таны имэйл рүү мэдэгдэх болно.</p></div>
       </section>
@@ -728,6 +980,47 @@
         <div class="music-heart">💗</div>
       </section>
     </aside>
+  </div>
+
+  <nav class="form-dock" aria-label="Preview болон дараагийн хэсэг">
+    <div class="form-dock-inner">
+      <button class="dock-btn dock-preview" id="openPreview" type="button">
+        <span aria-hidden="true">👁</span>
+        <span id="previewDockText">Preview</span>
+        <span class="preview-dot" aria-hidden="true"></span>
+      </button>
+      <button class="dock-btn dock-next" id="continueStep" type="button">Үргэлжлүүлэх →</button>
+    </div>
+  </nav>
+
+  <div class="preview-modal" id="previewModal" hidden role="dialog" aria-modal="true" aria-labelledby="previewModalTitle">
+    <header class="preview-modal-head">
+      <button class="modal-ghost" id="closePreview" type="button">✕ Хаах</button>
+      <strong class="preview-modal-title" id="previewModalTitle">Урилгын preview</strong>
+      <span aria-hidden="true"></span>
+    </header>
+    <div class="preview-modal-body">
+      <div class="preview-modal-phone">
+        <iframe class="preview-modal-frame" id="previewFull" title="Урилгын fullscreen preview"></iframe>
+      </div>
+    </div>
+    <footer class="preview-modal-foot">
+      <button class="modal-ghost" id="editPreview" type="button">✏️ Засах</button>
+      <a class="modal-pay" href="pay.html">9,900₮-өөр идэвхжүүлэх</a>
+    </footer>
+  </div>
+
+  <div class="success-modal" id="successModal" hidden role="dialog" aria-modal="true" aria-labelledby="successModalTitle">
+    <div class="success-card">
+      <button class="success-close" id="successClose" type="button" aria-label="Хаах">✕</button>
+      <span class="success-emoji" aria-hidden="true">💌</span>
+      <h2 class="success-title" id="successModalTitle">Урилгын линк бэлэн!</h2>
+      <p class="success-msg">Доорх линкийг хуулж аваад хайртай хүн рүүгээ илгээнэ үү 💗</p>
+      <div class="success-link" id="successLink"></div>
+      <button class="success-copy" id="successCopyBtn" type="button">📋 Хуулж авах</button>
+      <div class="success-status" id="successStatus" aria-live="polite"></div>
+      <p class="success-hint">Хаагаад үзэх, эсвэл “Нэмж шинэ” дараад өөр урилга үүсгэж болно.</p>
+    </div>
   </div>
 
 <script src="assets/utils.js"></script>
@@ -831,16 +1124,36 @@
   }
 
   var previewTimer = null;
+  var previewDirty = true;
+  var previewScrollY = 0;
+
+  function setPreviewDirty(isDirty){
+    previewDirty = !!isDirty;
+    document.body.classList.toggle('preview-dirty', previewDirty);
+    $('previewDockText').textContent = previewDirty ? 'Шинэ preview харах' : 'Preview';
+  }
+  function teaserLine(cfg){
+    if(cfg.customNote) return cfg.customNote.length > 70 ? cfg.customNote.slice(0, 67) + '...' : cfg.customNote;
+    return 'Чамд нэг санал байна 💗';
+  }
+  function updateTeaser(cfg){
+    cfg = cfg || collectConfig();
+    $('teaserName').textContent = (cfg.recipientName || 'Ану') + ',';
+    $('teaserLine').textContent = teaserLine(cfg);
+  }
   function schedulePreview(){
+    setPreviewDirty(true);
+    updateTeaser();
     if(previewTimer) clearTimeout(previewTimer);
     previewTimer = setTimeout(updatePreview, 400);
   }
   function updatePreview(){
     var cfg = collectConfig();
+    updateTeaser(cfg);
     $('preview').src = buildUrl(cfg, false);
   }
-  function settlePreview(){
-    var frame = $('preview');
+  function settlePreview(frame){
+    frame = frame || $('preview');
     try{
       var doc = frame.contentDocument || (frame.contentWindow && frame.contentWindow.document);
       if(!doc) return;
@@ -852,15 +1165,49 @@
       if(progress) progress.style.display = 'none';
     }catch(e){}
   }
-  $('preview').addEventListener('load', function(){
-    setTimeout(settlePreview, 300);
-    setTimeout(settlePreview, 3400);
-  });
+  function attachPreviewSettler(frame){
+    frame.addEventListener('load', function(){
+      setTimeout(function(){ settlePreview(frame); }, 300);
+      setTimeout(function(){ settlePreview(frame); }, 3400);
+    });
+  }
+  attachPreviewSettler($('preview'));
+  attachPreviewSettler($('previewFull'));
 
+  function openFullscreenPreview(){
+    if(previewTimer){
+      clearTimeout(previewTimer);
+      previewTimer = null;
+    }
+    previewScrollY = window.scrollY || window.pageYOffset || 0;
+    var cfg = collectConfig();
+    updateTeaser(cfg);
+    $('previewFull').src = buildUrl(cfg, false);
+    $('previewModal').hidden = false;
+    document.body.classList.add('preview-modal-open');
+    setPreviewDirty(false);
+    setTimeout(function(){
+      settlePreview($('previewFull'));
+      $('closePreview').focus();
+    }, 320);
+  }
+  function closeFullscreenPreview(){
+    $('previewModal').hidden = true;
+    document.body.classList.remove('preview-modal-open');
+    requestAnimationFrame(function(){ window.scrollTo(0, previewScrollY); });
+  }
   DRAFT_FIELDS.forEach(function(id){
     $(id).addEventListener('input', function(){ schedulePreview(); saveDraft(); });
   });
-  $('refreshPreview').addEventListener('click', updatePreview);
+  $('refreshPreview').addEventListener('click', function(){ updatePreview(); setPreviewDirty(false); });
+  $('openPreview').addEventListener('click', openFullscreenPreview);
+  $('teaserPreview').addEventListener('click', openFullscreenPreview);
+  $('closePreview').addEventListener('click', closeFullscreenPreview);
+  $('editPreview').addEventListener('click', closeFullscreenPreview);
+  $('continueStep').addEventListener('click', handleDockNext);
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' && !$('previewModal').hidden) closeFullscreenPreview();
+  });
 
   function extractYtId(v){
     if(!v) return '';
@@ -996,6 +1343,66 @@
 
   function setStatus(msg){ $('status').textContent = msg; }
 
+  /* ---------- 4-step wizard ---------- */
+  var TOTAL_STEPS = 4;
+  var currentStep = 1;
+  function goStep(n){
+    n = Math.max(1, Math.min(TOTAL_STEPS, n));
+    currentStep = n;
+    document.querySelectorAll('.wizard-step').forEach(function(s){
+      s.classList.toggle('active', parseInt(s.getAttribute('data-step'),10) === n);
+    });
+    document.querySelectorAll('.steps .step').forEach(function(b, i){
+      var idx = i + 1;
+      b.classList.toggle('on', idx === n);
+      b.classList.toggle('done', idx < n);
+    });
+    updateDockNext();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  function step1Valid(){
+    var email = $('responseEmail').value.trim();
+    return codeIsValid
+      && $('recipientName').value.trim().length > 0
+      && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email);
+  }
+  function canAdvance(){
+    return currentStep === 1 ? step1Valid() : true;
+  }
+  function updateDockNext(){
+    var next = $('continueStep');
+    if(!next) return;
+    if(currentStep === TOTAL_STEPS){
+      next.textContent = '💌 Линк үүсгэх';
+      next.disabled = !codeIsValid;
+    } else {
+      next.textContent = 'Үргэлжлүүлэх →';
+      next.disabled = !canAdvance();
+    }
+  }
+  function handleDockNext(){
+    if(currentStep === TOTAL_STEPS){
+      if(!$('generate').disabled) $('generate').click();
+      return;
+    }
+    if(!canAdvance()){
+      if(currentStep === 1){
+        if(!codeIsValid) setStatus('⚠️ Хүчинтэй эрхийн код оруулна уу');
+        else if(!$('recipientName').value.trim()) setStatus('⚠️ Хүлээн авагчийн нэрийг заавал бөглөнө үү');
+        else setStatus('⚠️ Зөв email хаяг оруулна уу');
+      }
+      return;
+    }
+    setStatus('');
+    goStep(currentStep + 1);
+  }
+  document.querySelectorAll('[data-step-back]').forEach(function(b){
+    b.addEventListener('click', function(){ setStatus(''); goStep(currentStep - 1); });
+  });
+  ['recipientName','responseEmail'].forEach(function(id){
+    var el = $(id); if(el) el.addEventListener('input', updateDockNext);
+  });
+
   /* ---------- Access code gate ---------- */
   var codeIsValid = false;
   var codeTimer = null;
@@ -1022,6 +1429,7 @@
     status.textContent = msg || '';
     codeIsValid = (state==='ok');
     $('generate').disabled = !codeIsValid;
+    if(typeof updateDockNext === 'function') updateDockNext();
   }
   async function checkCode(){
     var code = normalizeCode($('accessCode').value);
@@ -1033,9 +1441,9 @@
     try{
       var r = await BolzooAPI.validateCode(code);
       if(lastCheckedCode !== code) return; // race: newer check in flight
-      if(r.ok){ setCodeUI('ok', '✅ Код хүчинтэй — үргэлжлүүлээрэй'); return; }
-      if(r.reason === 'used')      setCodeUI('bad', '❌ Энэ код нэгэнт ашиглагдсан байна');
-      else if(r.reason === 'not_found') setCodeUI('bad', '❌ Ийм код олдсонгүй');
+      if(r.ok){ setCodeUI('ok', '✅ Эрхийн код баталгаажлаа — үргэлжлүүлээрэй'); return; }
+      if(r.reason === 'used')      setCodeUI('bad', '❌ Энэ эрхийн код нэгэнт ашиглагдсан байна');
+      else if(r.reason === 'not_found') setCodeUI('bad', '❌ Ийм эрхийн код олдсонгүй');
       else                          setCodeUI('bad', '❌ Шалгах үед алдаа гарлаа');
     }catch(e){
       setCodeUI('bad', '❌ Шалгах үед алдаа: ' + (e.message||e));
@@ -1051,7 +1459,7 @@
   $('accessCode').addEventListener('blur', checkCode);
 
   function validate(cfg){
-    if(!codeIsValid){ setStatus('⚠️ Хүчинтэй код оруулна уу'); return false; }
+    if(!codeIsValid){ setStatus('⚠️ Хүчинтэй эрхийн код оруулна уу'); return false; }
     if(!cfg.recipientName){ setStatus('⚠️ Хүлээн авагчийн нэрийг заавал бөглөнө үү'); return false; }
     if(!cfg.responseEmail || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(cfg.responseEmail)){
       setStatus('⚠️ Зөв Gmail хаяг оруулна уу'); return false;
@@ -1063,7 +1471,49 @@
     $('linkBox').style.display = 'block';
     $('linkActions').style.display = 'flex';
     setStatus(msg || '✅ Линк бэлэн!');
+    openSuccessModal(url);
   }
+
+  /* ---------- Success modal ---------- */
+  function openSuccessModal(url){
+    $('successLink').textContent = url;
+    $('successStatus').textContent = '';
+    var btn = $('successCopyBtn');
+    btn.classList.remove('copied');
+    btn.textContent = '📋 Хуулж авах';
+    $('successModal').hidden = false;
+    document.body.classList.add('preview-modal-open');
+    setTimeout(function(){ btn.focus({ preventScroll:true }); }, 220);
+  }
+  function closeSuccessModal(){
+    $('successModal').hidden = true;
+    document.body.classList.remove('preview-modal-open');
+  }
+  $('successClose').addEventListener('click', closeSuccessModal);
+  $('successModal').addEventListener('click', function(e){
+    if(e.target === $('successModal')) closeSuccessModal();
+  });
+  $('successCopyBtn').addEventListener('click', function(){
+    var url = $('successLink').textContent;
+    var btn = $('successCopyBtn');
+    function onOk(){
+      btn.classList.add('copied');
+      btn.textContent = '✅ Хуулагдлаа';
+      $('successStatus').textContent = 'Messenger/Instagram-т paste хийгээд илгээгээрэй 💌';
+    }
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(url).then(onOk).catch(function(){
+        var t = document.createElement('textarea'); t.value=url; document.body.appendChild(t); t.select(); document.execCommand('copy'); t.remove();
+        onOk();
+      });
+    } else {
+      var t = document.createElement('textarea'); t.value=url; document.body.appendChild(t); t.select(); document.execCommand('copy'); t.remove();
+      onOk();
+    }
+  });
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' && !$('successModal').hidden) closeSuccessModal();
+  });
   function buildShortUrl(id, absolute){
     var base = absolute ? new URL('bolzoo.html', window.location.href).href : 'bolzoo.html';
     return base + '?id=' + encodeURIComponent(id);
@@ -1079,15 +1529,15 @@
       var res = await BolzooAPI.createInvite(cfg, code);
       var url = buildShortUrl(res.id, true);
       showLink(url, '✅ Урилга үүслээ! Богино линк бэлэн ('+res.id+')');
-      setCodeUI('bad', '⚠️ Энэ код ашиглагдлаа. Дараагийн урилгад шинэ код авна уу.');
+      setCodeUI('bad', '⚠️ Энэ эрхийн код ашиглагдлаа. Дараагийн урилгад шинэ эрхийн код авна уу.');
       $('accessCode').value = '';
       lastCheckedCode = '';
       clearPersistence();
       updatePreview();
     }catch(e){
       var msg = e.message || String(e);
-      if(/already used/i.test(msg)) setCodeUI('bad', '❌ Энэ код нэгэнт ашиглагдсан байна');
-      else if(/Invalid access code/i.test(msg)) setCodeUI('bad', '❌ Ийм код олдсонгүй');
+      if(/already used/i.test(msg)) setCodeUI('bad', '❌ Энэ эрхийн код нэгэнт ашиглагдсан байна');
+      else if(/Invalid access code/i.test(msg)) setCodeUI('bad', '❌ Ийм эрхийн код олдсонгүй');
       setStatus('❌ Алдаа: '+ msg);
       $('generate').disabled = !codeIsValid;
     }
@@ -1141,6 +1591,9 @@
     setStatus('');
     clearPersistence();
     updatePreview();
+    setPreviewDirty(false);
+    closeSuccessModal();
+    goStep(1);
   });
 
   // Restore session on load: draft form + code from URL (?code=…) or localStorage
@@ -1153,6 +1606,8 @@
       checkCode();
     }
     updatePreview();
+    setPreviewDirty(false);
+    goStep(1);
   })();
 })();
 </script>

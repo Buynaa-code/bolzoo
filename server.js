@@ -67,6 +67,17 @@ const WIRE_API_KEY        = String(process.env.WIRE_API_KEY || '');
 const WIRE_WEBHOOK_SECRET = String(process.env.WIRE_WEBHOOK_SECRET || '');
 const WIRE_ENABLED        = !!WIRE_API_KEY;
 const YOUTUBE_API_KEY     = String(process.env.YOUTUBE_API_KEY || process.env.GOOGLE_API_KEY || '');
+const PAYMENT_DESCRIPTION = (String(process.env.PAYMENT_DESCRIPTION || process.env.PAYMENT_MEMO || 'Bolzoo invite access').trim().slice(0, 80) || 'Bolzoo invite access');
+
+function paymentMetadata() {
+  return {
+    product: 'bolzoo_access_code',
+    tier: 'single',
+    description: PAYMENT_DESCRIPTION,
+    invoice_description: PAYMENT_DESCRIPTION,
+    transaction_description: PAYMENT_DESCRIPTION
+  };
+}
 
 async function wireAPI(method, apiPath, body, idempotencyKey) {
   if (typeof fetch !== 'function') throw new Error('Node 18+ шаардлагатай (native fetch)');
@@ -388,7 +399,8 @@ async function handleCheckout(req, res) {
         amount: PRICE_MNT,
         currency: 'MNT',
         automatic_operator: true,
-        metadata: { product: 'bolzoo_access_code', tier: 'single' }
+        description: PAYMENT_DESCRIPTION,
+        metadata: paymentMetadata()
       }, crypto.randomUUID());
 
       const confirmed = await wireAPI('POST', '/v1/payment_intents/' + pi.id + '/confirm', {
@@ -415,6 +427,7 @@ async function handleCheckout(req, res) {
         intent_id:   pi.id,
         amount:      pi.amount,
         status:      payments[pi.id].status,
+        payment_description: PAYMENT_DESCRIPTION,
         next_action: payments[pi.id].next_action,
         mode:        'live'
       });
@@ -446,6 +459,7 @@ async function handleCheckout(req, res) {
     intent_id:   mockId,
     amount:      PRICE_MNT,
     status:      'requires_action',
+    payment_description: PAYMENT_DESCRIPTION,
     next_action: null,
     mode:        'mock'
   });
@@ -481,6 +495,7 @@ async function handlePaymentStatus(req, res, url) {
     status:      p.status,
     code:        p.status === 'succeeded' ? p.code : null,
     amount:      p.amount,
+    payment_description: PAYMENT_DESCRIPTION,
     next_action: p.next_action,
     expires_at:  p.expires_at,
     mode:        p.provider === 'mock' ? 'mock' : 'live'
@@ -663,7 +678,7 @@ const server = http.createServer(async (req, res) => {
     if (url.pathname.startsWith('/rest/v1/rpc/')) return await handleRPC(req, res, url);
     if (url.pathname === '/rest/v1/invites' || url.pathname.startsWith('/rest/v1/invites/')) return await handleInvites(req, res, url);
     if (url.pathname === '/rest/v1/access_codes' || url.pathname.startsWith('/rest/v1/access_codes/')) return await handleCodes(req, res, url);
-    if (url.pathname === '/api/health') return sendJSON(res, 200, { ok: true, invites: Object.keys(invites).length, codes: Object.keys(codes).length, payments: Object.keys(payments).length, webhook_events: Object.keys(webhookEvents).length, wire: WIRE_ENABLED ? 'live' : 'mock', wire_webhook_secret: WIRE_WEBHOOK_SECRET ? 'set' : 'unset', youtube: YOUTUBE_API_KEY ? 'configured' : 'not_configured', price: PRICE_MNT });
+    if (url.pathname === '/api/health') return sendJSON(res, 200, { ok: true, invites: Object.keys(invites).length, codes: Object.keys(codes).length, payments: Object.keys(payments).length, webhook_events: Object.keys(webhookEvents).length, wire: WIRE_ENABLED ? 'live' : 'mock', wire_webhook_secret: WIRE_WEBHOOK_SECRET ? 'set' : 'unset', youtube: YOUTUBE_API_KEY ? 'configured' : 'not_configured', price: PRICE_MNT, payment_description: PAYMENT_DESCRIPTION });
     if (url.pathname === '/api/checkout')        return await handleCheckout(req, res);
     if (url.pathname === '/api/payment-status')  return await handlePaymentStatus(req, res, url);
     if (url.pathname === '/api/wire-webhook')    return await handleWireWebhook(req, res);

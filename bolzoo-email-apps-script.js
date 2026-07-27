@@ -15,6 +15,8 @@ function doPost(e) {
     '',
     data.countdown || '',
     '',
+    '📸 Screen shot хийгээд илгээгээрэй.',
+    '',
     'Илгээсэн: ' + (data.sentAt || new Date())
   ].join('\n');
 

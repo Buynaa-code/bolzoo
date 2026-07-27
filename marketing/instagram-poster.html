@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1080, initial-scale=1" />
+<title>Bolzoo Instagram Poster</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@600;700&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0;width:1080px;height:1350px;overflow:hidden}
+  body{
+    font-family:"Nunito",Arial,sans-serif;
+    background:#fff7f9;
+    color:#391334;
+  }
+  .poster{
+    position:relative;
+    width:1080px;
+    height:1350px;
+    overflow:hidden;
+    background:
+      radial-gradient(circle at 14% 8%, rgba(255,197,215,.92) 0 154px, transparent 156px),
+      radial-gradient(circle at 84% 14%, rgba(180,231,211,.9) 0 126px, transparent 128px),
+      radial-gradient(circle at 94% 78%, rgba(255,220,147,.9) 0 184px, transparent 186px),
+      linear-gradient(145deg,#fff9fb 0%,#ffeaf1 50%,#f6fff9 100%);
+  }
+  .poster:before{
+    content:"";
+    position:absolute;
+    inset:38px;
+    border:3px solid rgba(255,105,151,.24);
+    border-radius:52px;
+  }
+  .spark{position:absolute;color:#ff679a;font-size:42px;font-weight:900;line-height:1}
+  .s1{left:90px;top:204px}.s2{right:108px;top:390px;color:#47b68e}.s3{left:126px;bottom:260px;color:#f4b847}.s4{right:86px;bottom:162px}
+  .top{
+    position:absolute;
+    left:82px;
+    right:82px;
+    top:82px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:18px;
+    font-family:"Comfortaa",Arial,sans-serif;
+    font-size:42px;
+    font-weight:700;
+    color:#44123b;
+  }
+  .mark{
+    width:74px;
+    height:74px;
+    border-radius:22px;
+    display:grid;
+    place-items:center;
+    background:linear-gradient(135deg,#ff4d82,#ff8fb1);
+    color:#fff;
+    box-shadow:0 20px 38px rgba(255,77,130,.28);
+    font-size:42px;
+  }
+  .tag{
+    padding:15px 22px;
+    border-radius:999px;
+    background:#fff;
+    border:2px solid rgba(255,112,157,.35);
+    color:#805a78;
+    font-size:24px;
+    font-weight:900;
+  }
+  .main{
+    position:absolute;
+    left:82px;
+    right:82px;
+    top:202px;
+  }
+  h1{
+    margin:0;
+    max-width:760px;
+    font-family:"Comfortaa",Arial,sans-serif;
+    font-size:80px;
+    line-height:1.02;
+    letter-spacing:0;
+    color:#45133d;
+  }
+  .lead{
+    margin:26px 0 0;
+    max-width:520px;
+    font-size:30px;
+    line-height:1.32;
+    font-weight:900;
+    color:#71546d;
+  }
+  .phone{
+    position:absolute;
+    right:70px;
+    top:518px;
+    width:408px;
+    height:570px;
+    border-radius:48px;
+    background:#2d1630;
+    box-shadow:0 42px 90px rgba(72,29,63,.28);
+    padding:18px;
+    transform:rotate(2.5deg);
+  }
+  .screen{
+    width:100%;
+    height:100%;
+    border-radius:36px;
+    background:linear-gradient(180deg,#fff 0%,#fff4f7 100%);
+    overflow:hidden;
+    padding:26px 24px;
+  }
+  .screen-top{display:flex;align-items:center;gap:12px;margin-bottom:22px}
+  .avatar{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#ff6d9b,#ffd16c);display:grid;place-items:center;color:#fff;font-size:24px}
+  .name{font-size:18px;font-weight:900;color:#56334e}
+  .card{
+    border-radius:24px;
+    background:linear-gradient(135deg,#ffe5ee,#f0fff8);
+    padding:24px;
+    border:2px solid rgba(255,121,164,.22);
+  }
+  .mini-title{font-family:"Comfortaa",Arial,sans-serif;font-size:30px;line-height:1.16;margin:0 0 18px;color:#44133b}
+  .ticket{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:14px;
+    padding:16px 18px;
+    border-radius:18px;
+    background:#fff;
+    border:2px dashed #ff86aa;
+    font-size:18px;
+    font-weight:900;
+    color:#6a4b62;
+  }
+  .answer{
+    margin-top:20px;
+    display:grid;
+    gap:10px;
+  }
+  .bubble{
+    max-width:86%;
+    padding:14px 16px;
+    border-radius:18px;
+    font-size:17px;
+    line-height:1.22;
+    font-weight:900;
+  }
+  .bubble.left{background:#fff;color:#765b72}
+  .bubble.right{background:#ff5a8d;color:#fff;margin-left:auto}
+  .features{
+    position:absolute;
+    left:82px;
+    top:704px;
+    width:450px;
+    display:grid;
+    gap:18px;
+  }
+  .feature{
+    display:flex;
+    align-items:center;
+    gap:16px;
+    font-size:29px;
+    font-weight:900;
+    color:#513048;
+  }
+  .feature span{
+    flex:0 0 54px;
+    width:54px;
+    height:54px;
+    border-radius:18px;
+    display:grid;
+    place-items:center;
+    color:#fff;
+    font-size:28px;
+    background:#ff5b8d;
+    box-shadow:0 14px 28px rgba(255,91,141,.22);
+  }
+  .feature:nth-child(2) span{background:#41b88c}
+  .feature:nth-child(3) span{background:#f1b640}
+  .feature:nth-child(4) span{background:#8b67d9}
+  .price-card{
+    position:absolute;
+    left:82px;
+    right:82px;
+    bottom:112px;
+    height:188px;
+    border-radius:38px;
+    background:#fff;
+    border:3px solid rgba(255,112,157,.3);
+    box-shadow:0 30px 70px rgba(108,48,83,.18);
+    display:grid;
+    grid-template-columns:1fr 1.08fr;
+    overflow:hidden;
+  }
+  .price{
+    padding:28px 34px;
+    background:linear-gradient(135deg,#ff4d82,#ff8ead);
+    color:#fff;
+  }
+  .price .label{font-size:22px;font-weight:900;text-transform:uppercase;letter-spacing:0;margin:0 0 8px}
+  .price .amount{font-family:"Comfortaa",Arial,sans-serif;font-size:62px;font-weight:700;margin:0;line-height:1}
+  .price .sub{margin:12px 0 0;font-size:23px;font-weight:900}
+  .cta{
+    padding:32px 36px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+  }
+  .cta .small{font-size:24px;font-weight:900;color:#7d5d77;margin:0 0 12px}
+  .cta .url{font-family:"Comfortaa",Arial,sans-serif;font-size:36px;font-weight:700;color:#421338;margin:0}
+  .pay{
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+    margin-top:18px;
+    font-size:23px;
+    font-weight:900;
+    color:#2b7f62;
+  }
+  .dot{width:16px;height:16px;border-radius:50%;background:#41b88c}
+</style>
+</head>
+<body>
+  <section class="poster" aria-label="Bolzoo Instagram poster">
+    <div class="spark s1">✦</div>
+    <div class="spark s2">♡</div>
+    <div class="spark s3">✧</div>
+    <div class="spark s4">♡</div>
+
+    <div class="top">
+      <div class="brand"><div class="mark">♡</div><div>Bolzoo</div></div>
+      <div class="tag">онлайн урилга</div>
+    </div>
+
+    <main class="main">
+      <h1>Болзооны урилгаа хөөрхнөөр илгээе</h1>
+      <p class="lead">Хайртдаа зориулсан интерактив урилга үүсгээд линкээр шууд явуулаарай.</p>
+    </main>
+
+    <div class="features">
+      <div class="feature"><span>✎</span>Өөрийн үг, нэр, зураглал</div>
+      <div class="feature"><span>♫</span>Дуу, gif, жижиг сюрприз</div>
+      <div class="feature"><span>✓</span>Хариуг нь шууд харна</div>
+      <div class="feature"><span>↗</span>Утсанд эвтэйхэн линк</div>
+    </div>
+
+    <aside class="phone" aria-hidden="true">
+      <div class="screen">
+        <div class="screen-top">
+          <div class="avatar">♡</div>
+          <div class="name">чамд нэг урилга байна</div>
+        </div>
+        <div class="card">
+          <p class="mini-title">Өнөө орой болзох уу?</p>
+          <div class="ticket"><span>DATE NIGHT</span><span>19:30</span></div>
+          <div class="answer">
+            <div class="bubble left">чамд зориулж хийсэн шүү</div>
+            <div class="bubble right">тийм ээ, явъя ♡</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <section class="price-card">
+      <div class="price">
+        <p class="label">1 урилга үүсгэх эрх</p>
+        <p class="amount">9,900₮</p>
+        <p class="sub">нэг удаагийн код</p>
+      </div>
+      <div class="cta">
+        <p class="small">Одоо өөрийн урилгаа үүсгээрэй</p>
+        <p class="url">bolzoodate.vercel.app</p>
+        <div class="pay"><span class="dot"></span> QPay-ээр төлбөрөө хийнэ</div>
+      </div>
+    </section>
+  </section>
+</body>
+</html>
