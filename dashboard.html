@@ -101,6 +101,13 @@
         + meta
         + '</div>';
     }
+    // Poster урилга: тухайн өдөр амжихгүй, өөр өдөр сонгож байгаа
+    if(r.answer === 'later' && !r.date){
+      return '<div class="response">'
+        + '<b>💌 Хариу:</b> Тухайн өдөр амжихгүй — өөр өдөр сонгож байна 💗<br>'
+        + meta
+        + '</div>';
+    }
     // Poster урилга: зөвшөөрсөн боловч огноогоо сонгож амжаагүй
     if(r.answer === 'yes' && !r.date){
       return '<div class="response">'
@@ -109,6 +116,9 @@
         + '</div>';
     }
     return '<div class="response">'
+      + (r.answer === 'later'
+        ? '<b>🎬 Постерийн хариу:</b> Тухайн өдөр амжихгүй, өөр өдөр санал болгосон<br>'
+        : '')
       + '<b>📅 Өдөр:</b> ' + esc(r.date) + '<br>'
       + '<b>🕐 Цаг:</b> ' + esc(r.time) + '<br>'
       + '<b>💝 Төрөл:</b> ' + esc(r.kind) + '<br>'

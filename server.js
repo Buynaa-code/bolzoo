@@ -22,6 +22,7 @@ const path = require('path');
 const crypto = require('crypto');
 
 const PORT = Number(process.env.PORT || 8080);
+const HOST = String(process.env.HOST || '127.0.0.1');
 const ADMIN_PASSWORD = String(process.env.ADMIN_PASSWORD || 'admin123');
 const ROOT = __dirname;
 const DATA_DIR = path.join(ROOT, 'data');
@@ -32,7 +33,7 @@ const EVENTS_FILE   = path.join(DATA_DIR, 'webhook_events.json');
 
 // Self-serve QPay үнэ (MNT ₮). Өөрчлөхөд энд бэлэн.
 // PRICE_MNT env var-аар override хийнэ (жишээ: PRICE_MNT=10 node server.js).
-const PRICE_MNT = Number(process.env.PRICE_MNT || 9900);
+const PRICE_MNT = Number(process.env.PRICE_MNT || 6900);
 
 fs.mkdirSync(DATA_DIR, { recursive: true });
 
@@ -102,20 +103,32 @@ async function wireAPI(method, apiPath, body, idempotencyKey) {
   return data;
 }
 
-function verifyWireSignature(payload, sigHeader, secret) {
+function verifyWireSignature(payload, sigHeader, secret, toleranceSeconds, nowSeconds) {
   if (!sigHeader || !secret) return false;
-  const parts = {};
+  const parts = { v1: [] };
   sigHeader.split(',').forEach(kv => {
-    const [k, v] = kv.split('=');
-    if (k && v) parts[k.trim()] = v.trim();
+    const idx = kv.indexOf('=');
+    if (idx < 0) return;
+    const key = kv.slice(0, idx).trim();
+    const value = kv.slice(idx + 1).trim();
+    if (key === 'v1') parts.v1.push(value);
+    else parts[key] = value;
   });
-  if (!parts.t || !parts.v1) return false;
+  const timestamp = Number(parts.t);
+  const tolerance = Number(toleranceSeconds == null ? 300 : toleranceSeconds);
+  const now = Number(nowSeconds == null ? Math.floor(Date.now() / 1000) : nowSeconds);
+  if (!Number.isFinite(timestamp) || !parts.v1.length) return false;
+  if (tolerance >= 0 && Math.abs(now - timestamp) > tolerance) return false;
+
   const signed   = parts.t + '.' + payload;
   const expected = crypto.createHmac('sha256', secret).update(signed).digest('hex');
   const a = Buffer.from(expected, 'hex');
-  const b = Buffer.from(parts.v1, 'hex');
-  if (a.length !== b.length) return false;
-  try { return crypto.timingSafeEqual(a, b); } catch (_) { return false; }
+  return parts.v1.some(signature => {
+    if (!/^[0-9a-f]+$/i.test(signature)) return false;
+    const b = Buffer.from(signature, 'hex');
+    if (a.length !== b.length) return false;
+    try { return crypto.timingSafeEqual(a, b); } catch (_) { return false; }
+  });
 }
 
 function createAccessCodeForPayment(paymentId, mock) {
@@ -168,10 +181,22 @@ function sendPGError(res, code, message) {
   return sendJSON(res, code, { code: 'P0001', message: message, details: null, hint: null });
 }
 
-function readBody(req) {
+function readBody(req, maxBytes) {
+  const limit = Number(maxBytes || 64 * 1024);
   return new Promise((resolve, reject) => {
     const chunks = [];
-    req.on('data', c => chunks.push(c));
+    let size = 0;
+    req.on('data', c => {
+      size += c.length;
+      if (size > limit) {
+        const err = new Error('Request body too large');
+        err.status = 413;
+        reject(err);
+        req.destroy();
+        return;
+      }
+      chunks.push(c);
+    });
     req.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')));
     req.on('error', reject);
   });
@@ -243,16 +268,7 @@ async function handleInvites(req, res, url) {
   }
 
   if (method === 'GET') {
-    let rows = Object.values(invites).filter(r => matches(r, filters));
-    if (order) {
-      const [col, dir] = order.split('.');
-      rows = rows.slice().sort((a, b) => {
-        const av = String(a[col] || ''), bv = String(b[col] || '');
-        return dir === 'desc' ? bv.localeCompare(av) : av.localeCompare(bv);
-      });
-    }
-    rows = rows.map(r => stripFieldsForSelect(r, select));
-    return sendJSON(res, 200, rows);
+    return sendPGError(res, 403, 'Direct invite reads are disabled. Use /api/invite.');
   }
 
   if (method === 'PATCH') {
@@ -272,8 +288,7 @@ async function handleCodes(req, res, url) {
   const filters = parseFilters(url);
 
   if (method === 'GET') {
-    let rows = Object.values(codes).filter(r => matches(r, filters));
-    return sendJSON(res, 200, rows);
+    return sendPGError(res, 403, 'Direct access code reads are disabled. Use /api/validate-code.');
   }
   // No anon insert/update/delete — must use RPCs
   return sendPGError(res, 403, 'access_codes mutations must go through admin RPCs.');
@@ -383,6 +398,79 @@ async function handleRPC(req, res, url) {
   }
 
   return sendPGError(res, 404, 'Unknown RPC: ' + name);
+}
+
+/* ---------- Protected read APIs ---------- */
+const INVITE_ID_RE = /^[A-Za-z0-9_-]{4,64}$/;
+const OWNER_TOKEN_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const ACCESS_CODE_RE = /^LOV-[A-HJ-NP-Z2-9]{6}$/;
+
+function publicInvite(inv) {
+  return { id: inv.id, config: inv.config, created_at: inv.created_at };
+}
+
+function ownedInvite(inv) {
+  return {
+    id: inv.id,
+    config: inv.config,
+    response: inv.response,
+    opened_at: inv.opened_at,
+    responded_at: inv.responded_at,
+    created_at: inv.created_at
+  };
+}
+
+async function handleInviteAPI(req, res, url) {
+  if (req.method === 'GET') {
+    const id = String(url.searchParams.get('id') || '');
+    if (!INVITE_ID_RE.test(id)) return sendJSON(res, 400, { error: 'Invalid invite id' });
+    const inv = invites[id];
+    if (!inv) return sendJSON(res, 404, { error: 'Invite not found' });
+    return sendJSON(res, 200, publicInvite(inv), { 'Cache-Control': 'private, no-store' });
+  }
+
+  if (req.method === 'POST') {
+    const bodyText = await readBody(req);
+    let body = {};
+    try { body = bodyText ? JSON.parse(bodyText) : {}; } catch (_) {
+      return sendJSON(res, 400, { error: 'Invalid JSON' });
+    }
+    const items = Array.isArray(body.items) ? body.items : [];
+    if (!items.length || items.length > 100) {
+      return sendJSON(res, 400, { error: 'items must contain 1-100 invites' });
+    }
+
+    const rows = [];
+    for (const item of items) {
+      const id = String(item && item.id || '');
+      const token = String(item && item.owner_token || '');
+      if (!INVITE_ID_RE.test(id) || !OWNER_TOKEN_RE.test(token)) {
+        return sendJSON(res, 400, { error: 'Invalid invite ownership data' });
+      }
+      const inv = invites[id];
+      if (inv && inv.owner_token === token) rows.push(ownedInvite(inv));
+    }
+    return sendJSON(res, 200, rows, { 'Cache-Control': 'private, no-store' });
+  }
+
+  return sendJSON(res, 405, { error: 'GET or POST only' });
+}
+
+async function handleValidateCodeAPI(req, res) {
+  if (req.method !== 'POST') return sendJSON(res, 405, { error: 'POST only' });
+  const bodyText = await readBody(req);
+  let body = {};
+  try { body = bodyText ? JSON.parse(bodyText) : {}; } catch (_) {
+    return sendJSON(res, 400, { error: 'Invalid JSON' });
+  }
+  const code = String(body.code || '').trim().toUpperCase();
+  if (!ACCESS_CODE_RE.test(code) || !codes[code]) {
+    return sendJSON(res, 200, { ok: false, reason: 'not_found' }, { 'Cache-Control': 'private, no-store' });
+  }
+  if (codes[code].used) {
+    return sendJSON(res, 200, { ok: false, reason: 'used' }, { 'Cache-Control': 'private, no-store' });
+  }
+  return sendJSON(res, 200, { ok: true }, { 'Cache-Control': 'private, no-store' });
 }
 
 /* ---------- /api/checkout | /api/payment-status | /api/wire-webhook ---------- */
@@ -504,13 +592,14 @@ async function handlePaymentStatus(req, res, url) {
 
 async function handleWireWebhook(req, res) {
   if (req.method !== 'POST') return sendJSON(res, 405, { error: 'POST only' });
+  if (!WIRE_WEBHOOK_SECRET) {
+    return sendJSON(res, 503, { error: 'WIRE_WEBHOOK_SECRET is required' });
+  }
   const bodyText = await readBody(req);
 
-  if (WIRE_WEBHOOK_SECRET) {
-    const sig = req.headers['wirepayment-signature'] || '';
-    if (!verifyWireSignature(bodyText, sig, WIRE_WEBHOOK_SECRET)) {
-      return sendJSON(res, 401, { error: 'invalid signature' });
-    }
+  const sig = req.headers['wirepayment-signature'] || '';
+  if (!verifyWireSignature(bodyText, sig, WIRE_WEBHOOK_SECRET)) {
+    return sendJSON(res, 401, { error: 'invalid or expired signature' });
   }
 
   let event = {};
@@ -518,7 +607,9 @@ async function handleWireWebhook(req, res) {
   const evtId    = event.id || '';
   const type     = event.type || '';
   const data     = event.data || {};
-  const intentId = (data && (data.id || (data.object && data.object.id))) || event.intent_id;
+  const object   = data && data.object || {};
+  const intentId = object.payment_intent || data.payment_intent || object.id || data.id || event.intent_id;
+  if (!evtId) return sendJSON(res, 400, { error: 'event id required' });
 
   console.log('[webhook]', new Date().toISOString(), type || '(no-type)', evtId || '-', intentId || '-');
 
@@ -656,11 +747,23 @@ async function handleYouTubeSearch(req, res, url) {
 }
 
 /* ---------- Static files ---------- */
+const PUBLIC_FILES = new Set([
+  '/admin.html',
+  '/bolzoo.html',
+  '/create.html',
+  '/dashboard.html',
+  '/pay.html'
+]);
+
 function serveStatic(req, res, url) {
   let rel = decodeURIComponent(url.pathname);
   if (rel === '/' || rel === '') rel = '/create.html';
+  if (!PUBLIC_FILES.has(rel) && !rel.startsWith('/assets/') && !rel.startsWith('/marketing/')) {
+    return send(res, 404, 'Not found');
+  }
   const filePath = path.join(ROOT, rel);
-  if (!filePath.startsWith(ROOT)) return send(res, 403, 'Forbidden');
+  const relativePath = path.relative(ROOT, filePath);
+  if (relativePath.startsWith('..') || path.isAbsolute(relativePath)) return send(res, 403, 'Forbidden');
   fs.stat(filePath, (err, st) => {
     if (err || !st.isFile()) return send(res, 404, 'Not found: ' + rel);
     const ext = path.extname(filePath).toLowerCase();
@@ -679,6 +782,8 @@ const server = http.createServer(async (req, res) => {
     if (url.pathname === '/rest/v1/invites' || url.pathname.startsWith('/rest/v1/invites/')) return await handleInvites(req, res, url);
     if (url.pathname === '/rest/v1/access_codes' || url.pathname.startsWith('/rest/v1/access_codes/')) return await handleCodes(req, res, url);
     if (url.pathname === '/api/health') return sendJSON(res, 200, { ok: true, invites: Object.keys(invites).length, codes: Object.keys(codes).length, payments: Object.keys(payments).length, webhook_events: Object.keys(webhookEvents).length, wire: WIRE_ENABLED ? 'live' : 'mock', wire_webhook_secret: WIRE_WEBHOOK_SECRET ? 'set' : 'unset', youtube: YOUTUBE_API_KEY ? 'configured' : 'not_configured', price: PRICE_MNT, payment_description: PAYMENT_DESCRIPTION });
+    if (url.pathname === '/api/invite')          return await handleInviteAPI(req, res, url);
+    if (url.pathname === '/api/validate-code')   return await handleValidateCodeAPI(req, res);
     if (url.pathname === '/api/checkout')        return await handleCheckout(req, res);
     if (url.pathname === '/api/payment-status')  return await handlePaymentStatus(req, res, url);
     if (url.pathname === '/api/wire-webhook')    return await handleWireWebhook(req, res);
@@ -691,8 +796,8 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
-server.listen(PORT, () => {
-  const url = `http://localhost:${PORT}`;
+server.listen(PORT, HOST, () => {
+  const url = `http://${HOST}:${PORT}`;
   console.log('');
   console.log('  💌  Bolzoo dev server');
   console.log('  ─────────────────────────────────────');
@@ -702,7 +807,7 @@ server.listen(PORT, () => {
   console.log('  Invite (id) :  ' + url + '/bolzoo.html?id=<ID>');
   console.log('  API health  :  ' + url + '/api/health');
   console.log('  Pay page    :  ' + url + '/pay.html');
-  console.log('  Admin pw    :  ' + ADMIN_PASSWORD + '  (set ADMIN_PASSWORD env to change)');
+  console.log('  Admin auth  :  ' + (process.env.ADMIN_PASSWORD ? 'custom password configured' : 'local default in use'));
   console.log('  Wire mode   :  ' + (WIRE_ENABLED ? '🟢 live (WIRE_API_KEY тохирсон)' : '🧪 mock (WIRE_API_KEY тохируулаагүй)'));
   console.log('  Price       :  ' + PRICE_MNT.toLocaleString() + ' ₮');
   console.log('');

@@ -51,6 +51,26 @@
   .price .amt{font-family:'Comfortaa', sans-serif; font-size:42px; font-weight:700; color:var(--hot); line-height:1; margin:0 0 6px;}
   .price .amt small{font-size:22px; margin-left:2px;}
   .price .lbl{color:#6d536b; font-size:12px; font-weight:900; letter-spacing:.05em;}
+  .discount-note{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    margin:0 0 10px;
+    padding:7px 12px;
+    border-radius:999px;
+    background:#fff;
+    border:1px solid rgba(255,112,157,.36);
+    color:#6d536b;
+    font-size:12px;
+    font-weight:900;
+  }
+  .discount-note .old-price{
+    color:#a48a9e;
+    text-decoration:line-through;
+    text-decoration-thickness:2px;
+  }
+  .discount-note .new-price{color:var(--hot);}
   .btn{
     display:inline-flex;
     align-items:center;
@@ -243,6 +263,12 @@
     <p class="subtitle">QPay төлөөд 1 урилга үүсгэх эрхийн кодоо шууд аваарай.</p>
 
     <div class="price">
+      <div class="discount-note">
+        <span>Spider-Man хямдрал</span>
+        <span class="old-price">9,900₮</span>
+        <span>→</span>
+        <span class="new-price">6,900₮</span>
+      </div>
       <p class="amt" id="priceAmt">…<small>₮</small></p>
       <p class="lbl">1 УРИЛГА ҮҮСГЭХ ЭРХ · НЭГ УДААГИЙН КОД</p>
     </div>

@@ -4,6 +4,24 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Болзооны урилга үүсгэх 💌</title>
+<meta name="description" content="Crush-даа зориулсан болзооны урилгаа үүсгээд Messenger, Instagram-аар илгээгээрэй 💌" />
+<link rel="canonical" href="https://bolzoodate.vercel.app/create" />
+<meta property="og:type" content="website" />
+<meta property="og:locale" content="mn_MN" />
+<meta property="og:site_name" content="Bolzoo Date" />
+<meta property="og:title" content="Crush-даа болзооны урилга илгээгээрэй 💌" />
+<meta property="og:description" content="Spider-Man постертой онцгой урилгаа үүсгээд Messenger, Instagram-аар илгээгээрэй." />
+<meta property="og:url" content="https://bolzoodate.vercel.app/create" />
+<meta property="og:image" content="https://bolzoodate.vercel.app/assets/posters/hun-aalz.png" />
+<meta property="og:image:secure_url" content="https://bolzoodate.vercel.app/assets/posters/hun-aalz.png" />
+<meta property="og:image:type" content="image/png" />
+<meta property="og:image:width" content="1003" />
+<meta property="og:image:height" content="1568" />
+<meta property="og:image:alt" content="Spider-Man: Цоо шинэ өдөр киноны постер" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Crush-даа болзооны урилга илгээгээрэй 💌" />
+<meta name="twitter:description" content="Spider-Man постертой онцгой урилгаа үүсгээрэй." />
+<meta name="twitter:image" content="https://bolzoodate.vercel.app/assets/posters/hun-aalz.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Comfortaa:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -155,6 +173,136 @@
     line-height:1.55;
     font-weight:700;
   }
+  .promo-splash{
+    position:relative;
+    margin:0 0 22px;
+    min-height:236px;
+    display:grid;
+    grid-template-columns:minmax(0,1fr) 172px;
+    gap:22px;
+    align-items:center;
+    overflow:hidden;
+    padding:22px;
+    border-radius:18px;
+    border:1px solid rgba(255,133,168,.58);
+    background:
+      radial-gradient(circle at 12% 0%, rgba(255,196,215,.72) 0 86px, transparent 88px),
+      radial-gradient(circle at 100% 18%, rgba(183,232,213,.7) 0 86px, transparent 88px),
+      linear-gradient(135deg,#fff9fb 0%,#ffeaf1 58%,#f7fff9 100%);
+    box-shadow:0 24px 54px -36px rgba(105,39,78,.42);
+  }
+  .promo-splash-copy{position:relative; z-index:1;}
+  .promo-tag{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    min-height:32px;
+    padding:7px 12px;
+    border-radius:999px;
+    background:#fff;
+    border:1px solid rgba(255,112,157,.32);
+    color:#2e9a76;
+    font-size:12px;
+    font-weight:900;
+    text-transform:uppercase;
+  }
+  .promo-title{
+    margin:12px 0 8px;
+    color:#43133b;
+    font-family:'Comfortaa',sans-serif;
+    font-size:25px;
+    line-height:1.16;
+    font-weight:700;
+  }
+  .promo-text{
+    max-width:540px;
+    margin:0;
+    color:#725d72;
+    font-size:14px;
+    line-height:1.45;
+    font-weight:800;
+  }
+  .promo-price{
+    display:flex;
+    flex-wrap:wrap;
+    align-items:baseline;
+    gap:10px;
+    margin:16px 0 0;
+  }
+  .promo-old{
+    color:#9b8397;
+    font-size:15px;
+    font-weight:900;
+    text-decoration:line-through;
+    text-decoration-thickness:2px;
+  }
+  .promo-new{
+    color:#ff4d82;
+    font-family:'Comfortaa',sans-serif;
+    font-size:36px;
+    line-height:1;
+    font-weight:700;
+  }
+  .promo-actions{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-top:18px;
+  }
+  .promo-btn,
+  .promo-link{
+    min-height:44px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    padding:10px 14px;
+    border-radius:12px;
+    font-family:'Nunito',sans-serif;
+    font-size:13px;
+    font-weight:900;
+    text-decoration:none;
+    cursor:pointer;
+  }
+  .promo-btn{
+    border:0;
+    color:#fff;
+    background:linear-gradient(100deg,#ff4d82,#9d63e6);
+    box-shadow:0 16px 32px -22px rgba(157,99,230,.9);
+  }
+  .promo-link{
+    border:1px solid rgba(248,215,226,.9);
+    color:#6a4062;
+    background:#fff;
+  }
+  .promo-poster{
+    position:relative;
+    z-index:1;
+    width:100%;
+    max-width:172px;
+    justify-self:end;
+    aspect-ratio:2/3;
+    overflow:hidden;
+    border-radius:16px;
+    border:5px solid #2d1630;
+    background:#160d16;
+    box-shadow:0 22px 44px -24px rgba(72,29,63,.65);
+    transform:rotate(2deg);
+  }
+  .promo-poster img{width:100%; height:100%; object-fit:cover; display:block;}
+  .promo-badge{
+    position:absolute;
+    top:10px;
+    right:10px;
+    z-index:2;
+    padding:6px 9px;
+    border-radius:999px;
+    background:#ff4d82;
+    color:#fff;
+    font-size:11px;
+    font-weight:900;
+    box-shadow:0 10px 18px -12px rgba(255,77,130,.7);
+  }
   .card,
   .form-card,
   .preview-card,
@@ -241,6 +389,86 @@
   .theme[data-theme="sunset"]{background:linear-gradient(135deg,#ffb066,#e75d5d);}
   .theme[data-theme="galaxy"]{background:linear-gradient(135deg,#b19cff,#6b47d9);}
   .theme[data-theme="aurora"]{background:linear-gradient(135deg,#7ee1c0,#4b9bcf);}
+  .posters{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(120px,1fr));
+    gap:12px;
+    margin-top:4px;
+  }
+  .poster{
+    position:relative;
+    cursor:pointer;
+    padding:0;
+    border-radius:14px;
+    border:1.5px solid rgba(248,215,226,.75);
+    background:#fff;
+    aspect-ratio:2/3;
+    overflow:hidden;
+    transition:transform .15s, border-color .15s, box-shadow .15s;
+    display:block;
+  }
+  .poster:hover{transform:translateY(-2px); border-color:#ff9aba;}
+  .poster img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
+  }
+  .poster-title{
+    position:absolute;
+    inset:auto 0 0 0;
+    padding:8px 10px;
+    background:linear-gradient(to top, rgba(0,0,0,.78), rgba(0,0,0,0));
+    color:#fff;
+    font-family:'Nunito',sans-serif;
+    font-size:11px;
+    font-weight:900;
+    line-height:1.2;
+    text-align:left;
+    letter-spacing:.3px;
+    pointer-events:none;
+  }
+  .poster.on{
+    border-color:var(--hot);
+    border-width:2.5px;
+    box-shadow:0 16px 30px -18px rgba(255,77,130,.75);
+  }
+  .poster.on::before{
+    content:"✓";
+    position:absolute;
+    top:8px;
+    right:8px;
+    width:26px;
+    height:26px;
+    display:grid;
+    place-items:center;
+    border-radius:50%;
+    background:var(--hot);
+    color:#fff;
+    font-size:14px;
+    font-weight:900;
+    z-index:2;
+    box-shadow:0 8px 16px -6px rgba(255,77,130,.6);
+  }
+  .poster-none{
+    aspect-ratio:2/3;
+    display:grid;
+    place-items:center;
+    text-align:center;
+    background:linear-gradient(135deg,#fff, #fff7fa);
+    color:#8b7b8d;
+    font-family:'Nunito',sans-serif;
+    font-size:13px;
+    font-weight:800;
+    line-height:1.35;
+    padding:14px;
+  }
+  .poster-none-icon{
+    display:block;
+    font-size:26px;
+    margin-bottom:6px;
+    opacity:.6;
+  }
   .btn{
     min-height:54px;
     display:inline-flex;
@@ -761,6 +989,12 @@
     .step-num{width:22px; height:22px; flex:0 0 22px; font-size:11px;}
     .title-block{margin-top:16px;}
     h1{font-size:24px;}
+    .promo-splash{grid-template-columns:1fr; gap:16px; padding:18px;}
+    .promo-title{font-size:22px;}
+    .promo-new{font-size:32px;}
+    .promo-poster{justify-self:start; width:min(160px,56vw);}
+    .promo-actions{display:grid; grid-template-columns:1fr; gap:8px;}
+    .promo-btn,.promo-link{width:100%;}
     .form-card,.preview-card,.side-card,.music-card{padding:20px 16px; border-radius:16px;}
     .code-help-top{grid-template-columns:32px minmax(0,1fr);}
     .code-help-icon{width:32px; height:32px;}
@@ -771,6 +1005,7 @@
     .song-result img{width:86px;}
     .themes{grid-template-columns:repeat(4,1fr); gap:10px;}
     .theme{height:54px;}
+    .posters{grid-template-columns:repeat(auto-fill,minmax(96px,1fr)); gap:10px;}
     .form-actions{grid-template-columns:1fr;}
     .preview-wrap{order:3;}
     .phone-shell{width:min(330px,100%);}
@@ -806,6 +1041,28 @@
         </div>
       </div>
 
+      <section class="promo-splash" aria-label="Spider-Man хямдралтай урилга">
+        <div class="promo-splash-copy">
+          <span class="promo-tag">🎬 Хямдралтай постер</span>
+          <h2 class="promo-title">Spider-Man кинонд уриарай</h2>
+          <p class="promo-text">
+            Хүн-Аалз постертой онлайн болзооны урилга үүсгээд Messenger эсвэл чатаар шууд илгээгээрэй.
+          </p>
+          <div class="promo-price" aria-label="Хямдралтай үнэ">
+            <span class="promo-old">9,900₮</span>
+            <strong class="promo-new">6,900₮</strong>
+          </div>
+          <div class="promo-actions">
+            <button class="promo-btn" id="promoSelectPoster" type="button">Постер сонгох</button>
+            <a class="promo-link" href="pay.html">6,900₮-өөр эрх авах</a>
+          </div>
+        </div>
+        <div class="promo-poster" aria-hidden="true">
+          <span class="promo-badge">-3,000₮</span>
+          <img src="assets/posters/hun-aalz.png" alt="" />
+        </div>
+      </section>
+
       <section class="form-card">
         <div class="wizard-step active" data-step="1">
         <div class="code-gate" id="codeGate">
@@ -825,7 +1082,7 @@
                 <strong>Кодгүй юу?</strong>
                 <span>QPay төлөөд кодоо шууд аваарай.</span>
               </div>
-              <a class="qpay-cta" href="pay.html" aria-label="QPay-ээр урилга үүсгэх эрх авах">QPay-ээр эрх авах <span>→</span></a>
+              <a class="qpay-cta" href="pay.html" aria-label="QPay-ээр урилга үүсгэх эрх авах">6,900₮-өөр эрх авах <span>→</span></a>
             </div>
             <div class="qpay-steps" aria-label="QPay эрх авах алхам">
               <span>1. Төлөх</span>
@@ -891,6 +1148,19 @@
             <div class="theme" data-theme="galaxy" title="Galaxy ✨"></div>
             <div class="theme" data-theme="aurora" title="Aurora ✨"></div>
           </div>
+        </div>
+        <div class="field">
+          <label><span class="label-icon">🎬</span>ОНЦГОЙ ПОСТЕР (ЗААВАЛ БИШ)</label>
+          <div class="posters" id="posters">
+            <button type="button" class="poster poster-none on" data-poster="" aria-label="Постергүй">
+              <span>
+                <span class="poster-none-icon" aria-hidden="true">✕</span>
+                Постергүй
+              </span>
+            </button>
+            <!-- Постерууд assets/posters.js-ээс автоматаар харагдана -->
+          </div>
+          <div class="hint">Постер сонгосон бол хүлээн авагч урилгыг нээхэд эхлээд постер + «Тийм / Үгүй» диалог гарна 🎬</div>
         </div>
         <div class="invite-teaser" id="inviteTeaser">
           <p>Таны урилга ингэж эхэлнэ</p>
@@ -1006,7 +1276,7 @@
     </div>
     <footer class="preview-modal-foot">
       <button class="modal-ghost" id="editPreview" type="button">✏️ Засах</button>
-      <a class="modal-pay" href="pay.html">9,900₮-өөр идэвхжүүлэх</a>
+      <a class="modal-pay" href="pay.html">6,900₮-өөр идэвхжүүлэх</a>
     </footer>
   </div>
 
@@ -1025,11 +1295,42 @@
 
 <script src="assets/utils.js"></script>
 <script src="assets/config.js"></script>
+<script src="assets/posters.js"></script>
 <script src="assets/api.js"></script>
 <script>
 (function(){
   var $ = BolzooUtils.$;
   var currentTheme = 'coral';
+  var currentPoster = '';
+
+  /* ---------- Posters picker (assets/posters.js registry) ---------- */
+  function renderPosters(){
+    var host = $('posters');
+    if(!host || !window.BolzooPosters) return;
+    var posters = BolzooPosters.list();
+    posters.forEach(function(p){
+      if(host.querySelector('[data-poster="'+p.id+'"]')) return;
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'poster';
+      btn.setAttribute('data-poster', p.id);
+      btn.setAttribute('aria-label', p.title + ' постер сонгох');
+      btn.innerHTML =
+        '<img src="'+BolzooUtils.esc(p.image)+'" alt="'+BolzooUtils.esc(p.title)+'" />' +
+        '<span class="poster-title">'+BolzooUtils.esc(p.title)+
+          (p.dateLabel ? ' · ' + BolzooUtils.esc(p.dateLabel) : '') +
+        '</span>';
+      host.appendChild(btn);
+    });
+  }
+  function markPoster(id){
+    var kids = $('posters').children;
+    for(var i=0;i<kids.length;i++){
+      var pid = kids[i].getAttribute('data-poster') || '';
+      kids[i].classList.toggle('on', pid === (id || ''));
+    }
+  }
+  renderPosters();
 
   /* ---------- Persistent session: URL ?code=... + localStorage draft ---------- */
   var STORAGE_CODE_KEY = 'bolzoo:pending_code';
@@ -1054,7 +1355,7 @@
     }catch(e){}
   }
   function saveDraft(){
-    var d = { theme: currentTheme };
+    var d = { theme: currentTheme, poster: currentPoster };
     DRAFT_FIELDS.forEach(function(id){ d[id] = $(id).value; });
     lsSet(STORAGE_DRAFT_KEY, JSON.stringify(d));
   }
@@ -1070,6 +1371,10 @@
         for(var i=0;i<kids.length;i++){
           kids[i].classList.toggle('on', kids[i].getAttribute('data-theme') === currentTheme);
         }
+      }
+      if(d.poster != null && window.BolzooPosters){
+        currentPoster = BolzooPosters.has(d.poster) ? d.poster : '';
+        markPoster(currentPoster);
       }
     }catch(e){}
   }
@@ -1094,8 +1399,26 @@
     saveDraft();
   });
 
+  $('posters').addEventListener('click', function(e){
+    var t = e.target.closest('.poster'); if(!t) return;
+    var pid = t.getAttribute('data-poster') || '';
+    currentPoster = pid;
+    markPoster(pid);
+    schedulePreview();
+    saveDraft();
+  });
+  $('promoSelectPoster').addEventListener('click', function(){
+    currentPoster = window.BolzooPosters && BolzooPosters.has('hun-aalz')
+      ? 'hun-aalz'
+      : '';
+    markPoster(currentPoster);
+    schedulePreview();
+    saveDraft();
+    goStep(2);
+  });
+
   function collectConfig(){
-    return {
+    var cfg = {
       recipientName: $('recipientName').value.trim(),
       senderName:    $('senderName').value.trim(),
       responseEmail: $('responseEmail').value.trim(),
@@ -1106,6 +1429,8 @@
       locationUrl:   $('locationUrl').value.trim(),
       specialLetter: $('specialLetter').value.trim()
     };
+    if(currentPoster) cfg.poster = currentPoster;
+    return cfg;
   }
 
   function encodeConfig(cfg){
@@ -1583,6 +1908,8 @@
     currentTheme = 'coral';
     var kids = $('themes').children;
     for(var i=0;i<kids.length;i++){ kids[i].classList.toggle('on', kids[i].getAttribute('data-theme') === 'coral'); }
+    currentPoster = '';
+    markPoster('');
     lastCheckedCode = '';
     setCodeUI('', '');
     $('videoPreview').style.display = 'none';

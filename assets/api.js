@@ -102,16 +102,30 @@
   function rpc(name, params){
     return req('POST', '/rpc/'+name, params || {});
   }
+  function appReq(method, path, body){
+    return fetch(path, {
+      method: method,
+      headers: { 'Content-Type': 'application/json' },
+      body: body ? JSON.stringify(body) : undefined
+    }).then(function(r){
+      return r.text().then(function(t){
+        var data = null;
+        try { data = t ? JSON.parse(t) : null; } catch(_){}
+        if(!r.ok){
+          var msg = data && (data.user_error || data.error || data.message);
+          throw new Error(msg || ('HTTP '+r.status));
+        }
+        return data;
+      });
+    });
+  }
 
   /* ------------ Access codes ------------ */
   async function validateCode(code){
     if(!code) return { ok:false, reason:'empty' };
     if(HAS_BACKEND){
       try{
-        var rows = await req('GET', '/access_codes?code=eq.'+encodeURIComponent(code)+'&select=code,used');
-        if(!rows || !rows.length) return { ok:false, reason:'not_found' };
-        if(rows[0].used) return { ok:false, reason:'used' };
-        return { ok:true };
+        return await appReq('POST', '/api/validate-code', { code:code });
       }catch(e){ return { ok:false, reason:'error', error:e.message }; }
     } else {
       var c = lsCodes()[code];
@@ -199,8 +213,12 @@
   async function getInvite(id){
     if(!id) return null;
     if(HAS_BACKEND){
-      var rows = await req('GET', '/invites?id=eq.'+encodeURIComponent(id)+'&select=id,config,response,opened_at,responded_at,created_at');
-      return rows && rows[0] ? rows[0] : null;
+      try{
+        return await appReq('GET', '/api/invite?id='+encodeURIComponent(id));
+      }catch(e){
+        if(/not found/i.test(e.message || '')) return null;
+        throw e;
+      }
     } else {
       var stored = lsGet('bolzoo:invites:'+id);
       if(!stored) return null;
@@ -234,10 +252,11 @@
     var mine = listMine();
     if(!mine.length) return [];
     if(HAS_BACKEND){
-      var ids = mine.map(function(x){ return x.id; });
-      var q = 'id=in.('+ids.map(encodeURIComponent).join(',')+')&order=created_at.desc';
-      var rows = await req('GET', '/invites?'+q+'&select=id,config,response,opened_at,responded_at,created_at');
-      return rows || [];
+      var items = mine.map(function(x){
+        return { id:x.id, owner_token:getOwnerToken(x.id) };
+      }).filter(function(x){ return !!x.owner_token; });
+      if(!items.length) return [];
+      return await appReq('POST', '/api/invite', { items:items }) || [];
     } else {
       return mine.map(function(x){
         var s = lsGet('bolzoo:invites:'+x.id);

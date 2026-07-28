@@ -29,12 +29,8 @@ alter table public.invites enable row level security;
 -- Anon cannot insert invites directly anymore — they must go through create_invite_with_code RPC.
 drop policy if exists "anon can insert invites" on public.invites;
 
--- Anyone (anon) can SELECT config by id
+-- Direct table reads are blocked. Public config is returned by /api/invite.
 drop policy if exists "anon can select invites" on public.invites;
-create policy "anon can select invites"
-  on public.invites for select
-  to anon
-  using (true);
 
 -- Anon UPDATE-ыг зөвшөөрөхгүй — хариу болон нээсэн тэмдгийг save_response / mark_opened RPC дамжуулна.
 drop policy if exists "anon can update response" on public.invites;
@@ -67,12 +63,8 @@ create index if not exists access_codes_used_idx on public.access_codes (used);
 
 alter table public.access_codes enable row level security;
 
--- Anon can SELECT to validate a code before submitting (client checks used=false, code=X)
+-- Direct table reads are blocked. Exact-code validation uses /api/validate-code.
 drop policy if exists "anon can select access codes" on public.access_codes;
-create policy "anon can select access codes"
-  on public.access_codes for select
-  to anon
-  using (true);
 
 -- No anon insert/update/delete — those go through RPCs (admin_* + create_invite_with_code)
 
@@ -305,12 +297,8 @@ create index if not exists payments_created_at_idx on public.payments (created_a
 
 alter table public.payments enable row level security;
 
--- Anon can SELECT (frontend polling: /api/payment-status)
+-- Payment polling uses /api/payment-status with the server-side service role.
 drop policy if exists "anon can select payments" on public.payments;
-create policy "anon can select payments"
-  on public.payments for select
-  to anon
-  using (true);
 
 -- No anon insert/update/delete — backend endpoint-ууд (server.js эсвэл Vercel function) service_role-оор гүйцэтгэнэ.
 
@@ -331,6 +319,128 @@ alter table public.webhook_events enable row level security;
 
 alter table public.access_codes add column if not exists source     text;    -- 'admin' | 'self_service'
 alter table public.access_codes add column if not exists payment_id text references public.payments(id) on delete set null;
+
+create unique index if not exists access_codes_payment_id_unique_idx
+  on public.access_codes (payment_id)
+  where payment_id is not null;
+
+/* ---------- Verified webhook processing ---------- */
+
+create or replace function public.process_wire_event(
+  p_event_id  text,
+  p_type      text,
+  p_intent_id text,
+  p_raw       jsonb
+)
+returns table (
+  processed     boolean,
+  payment_found boolean,
+  new_status    text
+)
+language plpgsql
+security invoker
+set search_path = ''
+as $$
+declare
+  v_inserted integer := 0;
+  v_updated integer := 0;
+  v_status text;
+begin
+  if p_event_id is null or length(p_event_id) = 0 then
+    raise exception 'event id required';
+  end if;
+
+  insert into public.webhook_events(id, type, intent_id, raw)
+  values (p_event_id, coalesce(p_type, ''), p_intent_id, p_raw)
+  on conflict (id) do nothing;
+  get diagnostics v_inserted = row_count;
+
+  if v_inserted = 0 then
+    return query select false, true, null::text;
+    return;
+  end if;
+
+  v_status := case p_type
+    when 'payment_intent.succeeded' then 'succeeded'
+    when 'charge.succeeded' then 'succeeded'
+    when 'payment_intent.canceled' then 'canceled'
+    when 'payment_intent.payment_failed' then 'failed'
+    when 'charge.failed' then 'failed'
+    else null
+  end;
+
+  if v_status is null or p_intent_id is null then
+    return query select true, false, null::text;
+    return;
+  end if;
+
+  update public.payments
+  set status = v_status,
+      raw_event = p_raw,
+      updated_at = now()
+  where id = p_intent_id;
+  get diagnostics v_updated = row_count;
+
+  return query select true, (v_updated = 1), v_status;
+end;
+$$;
+
+/* ---------- Least-privilege Data API grants ---------- */
+
+revoke all on table public.invites from public, anon, authenticated;
+revoke all on table public.access_codes from public, anon, authenticated;
+revoke all on table public.payments from public, anon, authenticated;
+revoke all on table public.admin_settings from public, anon, authenticated;
+revoke all on table public.webhook_events from public, anon, authenticated;
+
+grant select, insert, update, delete
+  on table public.invites,
+           public.access_codes,
+           public.payments,
+           public.admin_settings,
+           public.webhook_events
+  to service_role;
+
+alter default privileges for role postgres in schema public
+  revoke select, insert, update, delete on tables
+  from public, anon, authenticated, service_role;
+alter default privileges for role postgres in schema public
+  revoke usage, select on sequences
+  from public, anon, authenticated, service_role;
+alter default privileges for role postgres in schema public
+  revoke execute on functions
+  from public, anon, authenticated, service_role;
+
+revoke execute on function public._check_admin_pw(text)
+  from public, anon, authenticated;
+revoke execute on function public._gen_code()
+  from public, anon, authenticated;
+revoke execute on function public.create_invite_with_code(text, jsonb, text)
+  from public, authenticated;
+revoke execute on function public.save_response(text, jsonb)
+  from public, authenticated;
+revoke execute on function public.mark_opened(text)
+  from public, authenticated;
+revoke execute on function public.delete_own_invite(text, uuid)
+  from public, authenticated;
+revoke execute on function public.admin_create_codes(text, int, text)
+  from public, authenticated;
+revoke execute on function public.admin_list_codes(text)
+  from public, authenticated;
+revoke execute on function public.admin_delete_code(text, text)
+  from public, authenticated;
+revoke all on function public.process_wire_event(text, text, text, jsonb)
+  from public, anon, authenticated;
+
+grant usage on schema public to anon, service_role;
+grant execute on function public.create_invite_with_code(text, jsonb, text) to anon;
+grant execute on function public.save_response(text, jsonb) to anon;
+grant execute on function public.mark_opened(text) to anon;
+grant execute on function public.delete_own_invite(text, uuid) to anon;
+grant execute on function public.admin_create_codes(text, int, text) to anon;
+grant execute on function public.admin_list_codes(text) to anon;
+grant execute on function public.admin_delete_code(text, text) to anon;
+grant execute on function public.process_wire_event(text, text, text, jsonb) to service_role;
 
 -- Force PostgREST to reload its schema cache so new tables/functions are picked up immediately.
 NOTIFY pgrst, 'reload schema';
