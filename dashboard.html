@@ -93,12 +93,27 @@
   function renderResponse(inv){
     if(!inv.response) return '';
     var r = inv.response;
+    var meta = '<span class="card-meta">Хариу ирсэн: ' + esc(fmtWhen(inv.responded_at)) + '</span>';
+    // Poster урилга: татгалзсан
+    if(r.answer === 'no'){
+      return '<div class="response">'
+        + '<b>💌 Хариу:</b> Эелдгээр татгалзсан 🥲<br>'
+        + meta
+        + '</div>';
+    }
+    // Poster урилга: зөвшөөрсөн боловч огноогоо сонгож амжаагүй
+    if(r.answer === 'yes' && !r.date){
+      return '<div class="response">'
+        + '<b>💗 Хариу:</b> Тийм — огноогоо сонгож байна<br>'
+        + meta
+        + '</div>';
+    }
     return '<div class="response">'
       + '<b>📅 Өдөр:</b> ' + esc(r.date) + '<br>'
       + '<b>🕐 Цаг:</b> ' + esc(r.time) + '<br>'
       + '<b>💝 Төрөл:</b> ' + esc(r.kind) + '<br>'
       + '<b>🎫 Ticket:</b> ' + esc(r.ticketNo) + '<br>'
-      + '<span class="card-meta">Хариу ирсэн: ' + esc(fmtWhen(inv.responded_at)) + '</span>'
+      + meta
       + '</div>';
   }
 
