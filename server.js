@@ -731,6 +731,29 @@ function youtubeUserError(data) {
   return 'YouTube хайлт хийх үед алдаа гарлаа.';
 }
 
+// Local-dev stub for /api/notify-response. Real email delivery is handled by
+// the Vercel serverless function api/notify-response.js. Locally we just log so
+// devs can see the flow without needing RESEND_API_KEY.
+async function handleNotifyResponse(req, res) {
+  if (req.method !== 'POST') return sendJSON(res, 405, { error: 'POST only' });
+  const bodyText = await readBody(req);
+  let body = {};
+  try { body = bodyText ? JSON.parse(bodyText) : {}; } catch (_) {
+    return sendJSON(res, 400, { error: 'Invalid JSON' });
+  }
+  const id = String(body && body.inviteId || '');
+  if (!INVITE_ID_RE.test(id)) return sendJSON(res, 400, { error: 'Invalid invite id' });
+  const inv = invites[id];
+  if (!inv) return sendJSON(res, 404, { error: 'Invite not found' });
+  if (!inv.responded_at) return sendJSON(res, 400, { error: 'Invite has no response yet' });
+  const isFinal = inv.response && String(inv.response.final) === 'true';
+  if (!isFinal) return sendJSON(res, 200, { sent: false, reason: 'not_final' });
+  const to = (inv.private_config && inv.private_config.responseEmail) || '';
+  if (!to) return sendJSON(res, 200, { sent: false, reason: 'no_owner_email' });
+  console.log('  📮  [local] notify-response →', to, 'invite', id, JSON.stringify(inv.response));
+  return sendJSON(res, 200, { sent: false, reason: 'local_dev_stub', to });
+}
+
 async function handleYouTubeSearch(req, res, url) {
   if (req.method !== 'GET') return sendJSON(res, 405, { error: 'GET only' });
   if (!YOUTUBE_API_KEY) {
@@ -822,6 +845,7 @@ const server = http.createServer(async (req, res) => {
     if (url.pathname === '/api/payment-status')  return await handlePaymentStatus(req, res, url);
     if (url.pathname === '/api/wire-webhook')    return await handleWireWebhook(req, res);
     if (url.pathname === '/api/dev-mark-paid')   return await handleDevMarkPaid(req, res);
+    if (url.pathname === '/api/notify-response') return await handleNotifyResponse(req, res);
     if (url.pathname === '/api/youtube-search')  return await handleYouTubeSearch(req, res, url);
     return serveStatic(req, res, url);
   } catch (e) {

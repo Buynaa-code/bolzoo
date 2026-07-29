@@ -2121,6 +2121,19 @@
     var RESPONSE_EMAIL = '';
     var APPS_SCRIPT_URL = '';
 
+    // Fire-and-forget: server checks response.final and unique(invite_id,kind)
+    // so multiple calls are safe. Never blocks the UI.
+    function notifyOwner(id){
+      if(!id || IS_PREVIEW) return;
+      try{
+        fetch('/api/notify-response', {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({ inviteId: id })
+        }).catch(function(){});
+      }catch(e){}
+    }
+
     /* ---------- kawaii cat avatars (assets/bolzoo-cat.js) ---------- */
     BolzooCat.mountAll();
 
@@ -2673,7 +2686,9 @@
       twinkle();
       // Persist response to backend if we have an invite ID
       if(INVITE_ID && window.BolzooAPI){
-        BolzooAPI.saveResponse(INVITE_ID, responsePayload()).catch(function(e){
+        BolzooAPI.saveResponse(INVITE_ID, responsePayload()).then(function(){
+          notifyOwner(INVITE_ID);
+        }).catch(function(e){
           console.warn('Response save failed:', e);
         });
       }
@@ -2933,12 +2948,14 @@
         };
         // A poster-level "no" is a firm decline — mark it final so any later
         // background retry can't clobber it with a stale "yes" from the same
-        // browser session.
+        // browser session, and let the server notify the owner.
         if(answer === 'no') payload.final = true;
         try{
           var maybePromise = BolzooAPI.saveResponse(INVITE_ID, payload);
-          if(maybePromise && maybePromise.catch){
-            maybePromise.catch(function(e){ console.warn('Poster response save failed:', e); });
+          if(maybePromise && maybePromise.then){
+            maybePromise.then(function(){
+              if(payload.final) notifyOwner(INVITE_ID);
+            }).catch(function(e){ console.warn('Poster response save failed:', e); });
           }
         }catch(e){ console.warn('Poster response error:', e); }
       }

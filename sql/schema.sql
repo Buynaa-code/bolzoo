@@ -360,6 +360,26 @@ create table if not exists public.webhook_events (
 alter table public.webhook_events enable row level security;
 -- Backend only (service_role). Anon-д ямар ч policy байхгүй.
 
+/* ---------- notifications (email outbox) ---------- */
+
+create table if not exists public.notifications (
+  id          uuid primary key default gen_random_uuid(),
+  invite_id   text not null references public.invites(id) on delete cascade,
+  kind        text not null,             -- 'response' | future kinds
+  to_email    text not null,
+  sent_at     timestamptz,
+  error       text,
+  created_at  timestamptz not null default now(),
+  unique (invite_id, kind)                -- idempotency: one email per (invite, kind)
+);
+
+create index if not exists notifications_invite_id_idx on public.notifications(invite_id);
+create index if not exists notifications_pending_idx  on public.notifications(created_at)
+  where sent_at is null;
+
+alter table public.notifications enable row level security;
+-- Backend only (service_role). Never queryable by anon.
+
 /* ---------- access_codes нэмэлт талбар (self-serve tracking) ---------- */
 
 alter table public.access_codes add column if not exists source     text;    -- 'admin' | 'self_service'
@@ -437,13 +457,15 @@ revoke all on table public.access_codes from public, anon, authenticated;
 revoke all on table public.payments from public, anon, authenticated;
 revoke all on table public.admin_settings from public, anon, authenticated;
 revoke all on table public.webhook_events from public, anon, authenticated;
+revoke all on table public.notifications from public, anon, authenticated;
 
 grant select, insert, update, delete
   on table public.invites,
            public.access_codes,
            public.payments,
            public.admin_settings,
-           public.webhook_events
+           public.webhook_events,
+           public.notifications
   to service_role;
 
 alter default privileges for role postgres in schema public
