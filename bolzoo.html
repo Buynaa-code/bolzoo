@@ -1444,6 +1444,14 @@
             <span>📷</span>
             <strong>Story хийх</strong>
           </button>
+          <a class="action-tile" id="calGoogle" href="#" target="_blank" rel="noopener" hidden>
+            <span>📅</span>
+            <strong>Google Cal</strong>
+          </a>
+          <a class="action-tile" id="calIcs" href="#" hidden download>
+            <span>🍎</span>
+            <strong>Apple/.ics</strong>
+          </a>
         </div>
 
         <p class="invite-note" id="doneMsg">
@@ -1628,6 +1636,7 @@
           </div>
         </div>
 
+        <button class="restart" id="editResponse" hidden>✏️ Хариугаа өөрчлөх</button>
         <button class="restart" id="restart">эхнээс нь үзэх 🔁</button>
         <a class="own-cta" href="pay.html">💌 Өөрийн урилгаа үүсгэх · QPay-ээр →</a>
       </div>
@@ -2680,6 +2689,9 @@
           : defaultLetter();
       document.getElementById('letterBtn').style.display = 'flex';
       dateRoom.reset();
+      updateCalendarLinks();
+      var editBtn = document.getElementById('editResponse');
+      if(editBtn) editBtn.hidden = false;
       goTo('done');
       startCountdown();
       chime();
@@ -2693,6 +2705,71 @@
         });
       }
     });
+
+    /* ---------- Edit response (reopen date screen) ---------- */
+    (function(){
+      var btn = document.getElementById('editResponse');
+      if(!btn) return;
+      btn.addEventListener('click', function(){
+        stopCountdown();
+        var dateTitle = document.querySelector('[data-screen="date"] h1');
+        if(dateTitle){ dateTitle.innerHTML = 'Огноо болон цагаа шинэчлэх ✏️'; }
+        goTo('date');
+        renderCalendar();
+      });
+    })();
+
+    /* ---------- Calendar links (Google + .ics) ---------- */
+    function pad2(n){ return (n<10?'0':'')+n; }
+    function toUtcCompact(y, m, d, hh, mm){
+      // state.date is local Ulaanbaatar wall time. Convert to UTC by
+      // subtracting the +08:00 offset before formatting as YYYYMMDDTHHMMSSZ.
+      var local = new Date(y, m, d, hh, mm, 0);
+      var utc = new Date(local.getTime() - 8 * 3600 * 1000);
+      return utc.getUTCFullYear()
+        + pad2(utc.getUTCMonth()+1)
+        + pad2(utc.getUTCDate())
+        + 'T'
+        + pad2(utc.getUTCHours())
+        + pad2(utc.getUTCMinutes())
+        + '00Z';
+    }
+    function updateCalendarLinks(){
+      var gLink   = document.getElementById('calGoogle');
+      var icsLink = document.getElementById('calIcs');
+      if(!gLink || !icsLink) return;
+      if(!state.date || !state.time){
+        gLink.hidden = true; icsLink.hidden = true;
+        return;
+      }
+      var hm = state.time.split(':');
+      var startH = parseInt(hm[0]||'18', 10);
+      var startM = parseInt(hm[1]||'0', 10);
+      var d = state.date;
+      var startUtc = toUtcCompact(d.y, d.m, d.d, startH, startM);
+      // Assume a 2-hour event.
+      var endLocal = new Date(d.y, d.m, d.d, startH + 2, startM);
+      var endUtc = toUtcCompact(endLocal.getFullYear(), endLocal.getMonth(), endLocal.getDate(), endLocal.getHours(), endLocal.getMinutes());
+
+      var kind = getKind();
+      var title = 'Bolzoo — ' + (CONFIG.recipientName || 'Болзоо') + (kind && kind.ticket ? ' · ' + kind.ticket : '');
+      var loc = CONFIG.locationName || '';
+      var details = 'Bolzoo урилга. ' + (CONFIG.customNote || '');
+
+      gLink.href = 'https://calendar.google.com/calendar/render?action=TEMPLATE'
+        + '&text=' + encodeURIComponent(title)
+        + '&dates=' + startUtc + '/' + endUtc
+        + '&details=' + encodeURIComponent(details)
+        + (loc ? '&location=' + encodeURIComponent(loc) : '');
+      gLink.hidden = false;
+
+      if(INVITE_ID && !IS_PREVIEW){
+        icsLink.href = '/api/invite-ics?id=' + encodeURIComponent(INVITE_ID);
+        icsLink.hidden = false;
+      } else {
+        icsLink.hidden = true;
+      }
+    }
     function confettiCelebration(){
       var cx = window.innerWidth / 2;
       var cy = window.innerHeight * 0.4;
@@ -2719,16 +2796,18 @@
       var kind = getKind();
 
       var payload = {
-        date: fmtDate(d.y, d.m, d.d),
-        time: state.time,
-        kind: kind.ticket,
-        seat: 'A5',
+        date:     fmtDate(d.y, d.m, d.d),
+        // Machine-parseable local date + time so .ics / calendar links work
+        // without heuristically parsing the Mongolian `date` string.
+        dateISO:  d.y + '-' + pad(d.m + 1) + '-' + pad(d.d),
+        time:     state.time,
+        kind:     kind.ticket,
+        seat:     'A5',
         ticketNo: state.ticketNo,
         countdown: countdownText(),
-        sentAt: new Date().toLocaleString('mn-MN'),
-        // Guest committed to a specific date+time. Lock the response so late
-        // background retries with a stale "later" can't overwrite it.
-        final: true
+        sentAt:   new Date().toLocaleString('mn-MN')
+        // No `final: true` — the guest may edit their date/time later. The
+        // save_response guard's client_ts check still prevents stale retries.
       };
 
       if(CONFIG.poster){
@@ -2954,7 +3033,10 @@
           var maybePromise = BolzooAPI.saveResponse(INVITE_ID, payload);
           if(maybePromise && maybePromise.then){
             maybePromise.then(function(){
-              if(payload.final) notifyOwner(INVITE_ID);
+              // Notify only when this save is a commit — poster 'no' counts,
+              // interim 'yes' / 'later' don't (server rechecks so this is
+              // belt-and-suspenders).
+              if(answer === 'no') notifyOwner(INVITE_ID);
             }).catch(function(e){ console.warn('Poster response save failed:', e); });
           }
         }catch(e){ console.warn('Poster response error:', e); }

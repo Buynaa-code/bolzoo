@@ -352,7 +352,14 @@ async function handleRPC(req, res, url) {
       return sendJSON(res, 200, null);   // stale retry — silently ignore
     }
 
-    inv.response = body.p_response == null ? null : body.p_response;
+    const nextResponse = body.p_response == null ? null : body.p_response;
+    // Mirror the DB before-update trigger: append the old answer into history
+    // whenever it changes so the dashboard timeline is populated in local dev.
+    if (existing && JSON.stringify(existing) !== JSON.stringify(nextResponse)) {
+      inv.response_history = Array.isArray(inv.response_history) ? inv.response_history : [];
+      inv.response_history.push({ response: existing, responded_at: inv.responded_at });
+    }
+    inv.response = nextResponse;
     inv.responded_at = new Date().toISOString();
     saveInvites();
     return sendJSON(res, 200, null);
@@ -448,6 +455,7 @@ function ownedInvite(inv) {
     config: inv.config,
     private_config: inv.private_config || {},
     response: inv.response,
+    response_history: inv.response_history || [],
     opened_at: inv.opened_at,
     responded_at: inv.responded_at,
     created_at: inv.created_at
@@ -746,12 +754,52 @@ async function handleNotifyResponse(req, res) {
   const inv = invites[id];
   if (!inv) return sendJSON(res, 404, { error: 'Invite not found' });
   if (!inv.responded_at) return sendJSON(res, 400, { error: 'Invite has no response yet' });
-  const isFinal = inv.response && String(inv.response.final) === 'true';
-  if (!isFinal) return sendJSON(res, 200, { sent: false, reason: 'not_final' });
+  const resp = inv.response || {};
+  const hasDate = !!(resp.date || resp.dateISO);
+  const isDecline = String(resp.answer || '').toLowerCase() === 'no';
+  if (!hasDate && !isDecline) return sendJSON(res, 200, { sent: false, reason: 'not_committed' });
   const to = (inv.private_config && inv.private_config.responseEmail) || '';
   if (!to) return sendJSON(res, 200, { sent: false, reason: 'no_owner_email' });
   console.log('  📮  [local] notify-response →', to, 'invite', id, JSON.stringify(inv.response));
   return sendJSON(res, 200, { sent: false, reason: 'local_dev_stub', to });
+}
+
+// Local dev mirror of api/invite-ics.js — reads from the local invites JSON
+// store so the .ics link on bolzoo.html works without a Vercel deploy.
+const inviteIcs = require('./api/invite-ics');
+async function handleInviteIcs(req, res, url) {
+  if (req.method !== 'GET') return sendJSON(res, 405, { error: 'GET only' });
+  const id = String(url.searchParams.get('id') || '');
+  if (!INVITE_ID_RE.test(id)) return sendJSON(res, 400, { error: 'Invalid invite id' });
+  const inv = invites[id];
+  if (!inv || !inv.response || !inv.responded_at) {
+    return sendJSON(res, 404, { error: 'No confirmed response yet' });
+  }
+  const answer = String((inv.response && inv.response.answer) || '').toLowerCase();
+  if (answer === 'no' || answer === 'later') {
+    return sendJSON(res, 404, { error: 'Response is not a confirmed yes' });
+  }
+  const dt = inviteIcs.parseLocalDateTime(inv.response);
+  if (!dt) return sendJSON(res, 400, { error: 'Response missing dateISO/time' });
+  const start = inviteIcs.toUtcCompact(dt.y, dt.m, dt.d, dt.hh, dt.mm);
+  const end   = inviteIcs.toUtcCompact(dt.y, dt.m, dt.d, dt.hh + 2, dt.mm);
+  const cfg = inv.config || {};
+  const title = 'Bolzoo — ' + (cfg.recipientName || 'Болзоо')
+              + (inv.response.kind ? ' · ' + inv.response.kind : '');
+  const ics = inviteIcs.buildIcs({
+    inviteId:    id,
+    title:       title,
+    description: (cfg.customNote ? cfg.customNote + '\n' : '') + 'Bolzoo invite',
+    location:    cfg.locationName || '',
+    start:       start,
+    end:         end,
+    host:        req.headers.host
+  });
+  res.statusCode = 200;
+  res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
+  res.setHeader('Content-Disposition', 'attachment; filename="bolzoo-' + id + '.ics"');
+  res.setHeader('Cache-Control', 'private, no-store');
+  res.end(ics);
 }
 
 async function handleYouTubeSearch(req, res, url) {
@@ -846,6 +894,7 @@ const server = http.createServer(async (req, res) => {
     if (url.pathname === '/api/wire-webhook')    return await handleWireWebhook(req, res);
     if (url.pathname === '/api/dev-mark-paid')   return await handleDevMarkPaid(req, res);
     if (url.pathname === '/api/notify-response') return await handleNotifyResponse(req, res);
+    if (url.pathname === '/api/invite-ics')      return await handleInviteIcs(req, res, url);
     if (url.pathname === '/api/youtube-search')  return await handleYouTubeSearch(req, res, url);
     return serveStatic(req, res, url);
   } catch (e) {

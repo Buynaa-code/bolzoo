@@ -25,7 +25,36 @@ create table if not exists public.invites (
 
 -- Existing installs upgrade path.
 alter table public.invites
-  add column if not exists private_config jsonb not null default '{}'::jsonb;
+  add column if not exists private_config   jsonb not null default '{}'::jsonb;
+alter table public.invites
+  add column if not exists response_history jsonb not null default '[]'::jsonb;
+
+-- Timeline: record each older response before it gets overwritten.
+create or replace function public._append_response_history()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if OLD.response is not null and OLD.response is distinct from NEW.response then
+    NEW.response_history := coalesce(OLD.response_history, '[]'::jsonb)
+      || jsonb_build_array(
+        jsonb_build_object(
+          'response',     OLD.response,
+          'responded_at', OLD.responded_at
+        )
+      );
+  end if;
+  return NEW;
+end;
+$$;
+
+drop trigger if exists invites_response_history on public.invites;
+create trigger invites_response_history
+  before update of response on public.invites
+  for each row
+  execute function public._append_response_history();
 
 create index if not exists invites_created_at_idx on public.invites (created_at desc);
 
@@ -481,6 +510,8 @@ alter default privileges for role postgres in schema public
 revoke execute on function public._check_admin_pw(text)
   from public, anon, authenticated;
 revoke execute on function public._gen_code()
+  from public, anon, authenticated;
+revoke execute on function public._append_response_history()
   from public, anon, authenticated;
 revoke execute on function public.create_invite_with_code(text, jsonb, text, jsonb)
   from public, authenticated;

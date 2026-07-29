@@ -49,11 +49,15 @@ module.exports = async function handler(req, res) {
       return sendJSON(res, 400, { error: 'Invite has no response yet' });
     }
     // Only ship email for a committed answer. Intermediate poster-yes/later
-    // saves that don't carry final=true still go through save_response, but
-    // shouldn't burn the once-per-invite notification slot.
-    const isFinal = invite.response && String(invite.response.final) === 'true';
-    if (!isFinal) {
-      return sendJSON(res, 200, { sent: false, reason: 'not_final' });
+    // saves without a picked date shouldn't burn the once-per-invite slot —
+    // the guest is still deciding. A hard "no" or a picked date counts as
+    // commitment. Later edits are safe: the unique(invite_id, kind) row
+    // exists after the first send, so retries return already_sent.
+    const resp    = invite.response || {};
+    const hasDate = !!(resp.date || resp.dateISO);
+    const isDecline = String(resp.answer || '').toLowerCase() === 'no';
+    if (!hasDate && !isDecline) {
+      return sendJSON(res, 200, { sent: false, reason: 'not_committed' });
     }
 
     const toEmail = String((invite.private_config && invite.private_config.responseEmail) || '').trim();

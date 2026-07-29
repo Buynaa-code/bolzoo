@@ -50,6 +50,7 @@ function ownedInvite(row) {
     config: row.config,
     private_config: row.private_config || {},
     response: row.response,
+    response_history: row.response_history || [],
     opened_at: row.opened_at,
     responded_at: row.responded_at,
     created_at: row.created_at
@@ -98,7 +99,7 @@ module.exports = async function handler(req, res) {
       const rows = await supabaseFetch(
         'GET',
         '/invites?id=in.(' + ids.map(encodeURIComponent).join(',') + ')' +
-          '&select=id,owner_token,config,private_config,response,opened_at,responded_at,created_at'
+          '&select=id,owner_token,config,private_config,response,response_history,opened_at,responded_at,created_at'
       );
       const allowed = (rows || [])
         .filter((row) => expected.get(row.id) === String(row.owner_token || '').toLowerCase())

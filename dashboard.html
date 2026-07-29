@@ -31,6 +31,10 @@
   .badge.responded{background:#dcffde; color:#3a8a4a;}
   .response{margin-top:10px; padding:10px 14px; background:#fff8f4; border:1px dashed var(--coral-soft); border-radius:12px; font-size:13px; line-height:1.5;}
   .response b{color:var(--coral-deep);}
+  .history{margin-top:8px; padding:8px 12px; background:#fdf3f8; border-left:3px solid var(--coral-soft); border-radius:8px; font-size:12px; color:var(--muted); line-height:1.55;}
+  .history-title{display:block; font-weight:800; color:var(--coral-deep); margin-bottom:4px;}
+  .history-item{padding:2px 0; border-bottom:1px dashed rgba(0,0,0,.06);}
+  .history-item:last-child{border-bottom:none;}
   .card-actions{display:flex; flex-direction:column; gap:6px; align-items:flex-end;}
   .backend-warn{background:#fff1cf; color:#8a6a20; padding:10px 14px; border-radius:12px; margin-bottom:18px; font-size:13px; font-weight:700;}
   .id-mono{font-family:ui-monospace, Menlo, monospace; font-size:12px; color:var(--muted);}
@@ -94,36 +98,66 @@
     if(!inv.response) return '';
     var r = inv.response;
     var meta = '<span class="card-meta">Хариу ирсэн: ' + esc(fmtWhen(inv.responded_at)) + '</span>';
+    var body;
     // Poster урилга: татгалзсан
     if(r.answer === 'no'){
-      return '<div class="response">'
+      body = '<div class="response">'
         + '<b>💌 Хариу:</b> Эелдгээр татгалзсан 🥲<br>'
         + meta
         + '</div>';
-    }
-    // Poster урилга: тухайн өдөр амжихгүй, өөр өдөр сонгож байгаа
-    if(r.answer === 'later' && !r.date){
-      return '<div class="response">'
+    } else if(r.answer === 'later' && !r.date){
+      body = '<div class="response">'
         + '<b>💌 Хариу:</b> Тухайн өдөр амжихгүй — өөр өдөр сонгож байна 💗<br>'
         + meta
         + '</div>';
-    }
-    // Poster урилга: зөвшөөрсөн боловч огноогоо сонгож амжаагүй
-    if(r.answer === 'yes' && !r.date){
-      return '<div class="response">'
+    } else if(r.answer === 'yes' && !r.date){
+      body = '<div class="response">'
         + '<b>💗 Хариу:</b> Тийм — огноогоо сонгож байна<br>'
         + meta
         + '</div>';
+    } else {
+      body = '<div class="response">'
+        + (r.answer === 'later'
+          ? '<b>🎬 Постерийн хариу:</b> Тухайн өдөр амжихгүй, өөр өдөр санал болгосон<br>'
+          : '')
+        + '<b>📅 Өдөр:</b> ' + esc(r.date) + '<br>'
+        + '<b>🕐 Цаг:</b> ' + esc(r.time) + '<br>'
+        + '<b>💝 Төрөл:</b> ' + esc(r.kind) + '<br>'
+        + '<b>🎫 Ticket:</b> ' + esc(r.ticketNo) + '<br>'
+        + meta
+        + '</div>';
     }
-    return '<div class="response">'
-      + (r.answer === 'later'
-        ? '<b>🎬 Постерийн хариу:</b> Тухайн өдөр амжихгүй, өөр өдөр санал болгосон<br>'
-        : '')
-      + '<b>📅 Өдөр:</b> ' + esc(r.date) + '<br>'
-      + '<b>🕐 Цаг:</b> ' + esc(r.time) + '<br>'
-      + '<b>💝 Төрөл:</b> ' + esc(r.kind) + '<br>'
-      + '<b>🎫 Ticket:</b> ' + esc(r.ticketNo) + '<br>'
-      + meta
+    return body + renderHistory(inv);
+  }
+
+  function summarizeHistoryEntry(entry){
+    var r = (entry && entry.response) || {};
+    var when = entry && entry.responded_at ? fmtWhen(entry.responded_at) : '';
+    var label;
+    if(r.answer === 'no') label = 'Татгалзсан 🥲';
+    else if(r.answer === 'later' && !r.date) label = 'Тухайн өдөр амжихгүй';
+    else if(r.answer === 'yes' && !r.date) label = 'Тийм — огноо сонгоогүй';
+    else if(r.date) label = (r.answer === 'later' ? 'Өөр өдөр: ' : '') + r.date + (r.time ? ' · ' + r.time : '');
+    else label = 'Өмнөх хариу';
+    return {
+      label: label,
+      when: when
+    };
+  }
+
+  function renderHistory(inv){
+    var history = Array.isArray(inv.response_history) ? inv.response_history : [];
+    if(!history.length) return '';
+    var items = history.slice().reverse().map(function(entry){
+      var s = summarizeHistoryEntry(entry);
+      return '<div class="history-item">'
+        + esc(s.label)
+        + (s.when ? ' <span class="card-meta">· ' + esc(s.when) + '</span>' : '')
+        + '</div>';
+    }).join('');
+    return '<div class="history">'
+      + '<span class="history-title">📚 Өмнөх хариунууд</span>'
+      + items
       + '</div>';
   }
 
