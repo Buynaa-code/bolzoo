@@ -419,6 +419,19 @@
     padding:8px 12px;
   }
   .poster-no:hover{color:var(--coral-deep);}
+  .poster-decline{
+    min-height:40px;
+    border:none;
+    cursor:pointer;
+    border-radius:12px;
+    font-family:'Nunito',sans-serif;
+    font-weight:700;
+    font-size:13px;
+    color:#b48293;
+    background:transparent;
+    padding:6px 10px;
+  }
+  .poster-decline:hover{color:var(--coral-deep);}
   .poster-status{
     margin:12px 0 0;
     min-height:18px;
@@ -1641,6 +1654,7 @@
         <div class="poster-actions">
           <button class="poster-yes" id="posterYes" type="button">Тийм, явъя 💗</button>
           <button class="poster-no" id="posterNo" type="button">Одоохондоо амжихгүй</button>
+          <button class="poster-decline" id="posterDecline" type="button">🥲 Уучлаарай, боломжгүй</button>
         </div>
         <p class="poster-status" id="posterStatus" aria-live="polite"></p>
       </div>
@@ -2696,7 +2710,10 @@
         seat: 'A5',
         ticketNo: state.ticketNo,
         countdown: countdownText(),
-        sentAt: new Date().toLocaleString('mn-MN')
+        sentAt: new Date().toLocaleString('mn-MN'),
+        // Guest committed to a specific date+time. Lock the response so late
+        // background retries with a stale "later" can't overwrite it.
+        final: true
       };
 
       if(CONFIG.poster){
@@ -2884,17 +2901,24 @@
       goTo('ask');
     });
 
-    /* ---------- Poster modal Yes / No ---------- */
+    /* ---------- Poster modal Yes / Later / Decline ---------- */
     (function(){
       var modal   = document.getElementById('posterModal');
       if(!modal) return;
-      var yesBtnP = document.getElementById('posterYes');
-      var noBtnP  = document.getElementById('posterNo');
-      var status  = document.getElementById('posterStatus');
+      var yesBtnP     = document.getElementById('posterYes');
+      var noBtnP      = document.getElementById('posterNo');
+      var declineBtnP = document.getElementById('posterDecline');
+      var status      = document.getElementById('posterStatus');
 
       function closeModal(){
         modal.classList.remove('show');
         setTimeout(function(){ modal.hidden = true; }, 260);
+      }
+
+      function disableAll(){
+        yesBtnP.disabled = true;
+        noBtnP.disabled  = true;
+        if(declineBtnP) declineBtnP.disabled = true;
       }
 
       function saveQuickResponse(answer){
@@ -2903,10 +2927,14 @@
         if(IS_PREVIEW) return;              // preview → backend руу битгий хадгал
         if(!INVITE_ID || !window.BolzooAPI) return;
         var payload = {
-          answer:          answer,           // 'yes' | 'later'
-          poster:          CONFIG.poster || '',
+          answer:           answer,           // 'yes' | 'later' | 'no'
+          poster:           CONFIG.poster || '',
           posterAnsweredAt: state.posterAnsweredAt
         };
+        // A poster-level "no" is a firm decline — mark it final so any later
+        // background retry can't clobber it with a stale "yes" from the same
+        // browser session.
+        if(answer === 'no') payload.final = true;
         try{
           var maybePromise = BolzooAPI.saveResponse(INVITE_ID, payload);
           if(maybePromise && maybePromise.catch){
@@ -2916,8 +2944,7 @@
       }
 
       yesBtnP.addEventListener('click', function(){
-        yesBtnP.disabled = true;
-        noBtnP.disabled  = true;
+        disableAll();
         status.textContent = '💗 Хариу илгээж байна...';
         saveQuickResponse('yes');
         setTimeout(function(){
@@ -2929,8 +2956,7 @@
       });
 
       noBtnP.addEventListener('click', function(){
-        yesBtnP.disabled = true;
-        noBtnP.disabled  = true;
+        disableAll();
         status.textContent = '💌 Өөр боломжтой өдрөө сонгоорой';
         saveQuickResponse('later');
         setTimeout(function(){
@@ -2943,6 +2969,18 @@
           renderCalendar();
         }, 340);
       });
+
+      if(declineBtnP){
+        declineBtnP.addEventListener('click', function(){
+          disableAll();
+          status.textContent = '🥲 Хариу илгээгдлээ';
+          saveQuickResponse('no');
+          setTimeout(function(){
+            closeModal();
+            goTo('declined');
+          }, 320);
+        });
+      }
 
       // Modal нээлттэй үед бусад товч руу очихыг зөвшөөрөхгүй — сонголт заавал шаардлагатай
       modal.addEventListener('click', function(e){ e.stopPropagation(); });

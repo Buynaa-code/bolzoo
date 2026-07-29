@@ -239,15 +239,61 @@
     }
   }
 
+  var PENDING_PREFIX = 'bolzoo:pending-response:';
+  function pendingKey(id){ return PENDING_PREFIX + id; }
+  function enqueuePending(id, payload, clientTs){
+    lsSet(pendingKey(id), { payload: payload, client_ts: clientTs, queued_at: new Date().toISOString() });
+  }
+  function clearPending(id){ lsDel(pendingKey(id)); }
+
   async function saveResponse(id, response){
     if(!id) return;
+    var clientTs = new Date().toISOString();
+    var payload = response || {};
+
     if(HAS_BACKEND){
-      await rpc('save_response', { p_invite_id: id, p_response: response });
+      try{
+        await rpc('save_response', {
+          p_invite_id: id,
+          p_response:  payload,
+          p_client_ts: clientTs
+        });
+        clearPending(id);
+      }catch(e){
+        // Keep the newest attempt queued for a later flush. The server-side
+        // guard (p_client_ts) makes replay safe — stale writes are dropped.
+        enqueuePending(id, payload, clientTs);
+        throw e;
+      }
     } else {
       var s = lsGet('bolzoo:invites:'+id) || { config:null, response:null, opened_at:null };
-      s.response = response;
-      s.responded_at = new Date().toISOString();
+      s.response = payload;
+      s.responded_at = clientTs;
       lsSet('bolzoo:invites:'+id, s);
+    }
+  }
+
+  async function flushPendingResponses(){
+    if(!HAS_BACKEND) return;
+    var ids = [];
+    try{
+      for(var i=0; i<localStorage.length; i++){
+        var key = localStorage.key(i);
+        if(key && key.indexOf(PENDING_PREFIX) === 0) ids.push(key.slice(PENDING_PREFIX.length));
+      }
+    }catch(e){ return; }
+    for(var j=0; j<ids.length; j++){
+      var pid = ids[j];
+      var pending = lsGet(pendingKey(pid));
+      if(!pending || !pending.payload) { clearPending(pid); continue; }
+      try{
+        await rpc('save_response', {
+          p_invite_id: pid,
+          p_response:  pending.payload,
+          p_client_ts: pending.client_ts || new Date().toISOString()
+        });
+        clearPending(pid);
+      }catch(e){ /* leave queued for next attempt */ }
     }
   }
 
@@ -287,6 +333,7 @@
     getInvite: getInvite,
     markOpened: markOpened,
     saveResponse: saveResponse,
+    flushPendingResponses: flushPendingResponses,
     listMyInvites: listMyInvites,
     deleteInvite: deleteInvite,
     getOwnerToken: getOwnerToken,
@@ -296,4 +343,9 @@
     adminDeleteCode: adminDeleteCode,
     _shortId: shortId
   };
+
+  // Drain any responses that got stuck offline on a previous visit.
+  if(typeof window !== 'undefined' && HAS_BACKEND){
+    setTimeout(function(){ flushPendingResponses().catch(function(){}); }, 500);
+  }
 })();

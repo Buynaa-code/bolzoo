@@ -342,6 +342,16 @@ async function handleRPC(req, res, url) {
     if (!invId) return sendPGError(res, 400, 'Invite id required');
     const inv = invites[invId];
     if (!inv) return sendPGError(res, 404, 'Invite not found');
+
+    const existing = inv.response;
+    if (existing && String(existing.final) === 'true') {
+      return sendJSON(res, 200, null);   // locked final answer wins
+    }
+    const clientTs = body.p_client_ts ? String(body.p_client_ts) : null;
+    if (clientTs && inv.responded_at && inv.responded_at > clientTs) {
+      return sendJSON(res, 200, null);   // stale retry — silently ignore
+    }
+
     inv.response = body.p_response == null ? null : body.p_response;
     inv.responded_at = new Date().toISOString();
     saveInvites();

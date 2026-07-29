@@ -160,27 +160,56 @@ $$;
 
 grant execute on function public.create_invite_with_code(text, jsonb, text, jsonb) to anon;
 
--- Recipient: хариугаа хадгална. Зөвхөн response + responded_at-г өөрчилнө.
+-- Recipient: хариугаа хадгална. p_client_ts дамжуулж илгээвэл хожуу stale retry
+-- эсвэл response.final = true болсон хариуг дарж бичихгүй.
+drop function if exists public.save_response(text, jsonb);
+
 create or replace function public.save_response(
-  p_invite_id text,
-  p_response  jsonb
+  p_invite_id  text,
+  p_response   jsonb,
+  p_client_ts  timestamptz default null
 )
 returns void
 language plpgsql
 security definer
 set search_path = public
 as $$
+declare
+  existing_response jsonb;
+  existing_ts       timestamptz;
 begin
-  if p_invite_id is null or length(p_invite_id) = 0 then raise exception 'Invite id required'; end if;
+  if p_invite_id is null or length(p_invite_id) = 0 then
+    raise exception 'Invite id required';
+  end if;
+
+  select response, responded_at
+    into existing_response, existing_ts
+    from public.invites
+   where id = p_invite_id;
+
+  if not found then
+    raise exception 'Invite not found';
+  end if;
+
+  if existing_response is not null
+     and coalesce(existing_response->>'final', 'false') = 'true' then
+    return;
+  end if;
+
+  if p_client_ts is not null
+     and existing_ts is not null
+     and existing_ts > p_client_ts then
+    return;
+  end if;
+
   update public.invites
-    set response = p_response,
-        responded_at = now()
-    where id = p_invite_id;
-  if not found then raise exception 'Invite not found'; end if;
+     set response = p_response,
+         responded_at = now()
+   where id = p_invite_id;
 end;
 $$;
 
-grant execute on function public.save_response(text, jsonb) to anon;
+grant execute on function public.save_response(text, jsonb, timestamptz) to anon;
 
 -- Recipient: анх удаа нээхэд opened_at тэмдэглэнэ (дахин дарж бичихгүй).
 create or replace function public.mark_opened(p_invite_id text)
@@ -433,7 +462,7 @@ revoke execute on function public._gen_code()
   from public, anon, authenticated;
 revoke execute on function public.create_invite_with_code(text, jsonb, text, jsonb)
   from public, authenticated;
-revoke execute on function public.save_response(text, jsonb)
+revoke execute on function public.save_response(text, jsonb, timestamptz)
   from public, authenticated;
 revoke execute on function public.mark_opened(text)
   from public, authenticated;
@@ -450,7 +479,7 @@ revoke all on function public.process_wire_event(text, text, text, jsonb)
 
 grant usage on schema public to anon, service_role;
 grant execute on function public.create_invite_with_code(text, jsonb, text, jsonb) to anon;
-grant execute on function public.save_response(text, jsonb) to anon;
+grant execute on function public.save_response(text, jsonb, timestamptz) to anon;
 grant execute on function public.mark_opened(text) to anon;
 grant execute on function public.delete_own_invite(text, uuid) to anon;
 grant execute on function public.admin_create_codes(text, int, text) to anon;
