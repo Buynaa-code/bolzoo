@@ -1417,6 +1417,10 @@
     goStep(2);
   });
 
+  // Owner-only fields — never encoded into the preview URL, never sent to the
+  // public `config` JSONB. Sent separately as p_private_config.
+  var PRIVATE_CONFIG_KEYS = ['responseEmail'];
+
   function collectConfig(){
     var cfg = {
       recipientName: $('recipientName').value.trim(),
@@ -1433,9 +1437,21 @@
     return cfg;
   }
 
+  function splitConfig(cfg){
+    var pub = {}, priv = {};
+    for(var k in cfg){
+      if(!cfg[k]) continue;
+      if(PRIVATE_CONFIG_KEYS.indexOf(k) >= 0) priv[k] = cfg[k];
+      else pub[k] = cfg[k];
+    }
+    return { public: pub, private: priv };
+  }
+
   function encodeConfig(cfg){
     var clean = {};
-    for(var k in cfg){ if(cfg[k]) clean[k]=cfg[k]; }
+    for(var k in cfg){
+      if(cfg[k] && PRIVATE_CONFIG_KEYS.indexOf(k) < 0) clean[k] = cfg[k];
+    }
     var json = JSON.stringify(clean);
     // handle unicode via encodeURIComponent+unescape trick
     var b64 = btoa(unescape(encodeURIComponent(json)));
@@ -1851,7 +1867,8 @@
     $('generate').disabled = true;
     setStatus('⏳ Хадгалж байна...');
     try{
-      var res = await BolzooAPI.createInvite(cfg, code);
+      var split = splitConfig(cfg);
+      var res = await BolzooAPI.createInvite(split.public, code, split.private);
       var url = buildShortUrl(res.id, true);
       showLink(url, '✅ Урилга үүслээ! Богино линк бэлэн ('+res.id+')');
       setCodeUI('bad', '⚠️ Энэ эрхийн код ашиглагдлаа. Дараагийн урилгад шинэ эрхийн код авна уу.');

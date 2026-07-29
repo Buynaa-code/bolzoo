@@ -13,14 +13,19 @@ create extension if not exists "pgcrypto";
 /* ---------- invites ---------- */
 
 create table if not exists public.invites (
-  id            text primary key,           -- short public ID, e.g. "aB3xK9zQ"
-  owner_token   uuid not null default gen_random_uuid(),
-  config        jsonb not null,             -- recipient name, sender, videoId, theme, etc
-  response      jsonb,                      -- filled when recipient answers
-  opened_at     timestamptz,                -- first time recipient opened link
-  responded_at  timestamptz,
-  created_at    timestamptz not null default now()
+  id             text primary key,           -- short public ID, e.g. "aB3xK9zQ"
+  owner_token    uuid not null default gen_random_uuid(),
+  config         jsonb not null,             -- PUBLIC: recipient name, sender, videoId, theme, etc
+  private_config jsonb not null default '{}'::jsonb, -- OWNER-ONLY: responseEmail, notes, etc
+  response       jsonb,                      -- filled when recipient answers
+  opened_at      timestamptz,                -- first time recipient opened link
+  responded_at   timestamptz,
+  created_at     timestamptz not null default now()
 );
+
+-- Existing installs upgrade path.
+alter table public.invites
+  add column if not exists private_config jsonb not null default '{}'::jsonb;
 
 create index if not exists invites_created_at_idx on public.invites (created_at desc);
 
@@ -77,13 +82,13 @@ security definer
 set search_path = public
 as $$
 declare
-  correct_pw text;
+  stored_pw text;
 begin
-  select value into correct_pw from public.admin_settings where key = 'admin_password';
-  if correct_pw is null then
-    raise exception 'Admin password not set. Run: insert into admin_settings(key,value) values (''admin_password'',''your-secret'') on conflict (key) do update set value = excluded.value;';
+  select value into stored_pw from public.admin_settings where key = 'admin_password';
+  if stored_pw is null then
+    raise exception 'Admin password not set. Run: insert into admin_settings(key,value) values (''admin_password'', crypt(''your-secret'', gen_salt(''bf'',10))) on conflict (key) do update set value = excluded.value;';
   end if;
-  if admin_pw is null or admin_pw <> correct_pw then
+  if admin_pw is null or crypt(admin_pw, stored_pw) <> stored_pw then
     raise exception 'Invalid admin password';
   end if;
 end;
@@ -109,10 +114,15 @@ $$;
 
 -- Redeem a code and create an invite in one atomic step.
 -- Called from create.html when the buyer submits their invite form.
+-- p_private_config carries owner-only fields (e.g. responseEmail) so they never
+-- reach the public /api/invite GET response.
+drop function if exists public.create_invite_with_code(text, jsonb, text);
+
 create or replace function public.create_invite_with_code(
-  p_invite_id     text,
-  p_config        jsonb,
-  p_access_code   text
+  p_invite_id       text,
+  p_config          jsonb,
+  p_access_code     text,
+  p_private_config  jsonb default '{}'::jsonb
 )
 returns table (id text, owner_token uuid, created_at timestamptz)
 language plpgsql
@@ -124,15 +134,21 @@ declare
   new_owner uuid := gen_random_uuid();
   now_ts timestamptz := now();
 begin
-  if p_invite_id is null or length(p_invite_id) < 4 then raise exception 'Invalid invite id'; end if;
+  if p_invite_id is null or length(p_invite_id) < 8 then raise exception 'Invalid invite id'; end if;
   if p_access_code is null or length(p_access_code) = 0 then raise exception 'Access code required'; end if;
 
   select * into code_row from public.access_codes where code = p_access_code for update;
   if not found then raise exception 'Invalid access code'; end if;
   if code_row.used then raise exception 'Access code already used'; end if;
 
-  insert into public.invites(id, owner_token, config, created_at)
-    values (p_invite_id, new_owner, p_config, now_ts);
+  insert into public.invites(id, owner_token, config, private_config, created_at)
+    values (
+      p_invite_id,
+      new_owner,
+      coalesce(p_config, '{}'::jsonb),
+      coalesce(p_private_config, '{}'::jsonb),
+      now_ts
+    );
 
   update public.access_codes
     set used = true, used_at = now_ts, used_for_invite_id = p_invite_id
@@ -142,7 +158,7 @@ begin
 end;
 $$;
 
-grant execute on function public.create_invite_with_code(text, jsonb, text) to anon;
+grant execute on function public.create_invite_with_code(text, jsonb, text, jsonb) to anon;
 
 -- Recipient: хариугаа хадгална. Зөвхөн response + responded_at-г өөрчилнө.
 create or replace function public.save_response(
@@ -415,7 +431,7 @@ revoke execute on function public._check_admin_pw(text)
   from public, anon, authenticated;
 revoke execute on function public._gen_code()
   from public, anon, authenticated;
-revoke execute on function public.create_invite_with_code(text, jsonb, text)
+revoke execute on function public.create_invite_with_code(text, jsonb, text, jsonb)
   from public, authenticated;
 revoke execute on function public.save_response(text, jsonb)
   from public, authenticated;
@@ -433,7 +449,7 @@ revoke all on function public.process_wire_event(text, text, text, jsonb)
   from public, anon, authenticated;
 
 grant usage on schema public to anon, service_role;
-grant execute on function public.create_invite_with_code(text, jsonb, text) to anon;
+grant execute on function public.create_invite_with_code(text, jsonb, text, jsonb) to anon;
 grant execute on function public.save_response(text, jsonb) to anon;
 grant execute on function public.mark_opened(text) to anon;
 grant execute on function public.delete_own_invite(text, uuid) to anon;

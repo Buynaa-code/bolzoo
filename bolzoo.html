@@ -1687,8 +1687,13 @@
         && value !== null
         && value !== '';
     }
+    // Keys that must never enter the client-side CONFIG even if a legacy URL
+    // fragment or cached invite still carries them. responseEmail belongs to
+    // private_config on the server.
+    var CLIENT_CONFIG_BLOCKLIST = { responseEmail: true };
     function copyConfigValues(source, target){
       for(var k in source){
+        if(CLIENT_CONFIG_BLOCKLIST[k]) continue;
         if(hasConfigValue(source[k])){
           target[k] = source[k];
         }
@@ -1703,7 +1708,6 @@
         recipientName: '',
         senderName: '',
         videoId: 'qsPzEsxyzB8',
-        responseEmail: '',
         theme: 'coral',
         customNote: '',
         askTitle: '',
@@ -1735,7 +1739,6 @@
       if(yt) CONFIG.videoId = yt;
       if(!THEMES[CONFIG.theme]) CONFIG.theme='coral';
       VIDEO_ID = CONFIG.videoId;
-      RESPONSE_EMAIL = CONFIG.responseEmail;
     }
 
     function applyTheme(){
@@ -2099,8 +2102,9 @@
     // ===== BACKGROUND SONG =====
     var VIDEO_ID = CONFIG.videoId;
     var YT_VOLUME = 55;
-    var RESPONSE_EMAIL = CONFIG.responseEmail;
-    // Optional: Apps Script Web App URL тавивал автоматаар илгээнэ.
+    // responseEmail is owner-private (private_config) and never sent to the
+    // public invite view. Server-side notification handles owner alerts.
+    var RESPONSE_EMAIL = '';
     var APPS_SCRIPT_URL = '';
 
     /* ---------- kawaii cat avatars (assets/bolzoo-cat.js) ---------- */

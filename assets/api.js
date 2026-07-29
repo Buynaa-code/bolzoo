@@ -177,16 +177,19 @@
   }
 
   /* ------------ Public API ------------ */
-  async function createInvite(config, accessCode){
+  async function createInvite(config, accessCode, privateConfig){
     if(!accessCode) throw new Error('Access code required');
     var id = shortId(10);
+    var priv = privateConfig || {};
 
     if(HAS_BACKEND){
-      var rows = await rpc('create_invite_with_code', {
+      var payload = {
         p_invite_id: id,
         p_config: config,
         p_access_code: accessCode
-      });
+      };
+      if(Object.keys(priv).length > 0) payload.p_private_config = priv;
+      var rows = await rpc('create_invite_with_code', payload);
       var row = rows && rows[0];
       if(!row) throw new Error('RPC returned no row');
       setOwnerToken(row.id, row.owner_token);
@@ -199,7 +202,7 @@
       if(c.used) throw new Error('Access code already used');
       var token = uuid4();
       var createdAt = new Date().toISOString();
-      lsSet('bolzoo:invites:'+id, { config:config, response:null, opened_at:null, responded_at:null, created_at:createdAt });
+      lsSet('bolzoo:invites:'+id, { config:config, private_config:priv, response:null, opened_at:null, responded_at:null, created_at:createdAt });
       setOwnerToken(id, token);
       rememberMine(id);
       c.used = true;

@@ -9,13 +9,37 @@ const {
   supabaseFetch
 } = require('../lib/payment-api');
 
-const INVITE_ID_RE = /^[A-Za-z0-9_-]{4,64}$/;
+const INVITE_ID_RE = /^[A-Za-z0-9_-]{8,64}$/;
 const OWNER_TOKEN_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+// Only these keys are safe to expose to anyone who knows the invite URL. Any
+// owner-only field (email, phone, admin notes) belongs in `private_config` and
+// is returned solely by the authenticated POST path.
+const PUBLIC_CONFIG_KEYS = [
+  'recipientName',
+  'senderName',
+  'videoId',
+  'theme',
+  'customNote',
+  'locationName',
+  'locationUrl',
+  'specialLetter',
+  'poster'
+];
+
+function pickPublicConfig(cfg) {
+  const out = {};
+  if (!cfg || typeof cfg !== 'object') return out;
+  for (const key of PUBLIC_CONFIG_KEYS) {
+    if (cfg[key] != null) out[key] = cfg[key];
+  }
+  return out;
+}
 
 function publicInvite(row) {
   return {
     id: row.id,
-    config: row.config,
+    config: pickPublicConfig(row.config),
     created_at: row.created_at
   };
 }
@@ -24,6 +48,7 @@ function ownedInvite(row) {
   return {
     id: row.id,
     config: row.config,
+    private_config: row.private_config || {},
     response: row.response,
     opened_at: row.opened_at,
     responded_at: row.responded_at,
@@ -73,7 +98,7 @@ module.exports = async function handler(req, res) {
       const rows = await supabaseFetch(
         'GET',
         '/invites?id=in.(' + ids.map(encodeURIComponent).join(',') + ')' +
-          '&select=id,owner_token,config,response,opened_at,responded_at,created_at'
+          '&select=id,owner_token,config,private_config,response,opened_at,responded_at,created_at'
       );
       const allowed = (rows || [])
         .filter((row) => expected.get(row.id) === String(row.owner_token || '').toLowerCase())

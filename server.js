@@ -306,7 +306,8 @@ async function handleRPC(req, res, url) {
     const invId = body.p_invite_id;
     const cfg   = body.p_config;
     const code  = body.p_access_code;
-    if (!invId || String(invId).length < 4) return sendPGError(res, 400, 'Invalid invite id');
+    const priv  = body.p_private_config;
+    if (!invId || String(invId).length < 8) return sendPGError(res, 400, 'Invalid invite id');
     if (!code) return sendPGError(res, 400, 'Access code required');
     const codeRow = codes[code];
     if (!codeRow) return sendPGError(res, 400, 'Invalid access code');
@@ -316,13 +317,14 @@ async function handleRPC(req, res, url) {
     const nowTs = new Date().toISOString();
     const ownerToken = crypto.randomUUID();
     invites[invId] = {
-      id:            invId,
-      owner_token:   ownerToken,
-      config:        cfg || {},
-      response:      null,
-      opened_at:     null,
-      responded_at:  null,
-      created_at:    nowTs
+      id:             invId,
+      owner_token:    ownerToken,
+      config:         cfg || {},
+      private_config: priv || {},
+      response:       null,
+      opened_at:      null,
+      responded_at:   null,
+      created_at:     nowTs
     };
     codeRow.used = true;
     codeRow.used_at = nowTs;
@@ -401,18 +403,40 @@ async function handleRPC(req, res, url) {
 }
 
 /* ---------- Protected read APIs ---------- */
-const INVITE_ID_RE = /^[A-Za-z0-9_-]{4,64}$/;
+const INVITE_ID_RE = /^[A-Za-z0-9_-]{8,64}$/;
 const OWNER_TOKEN_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const ACCESS_CODE_RE = /^LOV-[A-HJ-NP-Z2-9]{6}$/;
 
+const PUBLIC_CONFIG_KEYS = [
+  'recipientName',
+  'senderName',
+  'videoId',
+  'theme',
+  'customNote',
+  'locationName',
+  'locationUrl',
+  'specialLetter',
+  'poster'
+];
+
+function pickPublicConfig(cfg) {
+  const out = {};
+  if (!cfg || typeof cfg !== 'object') return out;
+  for (const key of PUBLIC_CONFIG_KEYS) {
+    if (cfg[key] != null) out[key] = cfg[key];
+  }
+  return out;
+}
+
 function publicInvite(inv) {
-  return { id: inv.id, config: inv.config, created_at: inv.created_at };
+  return { id: inv.id, config: pickPublicConfig(inv.config), created_at: inv.created_at };
 }
 
 function ownedInvite(inv) {
   return {
     id: inv.id,
     config: inv.config,
+    private_config: inv.private_config || {},
     response: inv.response,
     opened_at: inv.opened_at,
     responded_at: inv.responded_at,
