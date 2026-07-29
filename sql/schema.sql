@@ -126,6 +126,7 @@ $$;
 create or replace function public._gen_code()
 returns text
 language plpgsql
+set search_path = public, pg_catalog
 as $$
 declare
   chars text := 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';   -- no I, O, 0, 1
