@@ -1152,11 +1152,6 @@
           <input id="senderName" type="text" placeholder="жишээ: Мики" maxlength="30" />
           <div class="hint">Урилга хэнээс очиж байгааг харуулна. Хоосон үлдээвэл “тусгай хэн нэгэн” гэж харагдана.</div>
         </div>
-        <div class="field">
-          <label><span class="label-icon">✉️</span>ТАНЫ ИМЭЙЛ (ХАРИУГ ЭНД ХҮРГЭНЭ) *</label>
-          <input id="responseEmail" type="email" placeholder="you@gmail.com" />
-          <div class="hint">🔒 <b>Зөвхөн танд ирнэ.</b> Хүлээн авагч энэ хаягийг харахгүй. Тийм / Үгүй / Уучлаарай — гурван төрлийн хариу, хариу засвар бүхэн энэ имэйл рүү автоматаар очно.</div>
-        </div>
         </div>
 
         <div class="wizard-step" data-step="3">
@@ -1289,7 +1284,7 @@
         <h2>💡 Туслах зөвлөгөө</h2>
         <div class="tip-row"><span>🔑</span><p>Эрхийн код нэг урилгад нэг удаа ашиглагдана.</p></div>
         <div class="tip-row"><span>🎟</span><p>Preview хийж хараад линкээ илгээнэ үү.</p></div>
-        <div class="tip-row"><span>💌</span><p>Хариу ирсэн даруйд таны имэйл рүү мэдэгдэх болно.</p></div>
+        <div class="tip-row"><span>💌</span><p>Хариу ирсэн даруйд таны хувийн хариунуудын самбар дээр харагдана.</p></div>
         <div class="tip-row"><span>🔒</span><p>Хариунууд зөвхөн танд харагдана. Урилгын линкийг харсан хүн таны бусад урилгыг харах боломжгүй.</p></div>
       </section>
 
@@ -1360,8 +1355,7 @@
         <div>
           <b>Хариу энд ирнэ · <span class="success-inbox-lock">🔒 зөвхөн танд</span></b>
           <p>
-            📧 <span class="success-inbox-email" id="successInboxEmail">…</span> рүү шууд имэйл ирнэ.<br>
-            Түүнчлэн энэ browser дээрээс <a class="success-inbox-link" href="dashboard.html" target="_blank" rel="noopener">🔒 Хувийн хариунуудын самбар нээх →</a>
+            Энэ browser дээрээс <a class="success-inbox-link" href="dashboard.html" target="_blank" rel="noopener">🔒 Хувийн хариунуудын самбар нээх →</a>
           </p>
         </div>
       </div>
@@ -1414,7 +1408,7 @@
   var STORAGE_DRAFT_KEY = 'bolzoo:pending_draft';
   var YOUTUBE_CACHE_KEY = 'bolzoo:youtube_search_cache:v1';
   var YOUTUBE_CACHE_TTL = 24 * 60 * 60 * 1000;
-  var DRAFT_FIELDS = ['recipientName','senderName','responseEmail','videoId','customNote','locationName','locationUrl','specialLetter'];
+  var DRAFT_FIELDS = ['recipientName','senderName','videoId','customNote','locationName','locationUrl','specialLetter'];
 
   function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
   function lsSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
@@ -1514,13 +1508,12 @@
   });
   // Owner-only fields — never encoded into the preview URL, never sent to the
   // public `config` JSONB. Sent separately as p_private_config.
-  var PRIVATE_CONFIG_KEYS = ['responseEmail'];
+  var PRIVATE_CONFIG_KEYS = [];
 
   function collectConfig(){
     var cfg = {
       recipientName: $('recipientName').value.trim(),
       senderName:    $('senderName').value.trim(),
-      responseEmail: $('responseEmail').value.trim(),
       videoId:       $('videoId').value.trim(),
       theme:         currentTheme,
       customNote:    $('customNote').value.trim(),
@@ -1913,10 +1906,8 @@
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
   function codeStepValid(){
-    var email = $('responseEmail').value.trim();
     return codeIsValid
-      && $('recipientName').value.trim().length > 0
-      && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email);
+      && $('recipientName').value.trim().length > 0;
   }
   function canAdvance(){
     if(currentStep === 1) return !!currentAskTemplate;
@@ -1952,7 +1943,6 @@
       } else if(currentStep === 2){
         if(!codeIsValid) setStatus('⚠️ Хүчинтэй эрхийн код оруулна уу');
         else if(!$('recipientName').value.trim()) setStatus('⚠️ Хүлээн авагчийн нэрийг заавал бөглөнө үү');
-        else setStatus('⚠️ Зөв email хаяг оруулна уу');
       }
       return;
     }
@@ -1962,7 +1952,7 @@
   document.querySelectorAll('[data-step-back]').forEach(function(b){
     b.addEventListener('click', function(){ setStatus(''); goStep(currentStep - 1); });
   });
-  ['recipientName','responseEmail'].forEach(function(id){
+  ['recipientName'].forEach(function(id){
     var el = $(id); if(el) el.addEventListener('input', updateDockNext);
   });
 
@@ -2046,11 +2036,6 @@
       jumpToField(2, 'recipientName');
       return false;
     }
-    if(!cfg.responseEmail || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(cfg.responseEmail)){
-      setStatus('⚠️ Зөв имэйл хаяг оруулна уу');
-      jumpToField(2, 'responseEmail');
-      return false;
-    }
     if(!cfg.askTemplate){
       setStatus('⚠️ Эхний хуудасны хэлбэрээс нэгийг сонгоно уу');
       jumpToField(1, 'askTemplates');
@@ -2063,7 +2048,7 @@
     $('linkBox').style.display = 'block';
     $('linkActions').style.display = 'flex';
     setStatus(msg || '✅ Линк бэлэн!');
-    openSuccessModal(url, $('recipientName').value.trim(), $('responseEmail').value.trim());
+    openSuccessModal(url, $('recipientName').value.trim());
   }
 
   /* ---------- Success modal ---------- */
@@ -2079,15 +2064,10 @@
     var t = document.createElement('textarea'); t.value=text; document.body.appendChild(t); t.select(); document.execCommand('copy'); t.remove();
     return Promise.resolve();
   }
-  function openSuccessModal(url, recipientName, responseEmail){
+  function openSuccessModal(url, recipientName){
     $('successLink').textContent = url;
     $('successStatus').textContent = '';
     $('successRecipient').textContent = recipientName && recipientName.trim() ? recipientName.trim() : 'хайртай хүн';
-    var emailEl = $('successInboxEmail');
-    if(emailEl){
-      var email = (responseEmail || '').trim();
-      emailEl.textContent = email || 'имэйл хаяг';
-    }
 
     var copyBtn = $('successCopyBtn');
     copyBtn.classList.remove('copied');
@@ -2238,7 +2218,7 @@
   });
 
   $('resetForm').addEventListener('click', function(){
-    ['accessCode','recipientName','senderName','responseEmail','videoId','customNote','locationName','locationUrl','specialLetter'].forEach(function(id){
+    ['accessCode','recipientName','senderName','videoId','customNote','locationName','locationUrl','specialLetter'].forEach(function(id){
       $(id).value = '';
     });
     $('songSearch').value = '';
