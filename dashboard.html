@@ -11,8 +11,13 @@
 <style>
   .wrap{max-width:900px; margin:0 auto; padding:32px 20px 60px;}
   header{display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:22px;}
+  .h-title{display:flex; align-items:center; gap:8px; flex-wrap:wrap;}
   h1{font-family:'Comfortaa',sans-serif; font-weight:700; font-size:26px; margin:0;}
+  .private-pill{display:inline-flex; align-items:center; gap:4px; font-family:'Nunito',sans-serif; font-size:11px; font-weight:900; padding:5px 10px; border-radius:999px; background:#dcffde; color:#2e7a3e; letter-spacing:.02em;}
   .subtitle{margin:0;}
+  .privacy-note{margin:0 0 18px; padding:12px 14px; border-radius:14px; background:linear-gradient(135deg,#f2fff2,#fff); border:1px solid rgba(90,186,122,.35); color:#215a34; font-size:13px; font-weight:800; line-height:1.5; display:flex; align-items:flex-start; gap:10px;}
+  .privacy-note-ic{flex:0 0 auto; font-size:16px; line-height:1;}
+  .privacy-note b{color:#1a4a28;}
   /* Dashboard-д стат картны stat илүү том */
   .stats{display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:22px;}
   @media (max-width:520px){ .stats{grid-template-columns:1fr;} }
@@ -44,7 +49,10 @@
   <div class="wrap">
     <header>
       <div>
-        <h1>📊 Миний урилгууд</h1>
+        <div class="h-title">
+          <h1>📊 Миний урилгууд</h1>
+          <span class="private-pill" title="Зөвхөн энэ browser дээрээс харагдана">🔒 Хувийн</span>
+        </div>
         <div class="subtitle">Энэ browser-с үүсгэсэн урилгууд ба хариунууд</div>
       </div>
       <div style="display:flex; gap:8px; flex-wrap:wrap;">
@@ -52,6 +60,13 @@
         <button class="btn secondary" id="refresh">🔄 Шинэчлэх</button>
       </div>
     </header>
+
+    <div class="privacy-note">
+      <span class="privacy-note-ic" aria-hidden="true">🔒</span>
+      <div>
+        <b>Энэ хуудсыг зөвхөн та л харна.</b> Урилгын линкийг илгээсэн crush эсвэл бусад хүн энэ жагсаалт руу нэвтрэх боломжгүй — жагсаалт нь зөвхөн энэ browser дээр хадгалагдана. Хариу нь мөн таны имэйл рүү шууд ирнэ.
+      </div>
+    </div>
 
     <div class="backend-warn" id="backendWarn" style="display:none;">
       ⚠️ Supabase backend тохируулаагүй тул зөвхөн энэ browser дээрх урилгууд харагдана. Backend тохируулбал бүх төхөөрөмжөөс харах, хариу цуглуулах боломжтой болно (assets/config.js).
@@ -67,6 +82,7 @@
       <div class="empty" id="empty" style="display:none;">
         <h2>Урилга байхгүй байна 💌</h2>
         <p class="subtitle">Эхний урилгаа үүсгээд туршиж үзье!</p>
+        <p class="subtitle" style="margin-top:8px; font-size:12px;">🔒 Жагсаалт зөвхөн энэ browser дээр хадгалагддаг. Өөр төхөөрөмжөөс үүсгэсэн урилгын хариу таны имэйл рүү ирэхийг мартав уу.</p>
         <a class="btn" href="create.html" style="margin-top:10px;">+ Шинэ урилга үүсгэх</a>
       </div>
     </div>
@@ -98,6 +114,9 @@
     if(!inv.response) return '';
     var r = inv.response;
     var meta = '<span class="card-meta">Хариу ирсэн: ' + esc(fmtWhen(inv.responded_at)) + '</span>';
+    var choiceLine = r.choice
+      ? '<b>💘 Сонголт:</b> ' + esc(r.choice) + '<br>'
+      : '';
     var body;
     // Poster урилга: татгалзсан
     if(r.answer === 'no'){
@@ -113,6 +132,7 @@
     } else if(r.answer === 'yes' && !r.date){
       body = '<div class="response">'
         + '<b>💗 Хариу:</b> Тийм — огноогоо сонгож байна<br>'
+        + choiceLine
         + meta
         + '</div>';
     } else {
@@ -120,6 +140,7 @@
         + (r.answer === 'later'
           ? '<b>🎬 Постерийн хариу:</b> Тухайн өдөр амжихгүй, өөр өдөр санал болгосон<br>'
           : '')
+        + choiceLine
         + '<b>📅 Өдөр:</b> ' + esc(r.date) + '<br>'
         + '<b>🕐 Цаг:</b> ' + esc(r.time) + '<br>'
         + '<b>💝 Төрөл:</b> ' + esc(r.kind) + '<br>'
@@ -136,8 +157,8 @@
     var label;
     if(r.answer === 'no') label = 'Татгалзсан 🥲';
     else if(r.answer === 'later' && !r.date) label = 'Тухайн өдөр амжихгүй';
-    else if(r.answer === 'yes' && !r.date) label = 'Тийм — огноо сонгоогүй';
-    else if(r.date) label = (r.answer === 'later' ? 'Өөр өдөр: ' : '') + r.date + (r.time ? ' · ' + r.time : '');
+    else if(r.answer === 'yes' && !r.date) label = r.choice ? r.choice + ' — огноо сонгоогүй' : 'Тийм — огноо сонгоогүй';
+    else if(r.date) label = (r.choice ? r.choice + ': ' : (r.answer === 'later' ? 'Өөр өдөр: ' : '')) + r.date + (r.time ? ' · ' + r.time : '');
     else label = 'Өмнөх хариу';
     return {
       label: label,

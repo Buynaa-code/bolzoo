@@ -21,6 +21,37 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 
+// ── Lightweight .env loader (zero deps) ─────────────────────────────────────
+// Repo root дахь `.env` файлыг уншиж process.env-т нэмнэ.
+// Урьтамжлал: shell env > .env.local > .env  (shell утгыг хэзээ ч дардаггүй)
+(function loadDotEnv(){
+  const setByFile = new Set();
+  const files = ['.env', '.env.local'];
+  for (const name of files) {
+    const p = path.join(__dirname, name);
+    let raw;
+    try { raw = fs.readFileSync(p, 'utf8'); } catch (_) { continue; }
+    for (const line of raw.split(/\r?\n/)) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith('#')) continue;
+      const idx = trimmed.indexOf('=');
+      if (idx <= 0) continue;
+      const key = trimmed.slice(0, idx).trim();
+      let val = trimmed.slice(idx + 1).trim();
+      // "quoted" эсвэл 'quoted' утгыг задална
+      if ((val.startsWith('"') && val.endsWith('"')) ||
+          (val.startsWith("'") && val.endsWith("'"))) {
+        val = val.slice(1, -1);
+      }
+      // Shell-с ирсэн бол хэвээр үлдэнэ. .env-ээс ирсэн бол .env.local нь дардаг.
+      if (process.env[key] === undefined || setByFile.has(key)) {
+        process.env[key] = val;
+        setByFile.add(key);
+      }
+    }
+  }
+})();
+
 const PORT = Number(process.env.PORT || 8080);
 const HOST = String(process.env.HOST || '127.0.0.1');
 const ADMIN_PASSWORD = String(process.env.ADMIN_PASSWORD || 'admin123');
@@ -33,7 +64,7 @@ const EVENTS_FILE   = path.join(DATA_DIR, 'webhook_events.json');
 
 // Self-serve QPay үнэ (MNT ₮). Өөрчлөхөд энд бэлэн.
 // PRICE_MNT env var-аар override хийнэ (жишээ: PRICE_MNT=10 node server.js).
-const PRICE_MNT = Number(process.env.PRICE_MNT || 6900);
+const PRICE_MNT = Number(process.env.PRICE_MNT || 9900);
 
 fs.mkdirSync(DATA_DIR, { recursive: true });
 
@@ -916,6 +947,7 @@ server.listen(PORT, HOST, () => {
   console.log('  Pay page    :  ' + url + '/pay.html');
   console.log('  Admin auth  :  ' + (process.env.ADMIN_PASSWORD ? 'custom password configured' : 'local default in use'));
   console.log('  Wire mode   :  ' + (WIRE_ENABLED ? '🟢 live (WIRE_API_KEY тохирсон)' : '🧪 mock (WIRE_API_KEY тохируулаагүй)'));
+  console.log('  YouTube key :  ' + (YOUTUBE_API_KEY ? '🟢 тохирсон' : '⚪ тохируулаагүй (хайлт 503 буцаана)'));
   console.log('  Price       :  ' + PRICE_MNT.toLocaleString() + ' ₮');
   console.log('');
   console.log('  Ctrl+C to stop.');

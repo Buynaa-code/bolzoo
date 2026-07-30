@@ -10,16 +10,16 @@
 <meta property="og:site_name" content="Bolzoo Date" />
 <meta property="og:title" content="Чамд зориулсан онцгой урилга байна 💌" />
 <meta property="og:description" content="Урилгаа нээгээд хариугаа өгөөрэй." />
-<meta property="og:image" content="https://bolzoodate.vercel.app/assets/posters/hun-aalz.png" />
-<meta property="og:image:secure_url" content="https://bolzoodate.vercel.app/assets/posters/hun-aalz.png" />
+<meta property="og:image" content="https://bolzoodate.vercel.app/assets/og-for-my-crush.png" />
+<meta property="og:image:secure_url" content="https://bolzoodate.vercel.app/assets/og-for-my-crush.png" />
 <meta property="og:image:type" content="image/png" />
-<meta property="og:image:width" content="1003" />
-<meta property="og:image:height" content="1568" />
-<meta property="og:image:alt" content="Spider-Man: Цоо шинэ өдөр киноны постер" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content="For my crush — Bolzoo болзооны урилга" />
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content="Чамд зориулсан онцгой урилга байна 💌" />
 <meta name="twitter:description" content="Урилгаа нээгээд хариугаа өгөөрэй." />
-<meta name="twitter:image" content="https://bolzoodate.vercel.app/assets/posters/hun-aalz.png" />
+<meta name="twitter:image" content="https://bolzoodate.vercel.app/assets/og-for-my-crush.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Comfortaa:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -207,6 +207,70 @@
     line-height:1.35;
     font-weight:900;
   }
+  .ask-card[data-template="letter"]{
+    background:
+      linear-gradient(180deg,rgba(255,255,255,.92),rgba(255,246,250,.96)),
+      repeating-linear-gradient(0deg,transparent 0 26px,rgba(255,197,213,.32) 27px 28px);
+    border-style:dashed;
+  }
+  .ask-card[data-template="letter"] .ask-sticker::before{
+    border-radius:30px;
+    background:linear-gradient(145deg,#fff,#fff0f5);
+    box-shadow:0 20px 46px -25px rgba(247,106,142,.55), inset 0 0 0 2px rgba(255,183,204,.65);
+  }
+  .ask-card[data-template="letter"] .invite-sticker-badge{
+    background:var(--coral-deep);
+    color:#fff;
+    transform:translateX(-50%) rotate(0deg);
+  }
+  .ask-card[data-template="letter"] .ask-title{font-family:'Caveat',cursive; font-size:40px; line-height:1.02;}
+  .ask-card[data-template="letter"] .ask-title span{font-family:'Nunito',sans-serif; font-size:16px;}
+
+  .ask-card[data-template="dreamy"]{
+    background:
+      radial-gradient(180px 130px at 14% 12%,rgba(255,255,255,.9),transparent 70%),
+      radial-gradient(190px 160px at 86% 14%,rgba(201,182,228,.28),transparent 72%),
+      linear-gradient(160deg,#fffaff,#fff7fb 48%,#fffdfb);
+  }
+  .ask-card[data-template="dreamy"] .ask-sticker{
+    width:142px;
+    height:142px;
+  }
+  .ask-card[data-template="dreamy"] .ask-sticker::before{
+    inset:2px;
+    background:rgba(255,255,255,.72);
+    box-shadow:0 20px 50px -24px rgba(157,99,230,.38), inset 0 0 0 1px rgba(255,255,255,.9);
+  }
+  .ask-card[data-template="dreamy"] .invite-sticker-badge{
+    bottom:-4px;
+    color:#7a4dcf;
+  }
+  .ask-card[data-template="dreamy"] .ask-question{font-size:23px;}
+  .ask-card[data-template="dreamy"] .ask-options .btn.big{background:linear-gradient(135deg,#ff8fb0,#9667e8);}
+
+  .ask-card[data-template="ticket"]{
+    background:
+      radial-gradient(circle at 0 52%,#fff7f8 0 18px,transparent 19px),
+      radial-gradient(circle at 100% 52%,#fff7f8 0 18px,transparent 19px),
+      linear-gradient(180deg,#fffdf8,#fff2e9);
+    border:2px solid #ffd3a8;
+    box-shadow:0 24px 58px -34px rgba(214,112,63,.46), inset 0 -1px 0 rgba(255,255,255,.8);
+  }
+  .ask-card[data-template="ticket"] .ask-sticker::before{
+    background:linear-gradient(145deg,#fff9ea,#fff);
+    box-shadow:0 20px 46px -24px rgba(247,142,90,.56), inset 0 0 0 8px rgba(255,179,138,.22);
+  }
+  .ask-card[data-template="ticket"] .invite-sticker-badge{
+    background:#fff8dc;
+    color:#b46b20;
+    box-shadow:inset 0 0 0 1px rgba(255,179,138,.7);
+  }
+  .ask-card[data-template="ticket"] .ask-question{
+    padding:12px 16px;
+    border:1px dashed rgba(244,142,90,.55);
+    border-radius:16px;
+    background:#fffaf0;
+  }
   @keyframes pop{0%{transform:scale(.5); opacity:0} 60%{transform:scale(1.08)} 100%{transform:scale(1); opacity:1}}
   @keyframes breathe{0%,100%{transform:scale(1)} 50%{transform:scale(1.045)}}
   @keyframes bob{0%,100%{transform:rotate(-4deg)} 50%{transform:rotate(4deg)}}
@@ -222,6 +286,28 @@
   .btn:active{transform:translateY(0) scale(.93);}
   .btn.big{font-size:20px; padding:16px 44px; margin-top:20px; animation:pulse 2.1s ease-in-out infinite;}
   .screen[data-screen="ask"] .btn.big{width:min(320px,100%); min-height:64px; margin:24px auto 0; font-size:21px;}
+  .ask-options{
+    display:grid;
+    gap:10px;
+    width:min(350px,100%);
+    margin:24px auto 0;
+  }
+  .ask-options.has-choices{
+    grid-template-columns:1fr;
+  }
+  .ask-options.has-choices .btn.big{
+    width:100%;
+    min-height:58px;
+    margin:0;
+    padding:13px 24px;
+    border-radius:20px;
+    font-size:17px;
+    line-height:1.2;
+    animation:none;
+  }
+  .ask-options.has-choices .btn.big:first-child{
+    animation:pulse 2.1s ease-in-out infinite;
+  }
   @keyframes pulse{0%,100%{box-shadow:0 12px 24px -8px rgba(247,106,142,.6)} 50%{box-shadow:0 14px 44px -6px rgba(247,106,142,.9)}}
   .btn.next{font-size:17px; padding:14px 40px; margin-top:22px; width:100%;}
   .btn:disabled{background:#f0e2df; color:#c8a9b7; box-shadow:none; cursor:not-allowed; animation:none; transform:none;}
@@ -477,7 +563,6 @@
     place-items:center;
     padding:24px;
     overflow:hidden;
-    cursor:pointer;
     background:
       linear-gradient(155deg,#fff8f4 0%, #fff1f6 54%, #fbf0ff 100%);
     animation:introFadeIn .34s ease-out both;
@@ -1211,6 +1296,7 @@
     .room-tabs{grid-template-columns:1fr;}
     .room-actions{grid-template-columns:1fr;}
     .choice-grid{grid-template-columns:1fr;}
+    .ask-options.has-choices .btn.big{font-size:15px; min-height:52px;}
     .challenge-layout{grid-template-columns:1fr;}
     .challenge-wheel{justify-self:center;}
     .ticket-strip{grid-template-columns:1fr 1fr;}
@@ -1247,10 +1333,12 @@
       <img class="intro-rose" src="assets/gif/Take This Rose GIF.gif" alt="rose" aria-hidden="true">
       <div class="intro-copy">
         <p class="intro-kicker">Нууц урилга ирлээ</p>
-        <strong>Дугтуйгаа нээгээрэй</strong>
-        <span>Дотор нь чамд зориулсан жижиг санал байгаа.</span>
+        <strong>Танд урилга иржээ</strong>
+        <span>Дугтуйг нээгээд хариугаа өгөөрэй.</span>
       </div>
-      <button class="intro-open" id="introOpen" type="button">Урилгаа нээх <span>›</span></button>
+      <button type="button" class="intro-open" id="introOpen">
+        <span>💌</span> Нээх
+      </button>
     </div>
   </div>
   <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
@@ -1280,7 +1368,9 @@
           </h1>
           <p class="ask-question">Надтай болзоонд явах уу?</p>
         </div>
-        <button class="btn big" id="yesBtn">Тийм, хамт явъя 💗</button>
+        <div class="ask-options" id="askOptions">
+          <button class="btn big" id="yesBtn" data-choice-index="0">Тийм, хамт явъя 💗</button>
+        </div>
         <p class="ask-surprise">дотор нь жижиг гэнэтийн бэлэг байгаа ✨</p>
         <div class="roam" id="roam"><button class="btn-no" id="noBtn">дараа бодъё</button></div>
         <img class="no-gif" id="noGif" alt="" aria-hidden="true">
@@ -1737,7 +1827,9 @@
         thanksTitle: '',
         dateTitle: '',
         doneNote: '',
-        poster: ''
+        poster: '',
+        askTemplate: 'classic',
+        choices: []
       };
       try{
         var hash = window.location.hash.slice(1);
@@ -1752,8 +1844,18 @@
       var yt = extractYouTubeId(defaults.videoId);
       if(yt){ defaults.videoId = yt; }
       if(!THEMES[defaults.theme]){ defaults.theme = 'coral'; }
+      if(['classic','letter','dreamy','ticket'].indexOf(defaults.askTemplate) < 0){
+        defaults.askTemplate = 'classic';
+      }
       return defaults;
     })();
+    function inviteChoices(){
+      if(!Array.isArray(CONFIG.choices)) return [];
+      var clean = CONFIG.choices.map(function(choice){
+        return String(choice || '').trim();
+      }).filter(function(choice){ return !!choice; });
+      return clean.length >= 2 ? clean.slice(0, 4) : [];
+    }
 
     function mergeIntoConfig(c){
       if(!c) return;
@@ -1761,6 +1863,7 @@
       var yt = extractYouTubeId(CONFIG.videoId);
       if(yt) CONFIG.videoId = yt;
       if(!THEMES[CONFIG.theme]) CONFIG.theme='coral';
+      if(['classic','letter','dreamy','ticket'].indexOf(CONFIG.askTemplate) < 0) CONFIG.askTemplate='classic';
       VIDEO_ID = CONFIG.videoId;
     }
 
@@ -1786,6 +1889,10 @@
       var thanksH1 = document.querySelector('[data-screen="thanks"] h1');
       var dateH1 = document.querySelector('[data-screen="date"] h1');
       var askNote = document.querySelector('[data-screen="ask"] .note');
+      var askCard = document.querySelector('[data-screen="ask"] .ask-card');
+      if(askCard){
+        askCard.setAttribute('data-template', CONFIG.askTemplate || 'classic');
+      }
       if(askH1){
         askH1.innerHTML = CONFIG.askTitle
           ? esc(CONFIG.askTitle)
@@ -1807,6 +1914,23 @@
       }
       if(askNote && CONFIG.customNote){
         askNote.textContent = CONFIG.customNote;
+      }
+      var askOptions = document.getElementById('askOptions');
+      if(askOptions){
+        var choices = inviteChoices();
+        if(choices.length){
+          askOptions.classList.add('has-choices');
+          askOptions.innerHTML = choices.map(function(choice, idx){
+            return '<button class="btn big" type="button"'
+              + (idx === 0 ? ' id="yesBtn"' : '')
+              + ' data-choice-index="' + idx + '">'
+              + esc(choice)
+              + '</button>';
+          }).join('');
+        } else {
+          askOptions.classList.remove('has-choices');
+          askOptions.innerHTML = '<button class="btn big" id="yesBtn" type="button" data-choice-index="0">Тийм, хамт явъя 💗</button>';
+        }
       }
       if(sender){
         document.title = sender+' → '+(recip||'чам')+' 💕';
@@ -1858,7 +1982,7 @@
       }, 260);
     }
 
-    /* ---------- Envelope intro overlay ---------- */
+    /* ---------- Envelope intro overlay: tap to open ---------- */
     (function(){
       var overlay = document.getElementById('introOverlay');
       if(!overlay){
@@ -1866,14 +1990,15 @@
         maybeShowPoster();
         return;
       }
-      var openBtn = document.getElementById('introOpen');
       if(IS_PREVIEW){
         overlay.style.display = 'none';
         envelopeOpen = true;
         maybeShowPoster();
         return;
       }
+      var openBtn = document.getElementById('introOpen');
       var opening = false;
+
       function openInvite(){
         if(opening) return;
         opening = true;
@@ -1887,15 +2012,56 @@
           }, 480);
         }, 980);
       }
-      overlay.addEventListener('click', openInvite);
-      if(openBtn){
-        openBtn.addEventListener('click', function(e){
-          e.stopPropagation();
-          openInvite();
-        });
-        setTimeout(function(){ openBtn.focus({ preventScroll:true }); }, 120);
-      }
+
+      if(openBtn) openBtn.addEventListener('click', openInvite);
     })();
+
+    /* ---------- Live preview channel (create.html postMessage) ---------- */
+    function hidePosterModal(){
+      var modal = document.getElementById('posterModal');
+      if(!modal) return;
+      modal.classList.remove('show');
+      modal.hidden = true;
+      posterShown = false;
+    }
+    if(IS_PREVIEW){
+      // Live preview үед хоосон утга илгээвэл цэвэрлэдэг байлгах — үгүй бол
+      // хэрэглэгч poster-ыг арилгасан ч previous state үлдэнэ.
+      var LIVE_CLEARABLE = ['askTemplate','poster','videoId','customNote','choices','locationName','locationUrl','specialLetter','senderName','recipientName'];
+      window.addEventListener('message', function(ev){
+        var data = ev && ev.data;
+        if(!data || data.type !== 'bolzoo:config' || !data.config) return;
+        var prevPoster = CONFIG.poster;
+        var incoming = data.config;
+        mergeIntoConfig(incoming);
+        LIVE_CLEARABLE.forEach(function(k){
+          if(k in incoming && !hasConfigValue(incoming[k])){
+            CONFIG[k] = (k === 'choices') ? [] : '';
+          }
+        });
+        applyContent();
+        if(typeof audio !== 'undefined' && audio && audio.setVideoId){
+          audio.setVideoId(CONFIG.videoId);
+        }
+        var newPoster = CONFIG.poster;
+        if(newPoster !== prevPoster){
+          hidePosterModal();
+        }
+        if(newPoster){
+          maybeShowPoster();
+        } else {
+          hidePosterModal();
+        }
+        // Preview-ийн эхний экран ask card тул үргэлж эхлэлд буцаана
+        try{ window.scrollTo(0, 0); }catch(e){}
+      });
+      try{
+        (window.parent || window.opener || window.top).postMessage(
+          { type: 'bolzoo:ready' },
+          '*'
+        );
+      }catch(e){}
+    }
 
     /* Load config from backend if ?id=xxx present */
     if(INVITE_ID && window.BolzooAPI){
@@ -1931,7 +2097,9 @@
       challengeIndex: 0,
       wheelRotation: 0,
       posterAnswer: null,
-      posterAnsweredAt: ''
+      posterAnsweredAt: '',
+      selectedChoice: '',
+      selectedChoiceIndex: null
     };
     var order = ['ask', 'thanks', 'date', 'done'];
     var DOW = ['Ня', 'Да', 'Мя', 'Лх', 'Пү', 'Ба', 'Бя'];
@@ -2298,6 +2466,9 @@
       'assets/gif/Not In My House No GIF.gif',
       'assets/gif/Cat GIF.gif'
     ];
+    function currentYesBtn(){
+      return $('yesBtn') || yesBtn;
+    }
     function showNoGif(index){
       if(!noGif) return;
       var src = noGifs[Math.min(index, noGifs.length - 1)];
@@ -2339,8 +2510,9 @@
       noBtn.style.left = '';
       noBtn.style.top = '';
       noBtn.style.transform = '';
-      yesBtn.textContent = 'Тийм, хамт явъя 💗';
-      yesBtn.style.transform = 'scale(1.15)';
+      var y = currentYesBtn();
+      if(y && !inviteChoices().length) y.textContent = 'Тийм, хамт явъя 💗';
+      if(y) y.style.transform = 'scale(1.15)';
       showNoMessage(3);
     }
     function dodge(){
@@ -2357,7 +2529,8 @@
       }
       moveNoButton(noScales[state.noStep - 1]);
       noBtn.textContent = 'дараа бодъё';
-      yesBtn.style.transform = 'scale(' + yesScales[state.noStep - 1] + ')';
+      var y = currentYesBtn();
+      if(y) y.style.transform = 'scale(' + yesScales[state.noStep - 1] + ')';
       showNoMessage(state.noStep - 1);
       showNoGif(state.noStep - 1);
       pop('A4');
@@ -2365,8 +2538,9 @@
     function resetNoInteraction(){
       roam.classList.remove('final');
       noBtn.classList.remove('as-link');
-      yesBtn.textContent = 'Тийм, хамт явъя 💗';
-      yesBtn.style.transform = '';
+      var y = currentYesBtn();
+      if(y && !inviteChoices().length) y.textContent = 'Тийм, хамт явъя 💗';
+      if(y) y.style.transform = '';
       noBtn.style.left = '50%';
       noBtn.style.top = '26px';
       noBtn.style.transform = 'translateX(-50%)';
@@ -2403,13 +2577,25 @@
       }
     });
 
-    yesBtn.addEventListener('click', function(){
+    function acceptInviteFromButton(btn){
+      if(!btn) return;
+      var choices = inviteChoices();
+      var idx = parseInt(btn.getAttribute('data-choice-index') || '0', 10);
+      if(!isFinite(idx) || idx < 0) idx = 0;
+      state.selectedChoice = choices.length ? choices[idx] : '';
+      state.selectedChoiceIndex = choices.length ? idx : null;
       initFX();
       chime();
-      burstFrom(yesBtn, 30);
+      burstFrom(btn, 30);
       setTimeout(function(){
         goTo('thanks');
       }, 180);
+    }
+
+    $('askOptions').addEventListener('click', function(e){
+      var btn = e.target.closest('[data-choice-index]');
+      if(!btn) return;
+      acceptInviteFromButton(btn);
     });
 
     /* ---------- screen 2: thanks ---------- */
@@ -2815,6 +3001,10 @@
         payload.poster = CONFIG.poster;
         payload.posterAnsweredAt = state.posterAnsweredAt
           || new Date().toLocaleString('mn-MN');
+      }
+      if(state.selectedChoice){
+        payload.choice = state.selectedChoice;
+        payload.choiceIndex = state.selectedChoiceIndex;
       }
 
       return payload;

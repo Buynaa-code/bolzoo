@@ -10,18 +10,16 @@
 <meta property="og:locale" content="mn_MN" />
 <meta property="og:site_name" content="Bolzoo Date" />
 <meta property="og:title" content="Crush-даа болзооны урилга илгээгээрэй 💌" />
-<meta property="og:description" content="Spider-Man постертой онцгой урилгаа үүсгээд Messenger, Instagram-аар илгээгээрэй." />
+<meta property="og:description" content="Crush-даа зориулсан болзооны урилгаа үүсгээд Messenger, Instagram-аар илгээгээрэй." />
 <meta property="og:url" content="https://bolzoodate.vercel.app/create" />
-<meta property="og:image" content="https://bolzoodate.vercel.app/assets/posters/hun-aalz.png" />
-<meta property="og:image:secure_url" content="https://bolzoodate.vercel.app/assets/posters/hun-aalz.png" />
+<meta property="og:image" content="https://bolzoodate.vercel.app/assets/og-for-my-crush.png" />
+<meta property="og:image:secure_url" content="https://bolzoodate.vercel.app/assets/og-for-my-crush.png" />
 <meta property="og:image:type" content="image/png" />
-<meta property="og:image:width" content="1003" />
-<meta property="og:image:height" content="1568" />
-<meta property="og:image:alt" content="Spider-Man: Цоо шинэ өдөр киноны постер" />
+<meta property="og:image:alt" content="Bolzoo Date — Crush-даа зориулсан урилга" />
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content="Crush-даа болзооны урилга илгээгээрэй 💌" />
-<meta name="twitter:description" content="Spider-Man постертой онцгой урилгаа үүсгээрэй." />
-<meta name="twitter:image" content="https://bolzoodate.vercel.app/assets/posters/hun-aalz.png" />
+<meta name="twitter:description" content="Crush-даа зориулсан болзооны урилгаа үүсгээрэй." />
+<meta name="twitter:image" content="https://bolzoodate.vercel.app/assets/og-for-my-crush.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Comfortaa:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -121,6 +119,34 @@
   .wizard-step{display:none; animation:stepIn .3s ease both;}
   .wizard-step.active{display:block;}
   @keyframes stepIn{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:none;}}
+  .preview-card{transition:box-shadow .28s ease, transform .28s ease;}
+  .preview-card.pulse{
+    box-shadow:0 30px 62px -30px rgba(255,77,130,.7), 0 0 0 4px rgba(255,145,176,.35);
+    transform:translateY(-2px);
+  }
+  .preview-card.pulse .preview-title::after{
+    content:" 💌 template солигдлоо";
+    color:var(--hot);
+    font-size:12px;
+    font-weight:900;
+    margin-left:6px;
+    letter-spacing:.02em;
+  }
+  .template-preview-hint{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin:12px 0 0;
+    padding:10px 12px;
+    border-radius:12px;
+    border:1px dashed rgba(255,145,176,.55);
+    background:linear-gradient(135deg,#fff8fb,#fff);
+    color:#7a4062;
+    font-family:'Nunito',sans-serif;
+    font-size:12px;
+    font-weight:900;
+    line-height:1.35;
+  }
   .step-back{
     display:inline-flex;
     align-items:center;
@@ -172,136 +198,6 @@
     font-size:14px;
     line-height:1.55;
     font-weight:700;
-  }
-  .promo-splash{
-    position:relative;
-    margin:0 0 22px;
-    min-height:236px;
-    display:grid;
-    grid-template-columns:minmax(0,1fr) 172px;
-    gap:22px;
-    align-items:center;
-    overflow:hidden;
-    padding:22px;
-    border-radius:18px;
-    border:1px solid rgba(255,133,168,.58);
-    background:
-      radial-gradient(circle at 12% 0%, rgba(255,196,215,.72) 0 86px, transparent 88px),
-      radial-gradient(circle at 100% 18%, rgba(183,232,213,.7) 0 86px, transparent 88px),
-      linear-gradient(135deg,#fff9fb 0%,#ffeaf1 58%,#f7fff9 100%);
-    box-shadow:0 24px 54px -36px rgba(105,39,78,.42);
-  }
-  .promo-splash-copy{position:relative; z-index:1;}
-  .promo-tag{
-    display:inline-flex;
-    align-items:center;
-    gap:8px;
-    min-height:32px;
-    padding:7px 12px;
-    border-radius:999px;
-    background:#fff;
-    border:1px solid rgba(255,112,157,.32);
-    color:#2e9a76;
-    font-size:12px;
-    font-weight:900;
-    text-transform:uppercase;
-  }
-  .promo-title{
-    margin:12px 0 8px;
-    color:#43133b;
-    font-family:'Comfortaa',sans-serif;
-    font-size:25px;
-    line-height:1.16;
-    font-weight:700;
-  }
-  .promo-text{
-    max-width:540px;
-    margin:0;
-    color:#725d72;
-    font-size:14px;
-    line-height:1.45;
-    font-weight:800;
-  }
-  .promo-price{
-    display:flex;
-    flex-wrap:wrap;
-    align-items:baseline;
-    gap:10px;
-    margin:16px 0 0;
-  }
-  .promo-old{
-    color:#9b8397;
-    font-size:15px;
-    font-weight:900;
-    text-decoration:line-through;
-    text-decoration-thickness:2px;
-  }
-  .promo-new{
-    color:#ff4d82;
-    font-family:'Comfortaa',sans-serif;
-    font-size:36px;
-    line-height:1;
-    font-weight:700;
-  }
-  .promo-actions{
-    display:flex;
-    flex-wrap:wrap;
-    gap:10px;
-    margin-top:18px;
-  }
-  .promo-btn,
-  .promo-link{
-    min-height:44px;
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    gap:8px;
-    padding:10px 14px;
-    border-radius:12px;
-    font-family:'Nunito',sans-serif;
-    font-size:13px;
-    font-weight:900;
-    text-decoration:none;
-    cursor:pointer;
-  }
-  .promo-btn{
-    border:0;
-    color:#fff;
-    background:linear-gradient(100deg,#ff4d82,#9d63e6);
-    box-shadow:0 16px 32px -22px rgba(157,99,230,.9);
-  }
-  .promo-link{
-    border:1px solid rgba(248,215,226,.9);
-    color:#6a4062;
-    background:#fff;
-  }
-  .promo-poster{
-    position:relative;
-    z-index:1;
-    width:100%;
-    max-width:172px;
-    justify-self:end;
-    aspect-ratio:2/3;
-    overflow:hidden;
-    border-radius:16px;
-    border:5px solid #2d1630;
-    background:#160d16;
-    box-shadow:0 22px 44px -24px rgba(72,29,63,.65);
-    transform:rotate(2deg);
-  }
-  .promo-poster img{width:100%; height:100%; object-fit:cover; display:block;}
-  .promo-badge{
-    position:absolute;
-    top:10px;
-    right:10px;
-    z-index:2;
-    padding:6px 9px;
-    border-radius:999px;
-    background:#ff4d82;
-    color:#fff;
-    font-size:11px;
-    font-weight:900;
-    box-shadow:0 10px 18px -12px rgba(255,77,130,.7);
   }
   .card,
   .form-card,
@@ -389,6 +285,96 @@
   .theme[data-theme="sunset"]{background:linear-gradient(135deg,#ffb066,#e75d5d);}
   .theme[data-theme="galaxy"]{background:linear-gradient(135deg,#b19cff,#6b47d9);}
   .theme[data-theme="aurora"]{background:linear-gradient(135deg,#7ee1c0,#4b9bcf);}
+  .template-grid{
+    display:grid;
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:10px;
+  }
+  @media (max-width:520px){ .template-grid{ grid-template-columns:repeat(2,minmax(0,1fr)); } }
+  .ask-template{
+    position:relative;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:8px;
+    border:1.5px solid rgba(248,215,226,.9);
+    border-radius:14px;
+    background:#fff;
+    padding:10px;
+    cursor:pointer;
+    font-family:'Nunito',sans-serif;
+    text-align:center;
+    box-shadow:0 12px 26px -24px rgba(90,42,70,.42);
+    transition:transform .16s ease, border-color .16s ease, box-shadow .16s ease;
+  }
+  .ask-template:hover{transform:translateY(-2px);}
+  .ask-template.on{
+    border-color:var(--hot);
+    box-shadow:0 18px 36px -26px rgba(255,77,130,.7), inset 0 0 0 2px rgba(255,77,130,.12);
+  }
+  .ask-template.on::after{
+    content:"✓";
+    position:absolute;
+    top:6px;
+    right:6px;
+    width:20px;
+    height:20px;
+    display:grid;
+    place-items:center;
+    border-radius:50%;
+    background:var(--hot);
+    color:#fff;
+    font-size:11px;
+    font-weight:900;
+    z-index:2;
+  }
+  .ask-mini{
+    width:100%;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+    padding:12px 8px;
+    border-radius:11px;
+    min-height:96px;
+  }
+  .ask-mini-avatar{
+    width:36px;
+    height:36px;
+    border-radius:50%;
+    display:grid;
+    place-items:center;
+    background:#fff;
+    font-size:18px;
+    box-shadow:0 8px 16px -12px rgba(247,106,142,.45), inset 0 0 0 3px rgba(255,143,166,.2);
+  }
+  .ask-mini-btn{
+    padding:3px 10px;
+    border-radius:999px;
+    background:linear-gradient(135deg,#ff8fa6,#f76a8e);
+    color:#fff;
+    font-size:10px;
+    font-weight:900;
+  }
+  .ask-mini-classic{background:linear-gradient(180deg,#fffdfb,#fff2f2);}
+  .ask-mini-letter{
+    background:linear-gradient(180deg,#fff,#fff6fa);
+    border:1px dashed rgba(255,145,176,.6);
+  }
+  .ask-mini-letter .ask-mini-btn{background:linear-gradient(135deg,#c9b6e4,#8e6dcf);}
+  .ask-mini-dreamy{background:linear-gradient(160deg,#fffaff,#f6efff 60%,#fff);}
+  .ask-mini-dreamy .ask-mini-btn{background:linear-gradient(135deg,#ff8fb0,#9667e8);}
+  .ask-mini-ticket{
+    background:linear-gradient(180deg,#fffdf8,#fff0e0);
+    border:1.5px solid #ffd3a8;
+  }
+  .ask-mini-ticket .ask-mini-btn{background:linear-gradient(135deg,#ffb066,#e75d5d);}
+  .ask-template strong{
+    color:#4b173f;
+    font-size:13px;
+    font-weight:900;
+  }
   .posters{
     display:grid;
     grid-template-columns:repeat(auto-fill,minmax(120px,1fr));
@@ -737,7 +723,6 @@
     font-weight:900;
     cursor:pointer;
   }
-
   .preview-wrap{position:sticky; top:20px; align-self:start;}
   .refresh{text-align:right; margin:0 0 18px;}
   .refresh .btn{border-radius:999px; color:var(--hot); padding-inline:20px;}
@@ -964,12 +949,62 @@
   .success-emoji{font-size:44px; margin:2px 0 10px; display:inline-block; animation:successFloat 2.4s ease-in-out infinite;}
   .success-title{font-family:'Comfortaa',sans-serif; font-size:22px; line-height:1.25; margin:0 0 8px; color:#4b173f;}
   .success-msg{color:#8b7b8d; font-size:14px; line-height:1.5; font-weight:800; margin:0 0 18px;}
-  .success-link{margin:0 0 16px; padding:14px 16px; border-radius:12px; border:1px solid #ffcbd9; background:linear-gradient(135deg,#fff6f9,#ffe8f0); color:#3e1738; font-family:ui-monospace,Menlo,monospace; font-size:13px; font-weight:800; line-height:1.4; word-break:break-all; text-align:left;}
-  .success-copy{width:100%; min-height:54px; border:0; border-radius:14px; color:#fff; font-family:'Nunito',sans-serif; font-size:15px; font-weight:900; cursor:pointer; background:linear-gradient(100deg,#ff4d82,#9d63e6); box-shadow:0 18px 34px -22px rgba(157,99,230,.88); transition:transform .16s ease, box-shadow .16s ease;}
-  .success-copy:hover{transform:translateY(-1px);}
-  .success-copy.copied{background:linear-gradient(100deg,#5aba7a,#3a8a4a);}
+  .success-link{margin:0 0 14px; padding:14px 16px; border-radius:12px; border:1px solid #ffcbd9; background:linear-gradient(135deg,#fff6f9,#ffe8f0); color:#3e1738; font-family:ui-monospace,Menlo,monospace; font-size:13px; font-weight:800; line-height:1.4; word-break:break-all; text-align:left;}
+  .success-share{display:grid; grid-template-columns:1fr; gap:8px; margin-bottom:8px;}
+  .success-share.has-native{grid-template-columns:1.15fr 1fr;}
+  .success-copy,.success-native{min-height:54px; border:0; border-radius:14px; color:#fff; font-family:'Nunito',sans-serif; font-size:15px; font-weight:900; cursor:pointer; box-shadow:0 18px 34px -22px rgba(157,99,230,.88); transition:transform .16s ease, box-shadow .16s ease; padding:0 12px;}
+  .success-native{background:linear-gradient(100deg,#ff4d82,#9d63e6);}
+  .success-native:hover{transform:translateY(-1px);}
+  .success-copy{background:#fff; color:#4b173f; border:1px solid #ffcbd9; box-shadow:0 12px 24px -18px rgba(105,39,78,.4);}
+  .success-copy:hover{background:#ffeef4;}
+  .success-copy.copied{background:linear-gradient(100deg,#5aba7a,#3a8a4a); color:#fff; border-color:#3a8a4a;}
+  .success-share:not(.has-native) .success-copy{background:linear-gradient(100deg,#ff4d82,#9d63e6); color:#fff; border-color:transparent;}
+  .success-apps{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:0 0 6px;}
+  .success-app{min-height:44px; border:1px solid rgba(255,203,217,.72); border-radius:12px; background:#fff; color:#4b173f; font-family:'Nunito',sans-serif; font-weight:800; font-size:13px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; text-decoration:none; box-shadow:0 8px 18px -14px rgba(105,39,78,.4);}
+  .success-app:hover{background:#ffeef4; transform:translateY(-1px);}
+  .success-app.messenger{color:#0084ff;}
+  .success-app.instagram{color:#c136a0;}
+  .success-qr{margin-top:14px; padding:12px; border-radius:12px; background:#fff; border:1px dashed rgba(255,203,217,.72); display:flex; align-items:center; gap:12px; text-align:left;}
+  .success-qr img{width:96px; height:96px; border-radius:8px; background:#fdf3f8;}
+  .success-qr-copy{font-size:12px; color:#8b7b8d; font-weight:800; line-height:1.4;}
+  .success-qr-copy b{color:#4b173f;}
   .success-hint{margin:12px 0 0; color:#a08699; font-size:12px; font-weight:800;}
+  .success-hint a{color:#c136a0;}
+  .success-inbox{
+    display:grid;
+    grid-template-columns:36px minmax(0,1fr);
+    align-items:start;
+    gap:12px;
+    margin:14px 0 0;
+    padding:12px 14px;
+    text-align:left;
+    background:linear-gradient(135deg,#fff8fb,#fff);
+    border:1px solid rgba(255,203,217,.72);
+    border-radius:14px;
+    box-shadow:0 12px 24px -20px rgba(105,39,78,.4);
+  }
+  .success-inbox-ic{
+    width:36px;
+    height:36px;
+    border-radius:50%;
+    display:grid;
+    place-items:center;
+    background:linear-gradient(135deg,#ffe8f0,#fff);
+    font-size:18px;
+    box-shadow:inset 0 0 0 1px rgba(255,145,176,.5);
+  }
+  .success-inbox b{display:block; color:#4b173f; font-size:13px; font-weight:900;}
+  .success-inbox p{margin:2px 0 0; color:#6a4062; font-size:12px; font-weight:800; line-height:1.4; word-break:break-word;}
+  .success-inbox .success-inbox-email{color:#c136a0; font-family:ui-monospace,Menlo,monospace;}
+  .success-inbox-lock{color:#3a8a4a;}
+  .success-inbox-link{display:inline-block; margin-top:8px; color:#c136a0; font-size:12px; font-weight:900; text-decoration:none;}
+  .success-inbox-link:hover{text-decoration:underline;}
   .success-status{margin-top:10px; min-height:18px; color:#3a8a4a; font-size:13px; font-weight:900;}
+  .code-example{margin:6px 0 4px; font-size:12px; color:#8b7b8d; font-weight:700;}
+  .code-example code{background:#fff; border:1px solid #ffcbd9; border-radius:6px; padding:2px 6px; font-family:ui-monospace,Menlo,monospace; color:#4b173f;}
+  .payment-toast{display:none; margin:0 0 16px; padding:12px 16px; border-radius:14px; background:linear-gradient(100deg,rgba(90,186,122,.16),rgba(58,138,74,.14)); border:1px solid rgba(58,138,74,.35); color:#215a34; font-weight:800; font-size:13px; line-height:1.45;}
+  .payment-toast.show{display:block; animation:paymentToastIn .35s ease;}
+  @keyframes paymentToastIn{from{opacity:0; transform:translateY(-6px);} to{opacity:1; transform:none;}}
   @keyframes successFadeIn{from{opacity:0;} to{opacity:1;}}
   @keyframes successPopIn{0%{opacity:0; transform:scale(.9) translateY(10px);} 100%{opacity:1; transform:none;}}
   @keyframes successFloat{0%,100%{transform:translateY(0) scale(1);} 50%{transform:translateY(-6px) scale(1.05);}}
@@ -984,21 +1019,15 @@
   @media (max-width:720px){
     .wrap{width:100%; max-width:none; margin:0; padding:18px 12px 28px; border-radius:0; border-left:0; border-right:0;}
     .topbar{align-items:flex-start;}
-    .steps{width:100%; display:grid; grid-template-columns:repeat(4,1fr); gap:6px; overflow:visible; padding-bottom:4px;}
+    .steps{width:100%; display:grid; grid-template-columns:repeat(5,1fr); gap:6px; overflow:visible; padding-bottom:4px;}
     .step{justify-content:center; gap:4px; margin:0; padding:0; border-right:0; font-size:10px; line-height:1.15; text-align:center; white-space:normal;}
     .step-num{width:22px; height:22px; flex:0 0 22px; font-size:11px;}
     .title-block{margin-top:16px;}
     h1{font-size:24px;}
-    .promo-splash{grid-template-columns:1fr; gap:16px; padding:18px;}
-    .promo-title{font-size:22px;}
-    .promo-new{font-size:32px;}
-    .promo-poster{justify-self:start; width:min(160px,56vw);}
-    .promo-actions{display:grid; grid-template-columns:1fr; gap:8px;}
-    .promo-btn,.promo-link{width:100%;}
     .form-card,.preview-card,.side-card,.music-card{padding:20px 16px; border-radius:16px;}
     .code-help-top{grid-template-columns:32px minmax(0,1fr);}
     .code-help-icon{width:32px; height:32px;}
-    .qpay-choice{grid-template-columns:1fr; gap:12px;}
+    .qpay-choice,.template-grid{grid-template-columns:1fr; gap:12px;}
     .qpay-cta{width:100%;}
     .song-search-row{grid-template-columns:1fr;}
     .song-result{grid-template-columns:86px minmax(0,1fr);}
@@ -1024,10 +1053,11 @@
   <div class="wrap">
     <header class="topbar">
       <div class="steps">
-        <span class="step on" data-step="1"><span class="step-num">1</span>Эрх + Хэн</span>
-        <span class="step" data-step="2"><span class="step-num">2</span>Дуу + Тема</span>
-        <span class="step" data-step="3"><span class="step-num">3</span>Дэлгэрэнгүй</span>
-        <span class="step" data-step="4"><span class="step-num">4</span>Preview + Илгээх</span>
+        <span class="step on" data-step="1"><span class="step-num">1</span>Template</span>
+        <span class="step" data-step="2"><span class="step-num">2</span>Эрх + Хэн</span>
+        <span class="step" data-step="3"><span class="step-num">3</span>Дуу + Тема</span>
+        <span class="step" data-step="4"><span class="step-num">4</span>Дэлгэрэнгүй</span>
+        <span class="step" data-step="5"><span class="step-num">5</span>Preview + Илгээх</span>
       </div>
       <div class="preview-kicker">✨ Preview</div>
     </header>
@@ -1040,35 +1070,56 @@
           <p class="subtitle">Preview-гээ хараад, QPay-ээр эрхээ идэвхжүүл. Код гармагц урилгын линкээ үүсгэнэ.</p>
         </div>
       </div>
-
-      <section class="promo-splash" aria-label="Spider-Man хямдралтай урилга">
-        <div class="promo-splash-copy">
-          <span class="promo-tag">🎬 Хямдралтай постер</span>
-          <h2 class="promo-title">Spider-Man кинонд уриарай</h2>
-          <p class="promo-text">
-            Хүн-Аалз постертой онлайн болзооны урилга үүсгээд Messenger эсвэл чатаар шууд илгээгээрэй.
-          </p>
-          <div class="promo-price" aria-label="Хямдралтай үнэ">
-            <span class="promo-old">9,900₮</span>
-            <strong class="promo-new">6,900₮</strong>
-          </div>
-          <div class="promo-actions">
-            <button class="promo-btn" id="promoSelectPoster" type="button">Постер сонгох</button>
-            <a class="promo-link" href="pay.html">6,900₮-өөр эрх авах</a>
-          </div>
-        </div>
-        <div class="promo-poster" aria-hidden="true">
-          <span class="promo-badge">-3,000₮</span>
-          <img src="assets/posters/hun-aalz.png" alt="" />
-        </div>
-      </section>
+      <div class="payment-toast" id="paymentToast" role="status" aria-live="polite">
+        💚 <b>Төлбөр амжилттай.</b> Кодоо бөглөсөн байна — одоо урилгаа үүсгээрэй.
+      </div>
 
       <section class="form-card">
         <div class="wizard-step active" data-step="1">
+        <div class="field">
+          <label><span class="label-icon">🎨</span>Урилгын эхний загвар</label>
+          <div class="template-grid" id="askTemplates">
+            <button class="ask-template" type="button" data-ask-template="classic" aria-label="Хөөрхөн загвар">
+              <div class="ask-mini ask-mini-classic">
+                <span class="ask-mini-avatar">💗</span>
+                <span class="ask-mini-btn">Тийм</span>
+              </div>
+              <strong>Хөөрхөн</strong>
+            </button>
+            <button class="ask-template" type="button" data-ask-template="letter" aria-label="Хайрын захидал">
+              <div class="ask-mini ask-mini-letter">
+                <span class="ask-mini-avatar">✉️</span>
+                <span class="ask-mini-btn">Уншая</span>
+              </div>
+              <strong>Захидал</strong>
+            </button>
+            <button class="ask-template" type="button" data-ask-template="dreamy" aria-label="Тансаг">
+              <div class="ask-mini ask-mini-dreamy">
+                <span class="ask-mini-avatar">🌙</span>
+                <span class="ask-mini-btn">Тийм</span>
+              </div>
+              <strong>Тансаг</strong>
+            </button>
+            <button class="ask-template" type="button" data-ask-template="ticket" aria-label="Тасалбар">
+              <div class="ask-mini ask-mini-ticket">
+                <span class="ask-mini-avatar">🎬</span>
+                <span class="ask-mini-btn">Оруул</span>
+              </div>
+              <strong>Тасалбар</strong>
+            </button>
+          </div>
+          <p class="template-preview-hint">👉 Дархад preview дээр шууд харагдана.</p>
+          <div class="code-status" id="templateStatus" aria-live="polite"></div>
+        </div>
+        </div>
+
+        <div class="wizard-step" data-step="2">
+        <button class="step-back" type="button" data-step-back>← Өмнөх алхам</button>
         <div class="code-gate" id="codeGate">
-          <label><span class="label-icon">🔑</span>1. УРИЛГА ҮҮСГЭХ ЭРХИЙН КОД *</label>
-          <input id="accessCode" class="code-input" type="text" placeholder="LOV-XXXXXX" maxlength="24" autocomplete="off" />
-          <div class="code-status" id="codeStatus"></div>
+          <label><span class="label-icon">🔑</span>УРИЛГЫН ЭРХИЙН КОД *</label>
+          <input id="accessCode" class="code-input" type="text" placeholder="LOV-A7K2M9" maxlength="24" autocomplete="off" aria-describedby="codeStatus codeExample" />
+          <div class="code-example" id="codeExample">Жишээ формат: <code>LOV-A7K2M9</code> · Том/жижиг үсэг чухал биш</div>
+          <div class="code-status" id="codeStatus" aria-live="polite"></div>
           <div class="code-help">
             <div class="code-help-top">
               <span class="code-help-icon">💡</span>
@@ -1082,7 +1133,7 @@
                 <strong>Кодгүй юу?</strong>
                 <span>QPay төлөөд кодоо шууд аваарай.</span>
               </div>
-              <a class="qpay-cta" href="pay.html" aria-label="QPay-ээр урилга үүсгэх эрх авах">6,900₮-өөр эрх авах <span>→</span></a>
+              <a class="qpay-cta" href="pay.html" aria-label="QPay-ээр урилга үүсгэх эрх авах">9,900₮-өөр эрх авах <span>→</span></a>
             </div>
             <div class="qpay-steps" aria-label="QPay эрх авах алхам">
               <span>1. Төлөх</span>
@@ -1092,31 +1143,31 @@
           </div>
         </div>
         <div class="field">
-          <label><span class="label-icon">♙</span>2. УРИЛГА ХҮЛЭЭН АВАГЧИЙН НЭР *</label>
+          <label><span class="label-icon">♙</span>УРИЛГА ХҮЛЭЭН АВАГЧИЙН НЭР *</label>
           <input id="recipientName" type="text" placeholder="жишээ: Аная" maxlength="30" />
           <div class="hint">Хэн рүү урилгаа илгээх вэ? Энэ нэр урилгын эхлэл болон мэндчилгээнд харагдана.</div>
         </div>
         <div class="field">
-          <label><span class="label-icon">💗</span>3. ИЛГЭЭГЧИЙН НЭР</label>
+          <label><span class="label-icon">💗</span>ИЛГЭЭГЧИЙН НЭР</label>
           <input id="senderName" type="text" placeholder="жишээ: Мики" maxlength="30" />
           <div class="hint">Урилга хэнээс очиж байгааг харуулна. Хоосон үлдээвэл “тусгай хэн нэгэн” гэж харагдана.</div>
         </div>
         <div class="field">
-          <label><span class="label-icon">✉️</span>4.ХАРИУ ХҮЛЭЭН АВАХ EMAIL *</label>
+          <label><span class="label-icon">✉️</span>ТАНЫ ИМЭЙЛ (ХАРИУГ ЭНД ХҮРГЭНЭ) *</label>
           <input id="responseEmail" type="email" placeholder="you@gmail.com" />
-          <div class="hint">Хүлээн авагч “тийм” эсвэл “үгүй” хариу имэйлээр ирнэ</div>
+          <div class="hint">🔒 <b>Зөвхөн танд ирнэ.</b> Хүлээн авагч энэ хаягийг харахгүй. Тийм / Үгүй / Уучлаарай — гурван төрлийн хариу, хариу засвар бүхэн энэ имэйл рүү автоматаар очно.</div>
         </div>
         </div>
 
-        <div class="wizard-step" data-step="2">
+        <div class="wizard-step" data-step="3">
         <button class="step-back" type="button" data-step-back>← Өмнөх алхам</button>
         <div class="field">
-          <label><span class="label-icon">🎵</span>5.YOUTUBE ДУУ ХАЙХ</label>
+          <label><span class="label-icon">🎵</span>YOUTUBE ДУУ ХАЙХ</label>
           <div class="song-search-row">
             <input id="songSearch" type="search" placeholder="Дууны нэр бичих" autocomplete="off" />
             <button class="btn small secondary" id="songSearchBtn" type="button">Хайх</button>
           </div>
-          <div id="songStatus" class="song-status"></div>
+          <div id="songStatus" class="song-status" aria-live="polite"></div>
           <div id="songResults" class="song-results" style="display:none;"></div>
           <input id="videoId" type="text" placeholder="Сонгосон дууны холбоос энд орно" readonly />
           <div class="hint">Хайлтын үр дүнгээс нэг дуу сонгоход холбоос нь автоматаар бөглөгдөнө.</div>
@@ -1170,31 +1221,31 @@
         </div>
         </div>
 
-        <div class="wizard-step" data-step="3">
+        <div class="wizard-step" data-step="4">
         <button class="step-back" type="button" data-step-back>← Өмнөх алхам</button>
         <div class="field">
-          <label><span class="label-icon">🖊</span>7.НЭМЭЛТ ЗУРВАС (ЗААВАЛ БИШ)</label>
+          <label><span class="label-icon">🖊</span>НЭМЭЛТ ЗУРВАС (ЗААВАЛ БИШ)</label>
           <textarea id="customNote" placeholder="жишээ: чиний хариу л надад бүх зүйл" maxlength="120"></textarea>
           <div class="hint">Энэ текст урилгын доод хэсэгт харагдана 💕</div>
         </div>
         <div class="field">
-          <label><span class="label-icon">📍</span>8.УУЛЗАХ ГАЗАР (ЗААВАЛ БИШ)</label>
+          <label><span class="label-icon">📍</span>УУЛЗАХ ГАЗАР (ЗААВАЛ БИШ)</label>
           <input id="locationName" type="text" placeholder="жишээ: Café Bene, State Circus" maxlength="60" />
           <div class="hint">Тийм газарт үүссэн бол энэ хэсэгт харагдана</div>
         </div>
         <div class="field">
-          <label><span class="label-icon">🗺</span>9.GOOGLE MAPS ЛИНК (ЗААВАЛ БИШ)</label>
+          <label><span class="label-icon">🗺</span>GOOGLE MAPS ЛИНК (ЗААВАЛ БИШ)</label>
           <input id="locationUrl" type="text" placeholder="https://maps.app.goo.gl/..." />
           <div class="hint">Google Maps share линкээ оруулна уу ✨</div>
         </div>
         <div class="field">
-          <label><span class="label-icon">💌</span>10.ТУСГАЙ ЗАХИДАЛ (ЗААВАЛ БИШ)</label>
+          <label><span class="label-icon">💌</span>ТУСГАЙ ЗАХИДАЛ (ЗААВАЛ БИШ)</label>
           <textarea id="specialLetter" placeholder="жишээ: Чамайг анх харснаас хойш..." maxlength="300"></textarea>
           <div class="hint">Таны хайртад зориулсан захидал энэ хэсэгт харагдана ❤️</div>
         </div>
         </div>
 
-        <div class="wizard-step" data-step="4">
+        <div class="wizard-step" data-step="5">
         <button class="step-back" type="button" data-step-back>← Өмнөх алхам</button>
         <p class="subtitle" style="margin-bottom:18px;">Preview дээрээ шалгаад, доорх товчоор урилгын линкээ үүсгэ 💌</p>
 
@@ -1207,12 +1258,12 @@
         <div class="form-actions">
           <button class="btn secondary" id="resetForm" type="button">＋ Нэмж шинэ</button>
           <button class="btn secondary" id="shareLink" type="button">🔗 Хуваалцах</button>
-          <button class="btn wide" id="generate" disabled>Линк илгээх →</button>
+          <button class="btn wide" id="generate" disabled>💌 Урилгын линк үүсгэх</button>
         </div>
-        <div class="status" id="status"></div>
+        <div class="status" id="status" aria-live="assertive"></div>
 
         <div class="backend-row">
-          <a href="dashboard.html" class="btn small secondary">📊 Миний урилгууд</a>
+          <a href="dashboard.html" class="btn small secondary" title="Зөвхөн энэ browser дээрээс харагдана">🔒 Хувийн хариунуудын самбар</a>
           <span id="backendBadge"></span>
         </div>
         <p class="footer-note">💞 Хийсэнээ! Одоо Messenger/Instagram-р паст хийгээрэй 💌</p>
@@ -1239,6 +1290,7 @@
         <div class="tip-row"><span>🔑</span><p>Эрхийн код нэг урилгад нэг удаа ашиглагдана.</p></div>
         <div class="tip-row"><span>🎟</span><p>Preview хийж хараад линкээ илгээнэ үү.</p></div>
         <div class="tip-row"><span>💌</span><p>Хариу ирсэн даруйд таны имэйл рүү мэдэгдэх болно.</p></div>
+        <div class="tip-row"><span>🔒</span><p>Хариунууд зөвхөн танд харагдана. Урилгын линкийг харсан хүн таны бусад урилгыг харах боломжгүй.</p></div>
       </section>
 
       <section class="side-card music-card">
@@ -1276,7 +1328,7 @@
     </div>
     <footer class="preview-modal-foot">
       <button class="modal-ghost" id="editPreview" type="button">✏️ Засах</button>
-      <a class="modal-pay" href="pay.html">6,900₮-өөр идэвхжүүлэх</a>
+      <button class="modal-pay" id="previewPrimaryCta" type="button" data-pay-href="pay.html">9,900₮-өөр идэвхжүүлэх</button>
     </footer>
   </div>
 
@@ -1285,11 +1337,35 @@
       <button class="success-close" id="successClose" type="button" aria-label="Хаах">✕</button>
       <span class="success-emoji" aria-hidden="true">💌</span>
       <h2 class="success-title" id="successModalTitle">Урилгын линк бэлэн!</h2>
-      <p class="success-msg">Доорх линкийг хуулж аваад хайртай хүн рүүгээ илгээнэ үү 💗</p>
+      <p class="success-msg">Одоо чи <b id="successRecipient">хайртай хүн</b> рүүгээ доорх линкийг илгээгээрэй 💗</p>
       <div class="success-link" id="successLink"></div>
-      <button class="success-copy" id="successCopyBtn" type="button">📋 Хуулж авах</button>
+      <div class="success-share" id="successShare">
+        <button class="success-native" id="successShareBtn" type="button" hidden>📤 Хуваалцах</button>
+        <button class="success-copy" id="successCopyBtn" type="button">📋 Хуулж авах</button>
+      </div>
+      <div class="success-apps">
+        <a class="success-app messenger" id="shareMessenger" href="#" target="_blank" rel="noopener">📨 Messenger</a>
+        <a class="success-app instagram" id="shareInstagram" href="#" target="_blank" rel="noopener">📷 Instagram</a>
+      </div>
+      <div class="success-qr">
+        <img id="successQrImg" alt="" />
+        <div class="success-qr-copy">
+          <b>Утсаараа scan хийж явуулах</b><br>
+          Компьютер дээрээс үүсгэсэн бол QR-аа гар утсаараа уншиж, тэндээсээ шууд ил&shy;гээе ✨
+        </div>
+      </div>
       <div class="success-status" id="successStatus" aria-live="polite"></div>
-      <p class="success-hint">Хаагаад үзэх, эсвэл “Нэмж шинэ” дараад өөр урилга үүсгэж болно.</p>
+      <div class="success-inbox" id="successInbox">
+        <span class="success-inbox-ic" aria-hidden="true">📬</span>
+        <div>
+          <b>Хариу энд ирнэ · <span class="success-inbox-lock">🔒 зөвхөн танд</span></b>
+          <p>
+            📧 <span class="success-inbox-email" id="successInboxEmail">…</span> рүү шууд имэйл ирнэ.<br>
+            Түүнчлэн энэ browser дээрээс <a class="success-inbox-link" href="dashboard.html" target="_blank" rel="noopener">🔒 Хувийн хариунуудын самбар нээх →</a>
+          </p>
+        </div>
+      </div>
+      <p class="success-hint">1 код = 1 урилга. Дараагийнхаа төлөө <a href="pay.html" id="successNewCode">шинэ код авах →</a></p>
     </div>
   </div>
 
@@ -1302,6 +1378,7 @@
   var $ = BolzooUtils.$;
   var currentTheme = 'coral';
   var currentPoster = '';
+  var currentAskTemplate = '';
 
   /* ---------- Posters picker (assets/posters.js registry) ---------- */
   function renderPosters(){
@@ -1355,7 +1432,7 @@
     }catch(e){}
   }
   function saveDraft(){
-    var d = { theme: currentTheme, poster: currentPoster };
+    var d = { theme: currentTheme, poster: currentPoster, askTemplate: currentAskTemplate };
     DRAFT_FIELDS.forEach(function(id){ d[id] = $(id).value; });
     lsSet(STORAGE_DRAFT_KEY, JSON.stringify(d));
   }
@@ -1376,6 +1453,9 @@
         currentPoster = BolzooPosters.has(d.poster) ? d.poster : '';
         markPoster(currentPoster);
       }
+      if(d.askTemplate){
+        markAskTemplate(d.askTemplate);
+      }
     }catch(e){}
   }
   function clearPersistence(){
@@ -1395,8 +1475,33 @@
     currentTheme = t.getAttribute('data-theme');
     var kids = $('themes').children;
     for(var i=0;i<kids.length;i++){ kids[i].classList.toggle('on', kids[i]===t); }
-    schedulePreview();
+    schedulePreview(true);
     saveDraft();
+  });
+
+  function markAskTemplate(template){
+    var allowed = { classic:true, letter:true, dreamy:true, ticket:true };
+    currentAskTemplate = allowed[template] ? template : '';
+    var host = $('askTemplates');
+    if(!host) return;
+    var kids = host.children;
+    for(var i=0;i<kids.length;i++){
+      kids[i].classList.toggle('on', kids[i].getAttribute('data-ask-template') === currentAskTemplate);
+    }
+    var status = $('templateStatus');
+    if(status){
+      status.textContent = currentAskTemplate ? '✅ Template сонгогдлоо' : '';
+      status.classList.toggle('ok', !!currentAskTemplate);
+      status.classList.remove('bad');
+    }
+  }
+  $('askTemplates').addEventListener('click', function(e){
+    var t = e.target.closest('[data-ask-template]'); if(!t) return;
+    markAskTemplate(t.getAttribute('data-ask-template'));
+    schedulePreview(true);
+    saveDraft();
+    updateDockNext();
+    highlightPreview();
   });
 
   $('posters').addEventListener('click', function(e){
@@ -1404,19 +1509,9 @@
     var pid = t.getAttribute('data-poster') || '';
     currentPoster = pid;
     markPoster(pid);
-    schedulePreview();
+    schedulePreview(true);
     saveDraft();
   });
-  $('promoSelectPoster').addEventListener('click', function(){
-    currentPoster = window.BolzooPosters && BolzooPosters.has('hun-aalz')
-      ? 'hun-aalz'
-      : '';
-    markPoster(currentPoster);
-    schedulePreview();
-    saveDraft();
-    goStep(2);
-  });
-
   // Owner-only fields — never encoded into the preview URL, never sent to the
   // public `config` JSONB. Sent separately as p_private_config.
   var PRIVATE_CONFIG_KEYS = ['responseEmail'];
@@ -1433,6 +1528,7 @@
       locationUrl:   $('locationUrl').value.trim(),
       specialLetter: $('specialLetter').value.trim()
     };
+    if(currentAskTemplate) cfg.askTemplate = currentAskTemplate;
     if(currentPoster) cfg.poster = currentPoster;
     return cfg;
   }
@@ -1467,12 +1563,64 @@
   var previewTimer = null;
   var previewDirty = true;
   var previewScrollY = 0;
+  var previewReady = false;
+  var fullPreviewReady = false;
+  var pendingPreviewCfg = null;
+  var pendingFullCfg = null;
 
   function setPreviewDirty(isDirty){
     previewDirty = !!isDirty;
     document.body.classList.toggle('preview-dirty', previewDirty);
     $('previewDockText').textContent = previewDirty ? 'Шинэ preview харах' : 'Preview';
   }
+  function postPreview(frame, cfg){
+    if(!frame || !frame.contentWindow) return false;
+    try{
+      frame.contentWindow.postMessage({ type: 'bolzoo:config', config: cfg }, '*');
+      return true;
+    }catch(e){ return false; }
+  }
+  function sendLivePreview(cfg){
+    cfg = cfg || collectConfig();
+    // Бүх public түлхүүрийг илгээнэ — хоосон утга ч гэсэн явна (bolzoo.html
+    // талд poster/choices зэргийг цэвэрлэхэд ашиглана).
+    var LIVE_KEYS = ['recipientName','senderName','videoId','theme','customNote','locationName','locationUrl','specialLetter','askTemplate','poster'];
+    var payload = {};
+    LIVE_KEYS.forEach(function(k){
+      if(PRIVATE_CONFIG_KEYS.indexOf(k) >= 0) return;
+      var v = cfg[k];
+      payload[k] = (v == null) ? '' : v;
+    });
+    if(previewReady){
+      postPreview($('preview'), payload);
+    } else {
+      pendingPreviewCfg = payload;
+    }
+    if(fullPreviewReady && !$('previewModal').hidden){
+      postPreview($('previewFull'), payload);
+    } else if(!$('previewModal').hidden){
+      pendingFullCfg = payload;
+    }
+  }
+  window.addEventListener('message', function(ev){
+    var data = ev && ev.data;
+    if(!data || data.type !== 'bolzoo:ready') return;
+    var src = ev.source;
+    if($('preview') && src === $('preview').contentWindow){
+      previewReady = true;
+      if(pendingPreviewCfg){
+        postPreview($('preview'), pendingPreviewCfg);
+        pendingPreviewCfg = null;
+      }
+    }
+    if($('previewFull') && src === $('previewFull').contentWindow){
+      fullPreviewReady = true;
+      if(pendingFullCfg){
+        postPreview($('previewFull'), pendingFullCfg);
+        pendingFullCfg = null;
+      }
+    }
+  });
   function teaserLine(cfg){
     if(cfg.customNote) return cfg.customNote.length > 70 ? cfg.customNote.slice(0, 67) + '...' : cfg.customNote;
     return 'Чамд нэг санал байна 💗';
@@ -1482,16 +1630,50 @@
     $('teaserName').textContent = (cfg.recipientName || 'Ану') + ',';
     $('teaserLine').textContent = teaserLine(cfg);
   }
-  function schedulePreview(){
+  function schedulePreview(immediate){
+    var cfg = collectConfig();
+    updateTeaser(cfg);
+    if(previewReady){
+      // Хэрэв iframe аль хэдийн ачаалагдсан бол шууд message-аар шинэчилнэ —
+      // reload/flicker гарахгүй, template солиход агшин зуур харагдана.
+      sendLivePreview(cfg);
+      setPreviewDirty(false);
+      return;
+    }
+    // Iframe анх ачаалж байгаа үед reload давхардуулахгүй — pending config-ыг
+    // шинэчилж, ready дохио ирэхэд илгээнэ.
+    if($('preview') && $('preview').src){
+      sendLivePreview(cfg);
+      setPreviewDirty(true);
+      return;
+    }
     setPreviewDirty(true);
-    updateTeaser();
     if(previewTimer) clearTimeout(previewTimer);
-    previewTimer = setTimeout(updatePreview, 400);
+    previewTimer = setTimeout(updatePreview, immediate ? 0 : 400);
   }
   function updatePreview(){
     var cfg = collectConfig();
     updateTeaser(cfg);
+    if(previewReady){
+      sendLivePreview(cfg);
+      setPreviewDirty(false);
+      return;
+    }
+    // Анхны ачаалалт эсвэл ready дохио ирээгүй үед л iframe-ийг дахин ачаална.
+    previewReady = false;
     $('preview').src = buildUrl(cfg, false);
+  }
+  var pulseTimer = null;
+  function highlightPreview(){
+    var card = document.querySelector('.preview-card');
+    if(!card) return;
+    card.classList.add('pulse');
+    if(pulseTimer) clearTimeout(pulseTimer);
+    pulseTimer = setTimeout(function(){ card.classList.remove('pulse'); }, 620);
+    // Утасны дэлгэц одоо ямар байгааг харуулахын тулд preview-руу scroll хийнэ
+    if(window.matchMedia('(max-width: 900px)').matches){
+      card.scrollIntoView({ behavior:'smooth', block:'center' });
+    }
   }
   function settlePreview(frame){
     frame = frame || $('preview');
@@ -1515,6 +1697,17 @@
   attachPreviewSettler($('preview'));
   attachPreviewSettler($('previewFull'));
 
+  function updatePreviewPrimaryCta(){
+    var btn = $('previewPrimaryCta');
+    if(!btn) return;
+    if(codeIsValid){
+      btn.textContent = '💌 Урилгын линк үүсгэх';
+      btn.dataset.mode = 'publish';
+    } else {
+      btn.textContent = '9,900₮-өөр идэвхжүүлэх';
+      btn.dataset.mode = 'pay';
+    }
+  }
   function openFullscreenPreview(){
     if(previewTimer){
       clearTimeout(previewTimer);
@@ -1523,7 +1716,10 @@
     previewScrollY = window.scrollY || window.pageYOffset || 0;
     var cfg = collectConfig();
     updateTeaser(cfg);
+    // Fullscreen preview үргэлж шинэчлэгдэж байхын тулд iframe-ийг ачаална.
+    fullPreviewReady = false;
     $('previewFull').src = buildUrl(cfg, false);
+    updatePreviewPrimaryCta();
     $('previewModal').hidden = false;
     document.body.classList.add('preview-modal-open');
     setPreviewDirty(false);
@@ -1545,6 +1741,21 @@
   $('teaserPreview').addEventListener('click', openFullscreenPreview);
   $('closePreview').addEventListener('click', closeFullscreenPreview);
   $('editPreview').addEventListener('click', closeFullscreenPreview);
+  $('previewPrimaryCta').addEventListener('click', function(){
+    // In "publish" mode, close the modal and trigger the same publish path
+    // as the regular Publish button. In "pay" mode, fall through to pay.html.
+    var mode = this.dataset.mode || 'pay';
+    if(mode === 'publish' && !$('generate').disabled){
+      closeFullscreenPreview();
+      // Wait for the modal transition so scroll + focus land on the CTA.
+      setTimeout(function(){
+        goStep(TOTAL_STEPS);
+        $('generate').click();
+      }, 220);
+      return;
+    }
+    window.location.href = this.dataset.payHref || 'pay.html';
+  });
   $('continueStep').addEventListener('click', handleDockNext);
   document.addEventListener('keydown', function(e){
     if(e.key === 'Escape' && !$('previewModal').hidden) closeFullscreenPreview();
@@ -1684,8 +1895,8 @@
 
   function setStatus(msg){ $('status').textContent = msg; }
 
-  /* ---------- 4-step wizard ---------- */
-  var TOTAL_STEPS = 4;
+  /* ---------- 5-step wizard ---------- */
+  var TOTAL_STEPS = 5;
   var currentStep = 1;
   function goStep(n){
     n = Math.max(1, Math.min(TOTAL_STEPS, n));
@@ -1701,14 +1912,16 @@
     updateDockNext();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
-  function step1Valid(){
+  function codeStepValid(){
     var email = $('responseEmail').value.trim();
     return codeIsValid
       && $('recipientName').value.trim().length > 0
       && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email);
   }
   function canAdvance(){
-    return currentStep === 1 ? step1Valid() : true;
+    if(currentStep === 1) return !!currentAskTemplate;
+    if(currentStep === 2) return codeStepValid();
+    return true;
   }
   function updateDockNext(){
     var next = $('continueStep');
@@ -1717,7 +1930,9 @@
       next.textContent = '💌 Линк үүсгэх';
       next.disabled = !codeIsValid;
     } else {
-      next.textContent = 'Үргэлжлүүлэх →';
+      next.textContent = currentStep === 1 && !currentAskTemplate
+        ? 'Template сонгоно уу'
+        : 'Үргэлжлүүлэх →';
       next.disabled = !canAdvance();
     }
   }
@@ -1728,6 +1943,13 @@
     }
     if(!canAdvance()){
       if(currentStep === 1){
+        var ts = $('templateStatus');
+        if(ts){
+          ts.textContent = '⚠️ 4 template-ээс нэгийг сонгоод үргэлжлүүлнэ үү';
+          ts.classList.add('bad');
+          ts.classList.remove('ok');
+        }
+      } else if(currentStep === 2){
         if(!codeIsValid) setStatus('⚠️ Хүчинтэй эрхийн код оруулна уу');
         else if(!$('recipientName').value.trim()) setStatus('⚠️ Хүлээн авагчийн нэрийг заавал бөглөнө үү');
         else setStatus('⚠️ Зөв email хаяг оруулна уу');
@@ -1771,6 +1993,8 @@
     codeIsValid = (state==='ok');
     $('generate').disabled = !codeIsValid;
     if(typeof updateDockNext === 'function') updateDockNext();
+    // Keep the fullscreen-preview CTA in sync if it's open.
+    if(typeof updatePreviewPrimaryCta === 'function') updatePreviewPrimaryCta();
   }
   async function checkCode(){
     var code = normalizeCode($('accessCode').value);
@@ -1799,11 +2023,38 @@
   });
   $('accessCode').addEventListener('blur', checkCode);
 
+  function jumpToField(step, elementId){
+    if(typeof goStep === 'function') goStep(step);
+    var target = elementId && document.getElementById(elementId);
+    if(target){
+      setTimeout(function(){
+        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        if(typeof target.focus === 'function'){
+          try{ target.focus({ preventScroll: true }); }catch(_){ target.focus(); }
+        }
+      }, 60);
+    }
+  }
   function validate(cfg){
-    if(!codeIsValid){ setStatus('⚠️ Хүчинтэй эрхийн код оруулна уу'); return false; }
-    if(!cfg.recipientName){ setStatus('⚠️ Хүлээн авагчийн нэрийг заавал бөглөнө үү'); return false; }
+    if(!codeIsValid){
+      setStatus('⚠️ Хүчинтэй эрхийн код оруулна уу');
+      jumpToField(2, 'accessCode');
+      return false;
+    }
+    if(!cfg.recipientName){
+      setStatus('⚠️ Хүлээн авагчийн нэрийг заавал бөглөнө үү');
+      jumpToField(2, 'recipientName');
+      return false;
+    }
     if(!cfg.responseEmail || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(cfg.responseEmail)){
-      setStatus('⚠️ Зөв Gmail хаяг оруулна уу'); return false;
+      setStatus('⚠️ Зөв имэйл хаяг оруулна уу');
+      jumpToField(2, 'responseEmail');
+      return false;
+    }
+    if(!cfg.askTemplate){
+      setStatus('⚠️ Эхний хуудасны хэлбэрээс нэгийг сонгоно уу');
+      jumpToField(1, 'askTemplates');
+      return false;
     }
     return true;
   }
@@ -1812,19 +2063,66 @@
     $('linkBox').style.display = 'block';
     $('linkActions').style.display = 'flex';
     setStatus(msg || '✅ Линк бэлэн!');
-    openSuccessModal(url);
+    openSuccessModal(url, $('recipientName').value.trim(), $('responseEmail').value.trim());
   }
 
   /* ---------- Success modal ---------- */
-  function openSuccessModal(url){
+  function successShareText(recipientName){
+    return (recipientName ? recipientName + ' минь, ' : '') + 'чамд болзооны урилга ирлээ 💌';
+  }
+  function copyToClipboard(text){
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      return navigator.clipboard.writeText(text).catch(function(){
+        var t = document.createElement('textarea'); t.value=text; document.body.appendChild(t); t.select(); document.execCommand('copy'); t.remove();
+      });
+    }
+    var t = document.createElement('textarea'); t.value=text; document.body.appendChild(t); t.select(); document.execCommand('copy'); t.remove();
+    return Promise.resolve();
+  }
+  function openSuccessModal(url, recipientName, responseEmail){
     $('successLink').textContent = url;
     $('successStatus').textContent = '';
-    var btn = $('successCopyBtn');
-    btn.classList.remove('copied');
-    btn.textContent = '📋 Хуулж авах';
+    $('successRecipient').textContent = recipientName && recipientName.trim() ? recipientName.trim() : 'хайртай хүн';
+    var emailEl = $('successInboxEmail');
+    if(emailEl){
+      var email = (responseEmail || '').trim();
+      emailEl.textContent = email || 'имэйл хаяг';
+    }
+
+    var copyBtn = $('successCopyBtn');
+    copyBtn.classList.remove('copied');
+    copyBtn.textContent = '📋 Хуулж авах';
+
+    // Native share sheet is the highest-leverage path on mobile. When
+    // available, promote it above the plain copy button.
+    var share = $('successShare');
+    var nativeBtn = $('successShareBtn');
+    if(navigator.share){
+      share.classList.add('has-native');
+      nativeBtn.hidden = false;
+    } else {
+      share.classList.remove('has-native');
+      nativeBtn.hidden = true;
+    }
+
+    // Messenger + Instagram deep links. Messenger has a stable web share URL;
+    // Instagram doesn't expose direct-message share to the web so we copy the
+    // link to clipboard and open the app/inbox — user pastes into DM.
+    $('shareMessenger').href = 'https://www.facebook.com/dialog/send?app_id=291823901192022&link=' + encodeURIComponent(url) + '&redirect_uri=' + encodeURIComponent(url);
+    $('shareInstagram').href = 'https://www.instagram.com/direct/inbox/';
+    $('shareInstagram').dataset.url = url;
+
+    // QR code — external service, sized for mobile scanning. Loading it lazily
+    // means the modal renders instantly if the network is slow.
+    $('successQrImg').src = 'https://api.qrserver.com/v1/create-qr-code/?size=192x192&margin=2&data=' + encodeURIComponent(url);
+    $('successQrImg').alt = 'QR: ' + url;
+
     $('successModal').hidden = false;
     document.body.classList.add('preview-modal-open');
-    setTimeout(function(){ btn.focus({ preventScroll:true }); }, 220);
+    setTimeout(function(){
+      var focusTarget = navigator.share ? nativeBtn : copyBtn;
+      focusTarget.focus({ preventScroll: true });
+    }, 220);
   }
   function closeSuccessModal(){
     $('successModal').hidden = true;
@@ -1834,23 +2132,36 @@
   $('successModal').addEventListener('click', function(e){
     if(e.target === $('successModal')) closeSuccessModal();
   });
+  $('successShareBtn').addEventListener('click', function(){
+    if(!navigator.share) return;
+    var url = $('successLink').textContent;
+    var recipient = $('successRecipient').textContent;
+    navigator.share({
+      title: 'Болзооны урилга 💌',
+      text:  successShareText(recipient === 'хайртай хүн' ? '' : recipient),
+      url:   url
+    }).then(function(){
+      $('successStatus').textContent = 'Илгээлээ 💌';
+    }).catch(function(err){
+      if(err && err.name === 'AbortError') return;
+      $('successStatus').textContent = 'Хуваалцаж чадсангүй — доорх товчоор оролдоорой';
+    });
+  });
   $('successCopyBtn').addEventListener('click', function(){
     var url = $('successLink').textContent;
     var btn = $('successCopyBtn');
-    function onOk(){
+    copyToClipboard(url).then(function(){
       btn.classList.add('copied');
       btn.textContent = '✅ Хуулагдлаа';
       $('successStatus').textContent = 'Messenger/Instagram-т paste хийгээд илгээгээрэй 💌';
-    }
-    if(navigator.clipboard && navigator.clipboard.writeText){
-      navigator.clipboard.writeText(url).then(onOk).catch(function(){
-        var t = document.createElement('textarea'); t.value=url; document.body.appendChild(t); t.select(); document.execCommand('copy'); t.remove();
-        onOk();
-      });
-    } else {
-      var t = document.createElement('textarea'); t.value=url; document.body.appendChild(t); t.select(); document.execCommand('copy'); t.remove();
-      onOk();
-    }
+    });
+  });
+  $('shareInstagram').addEventListener('click', function(){
+    // Copy first so paste-in-DM works as soon as Instagram opens.
+    var url = this.dataset.url || $('successLink').textContent;
+    copyToClipboard(url).then(function(){
+      $('successStatus').textContent = 'Линк хуулагдлаа · Instagram DM-д paste хийгээрэй 💌';
+    });
   });
   document.addEventListener('keydown', function(e){
     if(e.key === 'Escape' && !$('successModal').hidden) closeSuccessModal();
@@ -1871,17 +2182,30 @@
       var res = await BolzooAPI.createInvite(split.public, code, split.private);
       var url = buildShortUrl(res.id, true);
       showLink(url, '✅ Урилга үүслээ! Богино линк бэлэн ('+res.id+')');
-      setCodeUI('bad', '⚠️ Энэ эрхийн код ашиглагдлаа. Дараагийн урилгад шинэ эрхийн код авна уу.');
+      setCodeUI('bad', '⚠️ Энэ код ашиглагдлаа.');
+      // Upgrade the status message to include a direct new-code path so the
+      // "why is my button disabled again" moment has an obvious next step.
+      $('codeStatus').innerHTML = '⚠️ Энэ код ашиглагдлаа. Шинэ урилгад <a href="pay.html">шинэ код авах →</a>';
       $('accessCode').value = '';
       lastCheckedCode = '';
       clearPersistence();
       updatePreview();
     }catch(e){
       var msg = e.message || String(e);
-      if(/already used/i.test(msg)) setCodeUI('bad', '❌ Энэ эрхийн код нэгэнт ашиглагдсан байна');
-      else if(/Invalid access code/i.test(msg)) setCodeUI('bad', '❌ Ийм эрхийн код олдсонгүй');
-      setStatus('❌ Алдаа: '+ msg);
-      $('generate').disabled = !codeIsValid;
+      if(/already used/i.test(msg)){
+        setCodeUI('bad', '❌ Энэ эрхийн код нэгэнт ашиглагдсан байна');
+        setStatus('❌ Алдаа: '+ msg);
+        // Nothing to retry — the code is really gone.
+        $('generate').disabled = true;
+      } else if(/Invalid access code/i.test(msg)){
+        setCodeUI('bad', '❌ Ийм эрхийн код олдсонгүй');
+        setStatus('❌ Алдаа: '+ msg);
+        $('generate').disabled = true;
+      } else {
+        // Network/transient — keep the code state, let the user retry.
+        setStatus('❌ Алдаа: '+ msg + ' · дахин оролдоно уу');
+        $('generate').disabled = false;
+      }
     }
   });
 
@@ -1927,6 +2251,7 @@
     for(var i=0;i<kids.length;i++){ kids[i].classList.toggle('on', kids[i].getAttribute('data-theme') === 'coral'); }
     currentPoster = '';
     markPoster('');
+    markAskTemplate('');
     lastCheckedCode = '';
     setCodeUI('', '');
     $('videoPreview').style.display = 'none';
@@ -1944,10 +2269,20 @@
   (function initRestore(){
     restoreDraft();
     updateVideoPreview();
-    var savedCode = urlGetCode() || lsGet(STORAGE_CODE_KEY);
+    var urlCode = urlGetCode();
+    var savedCode = urlCode || lsGet(STORAGE_CODE_KEY);
     if(savedCode){
       $('accessCode').value = normalizeCode(savedCode);
       checkCode();
+      // If the code arrived via ?code=… it's fresh from a QPay redirect — the
+      // user just paid and needs one clear confirmation that the money moved.
+      if(urlCode){
+        var toast = $('paymentToast');
+        if(toast){
+          toast.classList.add('show');
+          setTimeout(function(){ toast.classList.remove('show'); }, 8000);
+        }
+      }
     }
     updatePreview();
     setPreviewDirty(false);
