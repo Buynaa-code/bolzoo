@@ -41,16 +41,78 @@
   }
   .subtitle{color:#816e82; margin:0 0 22px; font-size:14px; font-weight:700; line-height:1.5;}
   .price{
-    text-align:center;
-    padding:22px 18px;
+    position:relative;
+    padding:18px 20px;
     margin:0 0 22px;
-    background:linear-gradient(135deg,#fff6f9,#ffe8f0);
-    border:1px solid #ffcbd9;
-    border-radius:14px;
+    background:
+      radial-gradient(circle at 100% 0%, rgba(255,196,215,.6) 0 88px, transparent 96px),
+      linear-gradient(135deg,#fff8fb 0%,#ffeaf1 55%,#fff6f9 100%);
+    border:1px solid rgba(255,133,168,.5);
+    border-radius:18px;
+    box-shadow:0 20px 44px -30px rgba(105,39,78,.4);
+    overflow:hidden;
+    text-align:center;
   }
-  .price .amt{font-family:'Comfortaa', sans-serif; font-size:42px; font-weight:700; color:var(--hot); line-height:1; margin:0 0 6px;}
-  .price .amt small{font-size:22px; margin-left:2px;}
-  .price .lbl{color:#6d536b; font-size:12px; font-weight:900; letter-spacing:.05em;}
+  .price-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:8px;
+    margin:0 0 12px;
+  }
+  .price-tag{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:5px 10px;
+    border-radius:999px;
+    background:#fff;
+    border:1px solid rgba(255,112,157,.4);
+    color:#c74747;
+    font-size:11px;
+    font-weight:900;
+    text-transform:uppercase;
+    letter-spacing:.03em;
+  }
+  .price-limit{color:#8b6b83; font-size:11px; font-weight:800; letter-spacing:.02em;}
+  .price-row{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:14px;
+    flex-wrap:wrap;
+    margin:0 0 10px;
+  }
+  .price-old-block,
+  .price-new-block{display:flex; flex-direction:column; align-items:center; gap:2px;}
+  .price-old-label,
+  .price-new-label{color:#8b6b83; font-size:10px; font-weight:900; text-transform:uppercase; letter-spacing:.06em;}
+  .price-old{color:#a48a9e; font-family:'Comfortaa',sans-serif; font-size:20px; font-weight:700; text-decoration:line-through; text-decoration-thickness:2px; text-decoration-color:#c74747;}
+  .price-arrow{color:#c136a0; font-size:22px; font-weight:900; line-height:1;}
+  .price .amt{font-family:'Comfortaa',sans-serif; font-size:36px; font-weight:700; color:var(--hot); line-height:1; margin:0;}
+  .price .amt small{font-size:18px; margin-left:2px;}
+  .price-badge{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    padding:6px 12px;
+    border-radius:999px;
+    background:linear-gradient(135deg,#ff4d82,#c136a0);
+    color:#fff;
+    font-family:'Comfortaa',sans-serif;
+    font-size:14px;
+    font-weight:700;
+    letter-spacing:.02em;
+    box-shadow:0 10px 20px -12px rgba(255,77,130,.8);
+  }
+  .price .lbl{margin:0; padding:8px 12px; border-radius:10px; background:#fff; border:1px dashed rgba(255,145,176,.5); color:#6a4062; font-size:12px; font-weight:800; line-height:1.4; letter-spacing:.03em;}
+  @media (max-width:520px){
+    .price-row{gap:10px;}
+    .price-arrow{transform:rotate(90deg); font-size:18px;}
+    .price-old{font-size:18px;}
+    .price .amt{font-size:30px;}
+  }
   .btn{
     display:inline-flex;
     align-items:center;
@@ -239,11 +301,26 @@
 </head>
 <body>
   <div class="wrap">
-    <h1>💌 Өөрийн урилгыг үүсгэх</h1>
-    <p class="subtitle">QPay төлөөд 1 урилга үүсгэх эрхийн кодоо шууд аваарай.</p>
+    <h1 id="pageTitle">💌 Өөрийн урилгыг үүсгэх</h1>
+    <p class="subtitle" id="pageSubtitle">QPay төлөөд 1 урилга үүсгэх эрхийн кодоо шууд аваарай.</p>
 
-    <div class="price">
-      <p class="amt" id="priceAmt">…<small>₮</small></p>
+    <div class="price" id="priceBlock" aria-label="1 урилга үүсгэх эрхийн үнэ">
+      <div class="price-head">
+        <span class="price-tag">🔥 Нээлтийн хямдрал</span>
+        <span class="price-limit">Хугацаагаар хязгаартай</span>
+      </div>
+      <div class="price-row">
+        <div class="price-old-block">
+          <span class="price-old-label">Ердийн үнэ</span>
+          <span class="price-old">14,900₮</span>
+        </div>
+        <span class="price-arrow" aria-hidden="true">→</span>
+        <div class="price-new-block">
+          <span class="price-new-label">Одоогийн үнэ</span>
+          <p class="amt" id="priceAmt">…<small>₮</small></p>
+        </div>
+        <span class="price-badge">-33%</span>
+      </div>
       <p class="lbl">1 УРИЛГА ҮҮСГЭХ ЭРХ · НЭГ УДААГИЙН КОД</p>
     </div>
 
@@ -294,7 +371,7 @@
       <p class="footer" id="redirectHint">Эрхийн кодоо хуулсны дараа "Урилга үүсгэх" товч дар</p>
     </div>
 
-    <p class="footer">
+    <p class="footer" id="haveCodeFooter">
       Аль хэдийн эрхийн код авсан уу? <a href="create.html">Урилга үүсгэх →</a>
     </p>
   </div>
@@ -521,7 +598,12 @@
   var successCode = null;
   function onSuccess(code){
     successCode = code;
+    $('beforeStart').style.display   = 'none';
     $('afterStart').style.display    = 'none';
+    $('priceBlock').style.display    = 'none';
+    $('pageSubtitle').style.display  = 'none';
+    $('haveCodeFooter').style.display = 'none';
+    $('pageTitle').textContent       = '✅ Төлбөр амжилттай!';
     $('successPanel').style.display  = 'block';
     $('codeValue').textContent       = code;
     $('continueBtn').href = 'create.html?code=' + encodeURIComponent(code);

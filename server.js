@@ -894,6 +894,8 @@ const PUBLIC_FILES = new Set([
 function serveStatic(req, res, url) {
   let rel = decodeURIComponent(url.pathname);
   if (rel === '/' || rel === '') rel = '/create.html';
+  // Vercel-той нэгэн адил extension-гүй pretty URL-уудыг .html руу нь буулгах.
+  if (!rel.includes('.') && PUBLIC_FILES.has(rel + '.html')) rel = rel + '.html';
   if (!PUBLIC_FILES.has(rel) && !rel.startsWith('/assets/') && !rel.startsWith('/marketing/')) {
     return send(res, 404, 'Not found');
   }

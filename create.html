@@ -147,6 +147,124 @@
     font-weight:900;
     line-height:1.35;
   }
+  .price-splash{
+    position:relative;
+    margin:0 0 20px;
+    padding:18px 20px;
+    border-radius:18px;
+    border:1px solid rgba(255,133,168,.5);
+    background:
+      radial-gradient(circle at 100% 0%, rgba(255,196,215,.6) 0 88px, transparent 96px),
+      linear-gradient(135deg,#fff8fb 0%,#ffeaf1 55%,#fff6f9 100%);
+    box-shadow:0 20px 44px -30px rgba(105,39,78,.4);
+    overflow:hidden;
+  }
+  .price-splash-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:8px;
+    margin:0 0 12px;
+  }
+  .price-splash-tag{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:5px 10px;
+    border-radius:999px;
+    background:#fff;
+    border:1px solid rgba(255,112,157,.4);
+    color:#c74747;
+    font-size:11px;
+    font-weight:900;
+    text-transform:uppercase;
+    letter-spacing:.03em;
+  }
+  .price-splash-limit{
+    color:#8b6b83;
+    font-size:11px;
+    font-weight:800;
+    letter-spacing:.02em;
+  }
+  .price-splash-body{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:14px;
+    flex-wrap:wrap;
+    margin:0 0 10px;
+  }
+  .price-splash-old-block,
+  .price-splash-new-block{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:2px;
+  }
+  .price-splash-old-label,
+  .price-splash-new-label{
+    color:#8b6b83;
+    font-size:10px;
+    font-weight:900;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+  }
+  .price-splash-old{
+    color:#a48a9e;
+    font-family:'Comfortaa',sans-serif;
+    font-size:20px;
+    font-weight:700;
+    text-decoration:line-through;
+    text-decoration-thickness:2px;
+    text-decoration-color:#c74747;
+  }
+  .price-splash-new{
+    color:#ff4d82;
+    font-family:'Comfortaa',sans-serif;
+    font-size:36px;
+    line-height:1;
+    font-weight:700;
+  }
+  .price-splash-arrow{
+    color:#c136a0;
+    font-size:22px;
+    font-weight:900;
+    line-height:1;
+  }
+  .price-splash-badge{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    padding:6px 12px;
+    border-radius:999px;
+    background:linear-gradient(135deg,#ff4d82,#c136a0);
+    color:#fff;
+    font-family:'Comfortaa',sans-serif;
+    font-size:14px;
+    font-weight:700;
+    letter-spacing:.02em;
+    box-shadow:0 10px 20px -12px rgba(255,77,130,.8);
+  }
+  .price-splash-note{
+    margin:0;
+    padding:8px 12px;
+    border-radius:10px;
+    background:#fff;
+    border:1px dashed rgba(255,145,176,.5);
+    color:#6a4062;
+    font-size:12px;
+    font-weight:800;
+    line-height:1.4;
+    text-align:center;
+  }
+  @media (max-width:520px){
+    .price-splash{padding:16px;}
+    .price-splash-body{gap:10px;}
+    .price-splash-arrow{transform:rotate(90deg); font-size:18px;}
+    .price-splash-old{font-size:18px;}
+    .price-splash-new{font-size:30px;}
+  }
   .step-back{
     display:inline-flex;
     align-items:center;
@@ -1076,6 +1194,25 @@
 
       <section class="form-card">
         <div class="wizard-step active" data-step="1">
+        <div class="price-splash" aria-label="1 урилга үүсгэх эрхийн үнэ">
+          <div class="price-splash-header">
+            <span class="price-splash-tag">🔥 Нээлтийн хямдрал</span>
+            <span class="price-splash-limit">Хугацаагаар хязгаартай</span>
+          </div>
+          <div class="price-splash-body">
+            <div class="price-splash-old-block">
+              <span class="price-splash-old-label">Ердийн үнэ</span>
+              <span class="price-splash-old">14,900₮</span>
+            </div>
+            <span class="price-splash-arrow" aria-hidden="true">→</span>
+            <div class="price-splash-new-block">
+              <span class="price-splash-new-label">Одоогийн үнэ</span>
+              <strong class="price-splash-new">9,900₮</strong>
+            </div>
+            <span class="price-splash-badge">-33%</span>
+          </div>
+          <p class="price-splash-note">💌 1 урилга үүсгэх эрх · нэг удаагийн код · Preview дуустал шалгаад дараа нь төлж болно.</p>
+        </div>
         <div class="field">
           <label><span class="label-icon">🎨</span>Урилгын эхний загвар</label>
           <div class="template-grid" id="askTemplates">
