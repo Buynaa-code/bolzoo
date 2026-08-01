@@ -36,6 +36,9 @@
   .badge.responded{background:#dcffde; color:#3a8a4a;}
   .response{margin-top:10px; padding:10px 14px; background:#fff8f4; border:1px dashed var(--coral-soft); border-radius:12px; font-size:13px; line-height:1.5;}
   .response b{color:var(--coral-deep);}
+  .response .location-row{margin-top:8px; padding-top:8px; border-top:1px dashed rgba(0,0,0,.08); display:flex; align-items:center; gap:6px; flex-wrap:wrap;}
+  .response .location-row a{color:var(--coral-deep); font-weight:700; text-decoration:none;}
+  .response .location-row a:hover{text-decoration:underline;}
   .history{margin-top:8px; padding:8px 12px; background:#fdf3f8; border-left:3px solid var(--coral-soft); border-radius:8px; font-size:12px; color:var(--muted); line-height:1.55;}
   .history-title{display:block; font-weight:800; color:var(--coral-deep); margin-bottom:4px;}
   .history-item{padding:2px 0; border-bottom:1px dashed rgba(0,0,0,.06);}
@@ -110,13 +113,27 @@
     return '<span class="badge pending">⏳ Хүлээгдэж буй</span>';
   }
 
+  function renderLocationRow(cfg){
+    var name = (cfg.locationName || '').trim();
+    var url  = (cfg.locationUrl  || '').trim();
+    if(!name && !url) return '';
+    var label = name || 'Байршил';
+    var inner = url
+      ? '<a href="' + esc(url) + '" target="_blank" rel="noopener">' + esc(label) + ' →</a>'
+      : '<b>' + esc(label) + '</b>';
+    return '<div class="location-row">📍 <b>Уулзах газар:</b> ' + inner + '</div>';
+  }
+
   function renderResponse(inv){
     if(!inv.response) return '';
     var r = inv.response;
+    var cfg = inv.config || {};
     var meta = '<span class="card-meta">Хариу ирсэн: ' + esc(fmtWhen(inv.responded_at)) + '</span>';
     var choiceLine = r.choice
       ? '<b>💘 Сонголт:</b> ' + esc(r.choice) + '<br>'
       : '';
+    // Байршил зөвхөн уулзалт болох магадлалтай хариунуудад харуулна
+    var locationRow = r.answer === 'no' ? '' : renderLocationRow(cfg);
     var body;
     // Poster урилга: татгалзсан
     if(r.answer === 'no'){
@@ -128,12 +145,14 @@
       body = '<div class="response">'
         + '<b>💌 Хариу:</b> Тухайн өдөр амжихгүй — өөр өдөр сонгож байна 💗<br>'
         + meta
+        + locationRow
         + '</div>';
     } else if(r.answer === 'yes' && !r.date){
       body = '<div class="response">'
         + '<b>💗 Хариу:</b> Тийм — огноогоо сонгож байна<br>'
         + choiceLine
         + meta
+        + locationRow
         + '</div>';
     } else {
       body = '<div class="response">'
@@ -146,6 +165,7 @@
         + '<b>💝 Төрөл:</b> ' + esc(r.kind) + '<br>'
         + '<b>🎫 Ticket:</b> ' + esc(r.ticketNo) + '<br>'
         + meta
+        + locationRow
         + '</div>';
     }
     return body + renderHistory(inv);
