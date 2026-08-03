@@ -838,6 +838,15 @@
       return defaults;
     })();
 
+    /* Аргадах захидлыг argadah.html үзүүлдэг. Хэрэв энэ хуудсаар ирвэл шилжүүлнэ
+       (хуучин хадгалсан линк, эсвэл гараар бичсэн хаяг). */
+    function redirectIfSorry(cfg){
+      if(!cfg || cfg.mode !== 'sorry') return false;
+      window.location.replace('argadah.html' + window.location.search + window.location.hash);
+      return true;
+    }
+    if(redirectIfSorry(CONFIG)) return;
+
     function mergeIntoConfig(c){
       if(!c) return;
       for(var k in c){ if(c[k]!==undefined && c[k]!==null && c[k]!==''){ CONFIG[k]=c[k]; } }
@@ -923,6 +932,7 @@
     /* Load config from backend if ?id=xxx present */
     if(INVITE_ID && window.BolzooAPI){
       BolzooAPI.getInvite(INVITE_ID).then(function(rec){
+        if(rec && redirectIfSorry(rec.config)) return;
         if(rec && rec.config){
           mergeIntoConfig(rec.config);
           applyContent();

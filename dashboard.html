@@ -29,6 +29,8 @@
   .badge.pending{background:#f3e6ec; color:var(--muted);}
   .badge.opened{background:#fff1cf; color:#b47f16;}
   .badge.responded{background:#dcffde; color:#3a8a4a;}
+  .badge.date{background:#ffe6ef; color:#d1447a;}
+  .badge.sorry{background:#efe4ff; color:#7a4dcf;}
   .response{margin-top:10px; padding:10px 14px; background:#fff8f4; border:1px dashed var(--coral-soft); border-radius:12px; font-size:13px; line-height:1.5;}
   .response b{color:var(--coral-deep);}
   .card-actions{display:flex; flex-direction:column; gap:6px; align-items:flex-end;}
@@ -80,8 +82,19 @@
   if(kind === 'localStorage'){
     $('backendWarn').style.display = 'block';
   }
-  function inviteUrl(id){
-    return new URL('bolzoo.html', window.location.href).href + '?id=' + encodeURIComponent(id);
+  // Аргадах захидал өөр хуудсан дээр нээгддэг
+  function isSorry(inv){
+    return ((inv.config || {}).mode === 'sorry');
+  }
+  function inviteUrl(inv){
+    var page = isSorry(inv) ? 'argadah.html' : 'bolzoo.html';
+    return new URL(page, window.location.href).href + '?id=' + encodeURIComponent(inv.id);
+  }
+
+  function modeBadge(inv){
+    return isSorry(inv)
+      ? '<span class="badge sorry">🥺 Аргадах</span>'
+      : '<span class="badge date">💌 Болзоо</span>';
   }
 
   function statusBadge(inv){
@@ -93,12 +106,23 @@
   function renderResponse(inv){
     if(!inv.response) return '';
     var r = inv.response;
+    var when = '<span class="card-meta">Хариу ирсэн: ' + esc(fmtWhen(inv.responded_at)) + '</span>';
+
+    if(r.type === 'sorry'){
+      return '<div class="response">'
+        + '<b>' + (r.forgiven ? '💗 Уучилсан' : '🫂 Хараахан үгүй') + '</b><br>'
+        + '<b>📊 Уучлалын хэмжүүр:</b> ' + esc(String(r.level == null ? '—' : r.level)) + '%<br>'
+        + (r.reply ? '<b>✍️ Хэлсэн үг:</b> ' + esc(r.reply) + '<br>' : '')
+        + when
+        + '</div>';
+    }
+
     return '<div class="response">'
       + '<b>📅 Өдөр:</b> ' + esc(r.date) + '<br>'
       + '<b>🕐 Цаг:</b> ' + esc(r.time) + '<br>'
       + '<b>💝 Төрөл:</b> ' + esc(r.kind) + '<br>'
       + '<b>🎫 Ticket:</b> ' + esc(r.ticketNo) + '<br>'
-      + '<span class="card-meta">Хариу ирсэн: ' + esc(fmtWhen(inv.responded_at)) + '</span>'
+      + when
       + '</div>';
   }
 
@@ -124,12 +148,14 @@
             + 'Үүсгэсэн: ' + esc(fmtWhen(inv.created_at))
             + ' · <span class="id-mono">' + esc(inv.id) + '</span>'
           + '</div>'
-          + '<div style="margin-top:8px;">' + statusBadge(inv) + '</div>'
+          + '<div style="margin-top:8px; display:flex; gap:6px; flex-wrap:wrap;">'
+            + modeBadge(inv) + statusBadge(inv)
+          + '</div>'
           + renderResponse(inv)
         + '</div>'
         + '<div class="card-actions">'
-          + '<a class="btn small secondary" href="' + esc(inviteUrl(inv.id)) + '" target="_blank">🔗 Нээх</a>'
-          + '<button class="btn small secondary" data-copy="' + esc(inviteUrl(inv.id)) + '">📋 Хуулах</button>'
+          + '<a class="btn small secondary" href="' + esc(inviteUrl(inv)) + '" target="_blank">🔗 Нээх</a>'
+          + '<button class="btn small secondary" data-copy="' + esc(inviteUrl(inv)) + '">📋 Хуулах</button>'
           + '<button class="btn small danger" data-del="' + esc(inv.id) + '">🗑️ Устгах</button>'
         + '</div>';
       main.appendChild(el);
