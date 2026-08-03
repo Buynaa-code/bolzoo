@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Багц ба үнэ 💌 Bolzoo</title>
+<meta name="description" content="Bolzoo — хайртдаа зориулсан онцгой урилга. Энгийн 9,900₮, Онцгой 14,900₮." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Comfortaa:wght@500;600;700&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/styles.css">
+<style>
+  .wrap{width:min(880px,100%); margin:0 auto; padding:34px 16px 60px;}
+
+  .hero{text-align:center; margin-bottom:34px;}
+  .hero-icon{
+    width:64px; height:64px; margin:0 auto 16px;
+    display:grid; place-items:center; font-size:32px;
+    border-radius:20px; background:linear-gradient(145deg,#fff,#ffe8f0);
+    border:1px solid rgba(248,215,226,.8);
+    box-shadow:0 16px 32px -22px rgba(90,42,70,.55);
+  }
+  h1{
+    margin:0 0 10px;
+    font-family:'Comfortaa',sans-serif; font-weight:700;
+    font-size:clamp(26px,5.4vw,34px); line-height:1.22; color:#4b173f;
+  }
+  .hero p{margin:0 auto; max-width:460px; color:var(--muted); font-size:15px; line-height:1.55; font-weight:700;}
+
+  .plans{display:grid; grid-template-columns:1fr 1fr; gap:18px; align-items:start;}
+  @media (max-width:700px){ .plans{grid-template-columns:1fr;} }
+
+  .plan{
+    position:relative; overflow:hidden;
+    padding:26px 24px 24px;
+    border:1px solid rgba(248,215,226,.85); border-radius:22px;
+    background:#fffdfb;
+    box-shadow:0 22px 52px -34px rgba(105,39,78,.45);
+  }
+  .plan.featured{
+    border:2px solid #d9bcff; padding:25px 23px 23px;
+    background:linear-gradient(168deg,#fffdff 0%,#faf4ff 100%);
+    box-shadow:0 28px 62px -32px rgba(122,77,207,.5);
+  }
+  .ribbon{
+    position:absolute; top:16px; right:16px;
+    padding:5px 13px; border-radius:999px;
+    background:linear-gradient(135deg,#a97bf0,#7a4dcf); color:#fff;
+    font-size:10.5px; font-weight:900; letter-spacing:.6px;
+    box-shadow:0 8px 18px -10px rgba(122,77,207,.8);
+  }
+  .plan-head{display:flex; align-items:center; gap:12px; margin-bottom:6px; padding-right:96px;}
+  .plan-emoji{font-size:30px; line-height:1;}
+  .plan-name{font-family:'Comfortaa',sans-serif; font-weight:700; font-size:21px; color:#4b173f;}
+  .plan-tagline{margin:0 0 18px; color:var(--muted); font-size:13px; font-weight:800;}
+  .price{display:flex; align-items:baseline; gap:8px; margin-bottom:6px;}
+  .price b{font-family:'Comfortaa',sans-serif; font-weight:700; font-size:38px; line-height:1; color:var(--coral-deep);}
+  .plan.featured .price b{color:#7a4dcf;}
+  .price span{color:var(--muted); font-size:13px; font-weight:800;}
+  .plan-blurb{
+    margin:0 0 20px; padding-bottom:20px;
+    border-bottom:1px solid rgba(248,215,226,.9);
+    color:#7d687d; font-size:13.5px; line-height:1.5; font-weight:700;
+  }
+
+  ul.perks{list-style:none; margin:0; padding:0;}
+  ul.perks li{
+    display:grid; grid-template-columns:22px minmax(0,1fr); gap:10px;
+    margin-bottom:11px; color:#5a3a52; font-size:14px; line-height:1.4; font-weight:800;
+  }
+  ul.perks li.no{color:#b3a3b3;}
+  .tick{
+    width:22px; height:22px; display:grid; place-items:center;
+    border-radius:50%; background:#e6f8e9; color:#3a8a4a;
+    font-size:12px; font-weight:900;
+  }
+  .plan.featured .tick{background:#efe4ff; color:#7a4dcf;}
+  ul.perks li.no .tick{background:#f3eef3; color:#b3a3b3;}
+
+  .plan .btn{width:100%; margin-top:22px; padding:14px 20px; font-size:15px; text-align:center;}
+  .plan.featured .btn{background:linear-gradient(135deg,#a97bf0,#7a4dcf); box-shadow:0 12px 26px -10px rgba(122,77,207,.6);}
+
+  .how{
+    margin-top:34px; padding:26px 24px;
+    border:1px solid rgba(248,215,226,.85); border-radius:22px;
+    background:#fffdfb;
+    box-shadow:0 20px 48px -36px rgba(105,39,78,.45);
+  }
+  .how h2{margin:0 0 18px; font-family:'Comfortaa',sans-serif; font-weight:700; font-size:19px; color:#4b173f;}
+  .steps{display:grid; grid-template-columns:repeat(3,1fr); gap:16px;}
+  @media (max-width:640px){ .steps{grid-template-columns:1fr;} }
+  .step{display:grid; grid-template-columns:34px minmax(0,1fr); gap:12px; align-items:start;}
+  .step-n{
+    width:34px; height:34px; display:grid; place-items:center;
+    border-radius:50%; background:linear-gradient(135deg,var(--coral),var(--coral-deep));
+    color:#fff; font-size:14px; font-weight:900;
+  }
+  .step strong{display:block; margin-bottom:3px; color:#4b173f; font-size:14px; font-weight:900;}
+  .step small{color:var(--muted); font-size:12.5px; line-height:1.45; font-weight:700;}
+
+  .faq{margin-top:26px;}
+  .faq details{
+    margin-bottom:10px; padding:15px 18px;
+    border:1px solid rgba(248,215,226,.85); border-radius:14px; background:#fffdfb;
+  }
+  .faq summary{cursor:pointer; color:#4b173f; font-size:14px; font-weight:900; list-style:none;}
+  .faq summary::-webkit-details-marker{display:none;}
+  .faq summary::after{content:" +"; color:var(--coral-deep);}
+  .faq details[open] summary::after{content:" −";}
+  .faq p{margin:10px 0 0; color:#7d687d; font-size:13.5px; line-height:1.55; font-weight:700;}
+
+  .foot{margin-top:30px; text-align:center;}
+  .foot p{margin:0 0 14px; color:var(--muted); font-size:13px; font-weight:800;}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="hero">
+      <div class="hero-icon">💌</div>
+      <h1>Хайртдаа зориулсан<br>онцгой урилга</h1>
+      <p>Болзоонд урих эсвэл гомдоосон бол аргадах — линк илгээхэд л болно. Тэр нээгээд хариугаа өгнө.</p>
+    </header>
+
+    <section class="plans" id="plans"></section>
+
+    <section class="how">
+      <h2>🪄 Хэрхэн ажилладаг вэ</h2>
+      <div class="steps">
+        <div class="step">
+          <span class="step-n">1</span>
+          <div>
+            <strong>Код авах</strong>
+            <small>Instagram/Messenger-ээр холбогдож гүйлгээ хийнэ. Код шууд ирнэ.</small>
+          </div>
+        </div>
+        <div class="step">
+          <span class="step-n">2</span>
+          <div>
+            <strong>Формоо бөглөх</strong>
+            <small>Нэр, дуу, өнгө, захидлаа бичээд preview дээрээ хараарай.</small>
+          </div>
+        </div>
+        <div class="step">
+          <span class="step-n">3</span>
+          <div>
+            <strong>Линкээ илгээх</strong>
+            <small>Хариу ирмэгц таны имэйл рүү мэдэгдэнэ.</small>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="faq">
+      <details>
+        <summary>Нэг кодоор хэдэн урилга үүсгэх вэ?</summary>
+        <p>Нэг код = нэг урилга. Урилга үүсгэсний дараа тэр код хаагдана. Дараагийн урилгад шинэ код авна.</p>
+      </details>
+      <details>
+        <summary>Код хэр удаан хүчинтэй вэ?</summary>
+        <p>Хугацааны хязгааргүй. Хэзээ ч ашиглаж болно, гэхдээ ганц удаа.</p>
+      </details>
+      <details>
+        <summary>Урилга үүсгэсний дараа засаж болох уу?</summary>
+        <p>Одоогоор засах боломжгүй. Тиймээс илгээхийн өмнө preview дээрээ сайн шалгаарай.</p>
+      </details>
+      <details>
+        <summary>Хүлээн авагч апп татах шаардлагатай юу?</summary>
+        <p>Үгүй. Ямар ч утас, browser дээр линк дараад л нээгдэнэ.</p>
+      </details>
+      <details>
+        <summary>Хариуг би хаанаас харах вэ?</summary>
+        <p>Хариу ирмэгц имэйлээр мэдэгдэнэ. Мөн “Миний урилгууд” хуудаснаас бүгдийг хянаж болно.</p>
+      </details>
+    </section>
+
+    <footer class="foot">
+      <p>Асуух зүйл байвал Instagram/Messenger-ээр бичээрэй 💕</p>
+      <a class="btn secondary" href="create.html">Кодтой юу? Урилгаа үүсгэх →</a>
+    </footer>
+  </div>
+
+<script src="assets/utils.js"></script>
+<script src="assets/bolzoo-plans.js"></script>
+<script>
+(function(){
+  var esc = BolzooUtils.esc;
+
+  var html = '';
+  BolzooPlans.LIST.forEach(function(p){
+    var featured = (p.id === 'premium');
+    html += '<article class="plan' + (featured ? ' featured' : '') + '">'
+      + (featured ? '<div class="ribbon">ЭРЭЛТТЭЙ</div>' : '')
+      + '<div class="plan-head">'
+        + '<span class="plan-emoji">' + p.emoji + '</span>'
+        + '<span class="plan-name">' + esc(p.label) + '</span>'
+      + '</div>'
+      + '<p class="plan-tagline">' + esc(p.tagline) + '</p>'
+      + '<div class="price"><b>' + BolzooPlans.money(p.price) + '</b><span>/ нэг урилга</span></div>'
+      + '<p class="plan-blurb">' + esc(p.blurb) + '</p>'
+      + '<ul class="perks">';
+
+    p.perks.forEach(function(perk){
+      html += '<li class="' + (perk.ok ? 'yes' : 'no') + '">'
+        + '<span class="tick">' + (perk.ok ? '✓' : '✕') + '</span>'
+        + '<span>' + esc(perk.text) + '</span>'
+        + '</li>';
+    });
+
+    html += '</ul>'
+      + '<a class="btn' + (featured ? '' : ' secondary') + '" href="create.html">Энэ багцаар үүсгэх →</a>'
+      + '</article>';
+  });
+
+  document.getElementById('plans').innerHTML = html;
+})();
+</script>
+</body>
+</html>
