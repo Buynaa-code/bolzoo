@@ -193,37 +193,6 @@ async function handleCodes(req, res, url) {
   return sendPGError(res, 403, 'access_codes mutations must go through admin RPCs.');
 }
 
-/* ---------- Багцын хязгаар ----------
- * sql/schema.sql доторх _apply_plan_limits()-ийн JS хувилбар.
- * Хоёуланг нь ЗЭРЭГ шинэчилж байх ёстой (assets/bolzoo-plans.js-ийг ч мөн).
- */
-const PLAN_LIMITS = {
-  basic:   { papers: ['cream','blush','ruled'], stickers: ['draw','none'],
-             letterMax: 300, maxPromises: 0, location: false, specialLetter: false },
-  premium: { papers: null, stickers: null,
-             letterMax: 600, maxPromises: 5, location: true, specialLetter: true }
-};
-
-function applyPlanLimits(cfg, plan) {
-  const p = PLAN_LIMITS[plan] || PLAN_LIMITS.premium;
-  const out = Object.assign({}, cfg || {});
-  out.plan = PLAN_LIMITS[plan] ? plan : 'premium';
-
-  if (p.papers && out.paper && !p.papers.includes(out.paper)) out.paper = p.papers[0];
-  if (p.stickers && out.sticker && !p.stickers.includes(out.sticker)) out.sticker = p.stickers[0];
-
-  if (!p.location) { delete out.locationName; delete out.locationUrl; }
-  if (!p.specialLetter) delete out.specialLetter;
-
-  if (typeof out.sorryLetter === 'string') out.sorryLetter = out.sorryLetter.slice(0, p.letterMax);
-
-  if (Array.isArray(out.promises)) {
-    if (p.maxPromises > 0) out.promises = out.promises.slice(0, p.maxPromises);
-    else delete out.promises;
-  }
-  return out;
-}
-
 /* ---------- /rest/v1/rpc/* ---------- */
 async function handleRPC(req, res, url) {
   if (req.method !== 'POST') return sendJSON(res, 405, { error: 'RPC requires POST' });
@@ -248,7 +217,7 @@ async function handleRPC(req, res, url) {
     invites[invId] = {
       id:            invId,
       owner_token:   ownerToken,
-      config:        applyPlanLimits(cfg, codeRow.plan),
+      config:        cfg || {},
       response:      null,
       opened_at:     null,
       responded_at:  null,
@@ -299,12 +268,11 @@ async function handleRPC(req, res, url) {
     if (body.admin_pw !== ADMIN_PASSWORD) return sendPGError(res, 401, 'Invalid admin password');
     const qty = Math.max(1, Math.min(100, Number(body.qty || 1)));
     const note = body.note_ != null ? String(body.note_) : null;
-    const plan = PLAN_LIMITS[body.plan_] ? body.plan_ : 'premium';
     const created = [];
     for (let i = 0; i < qty; i++) {
       let c;
       do { c = genCode(); } while (codes[c]);
-      const row = { code: c, plan: plan, used: false, used_at: null, used_for_invite_id: null, note: note, created_at: new Date().toISOString() };
+      const row = { code: c, used: false, used_at: null, used_for_invite_id: null, note: note, created_at: new Date().toISOString() };
       codes[c] = row;
       created.push(row);
     }

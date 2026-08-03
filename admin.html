@@ -39,23 +39,6 @@
     td.actions::before{display:none;}
   }
   .code-cell{font-family:ui-monospace,Menlo,monospace; font-weight:800; font-size:14px; color:var(--ink); letter-spacing:1px;}
-  /* Багц сонгогч */
-  .plan-pick{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
-  @media (max-width:520px){ .plan-pick{grid-template-columns:1fr;} }
-  .plan-btn{
-    display:flex; align-items:center; gap:10px;
-    padding:12px 14px; cursor:pointer; text-align:left;
-    border:1px solid #ffd7c9; border-radius:12px; background:#fff;
-    font-family:'Nunito',sans-serif;
-    transition:border-color .15s, background .15s, transform .15s;
-  }
-  .plan-btn:hover{transform:translateY(-1px);}
-  .plan-btn.on{border:2px solid var(--coral-deep); padding:11px 13px; background:linear-gradient(135deg,#fff6f9,#ffe9f2);}
-  .plan-btn .pb-emoji{font-size:22px; line-height:1;}
-  .plan-btn strong{display:block; color:var(--ink); font-size:14px; font-weight:900; line-height:1.2;}
-  .plan-btn small{display:block; margin-top:2px; color:var(--muted); font-size:12px; font-weight:800;}
-  .badge.plan-basic{background:#ffe6ef; color:#d1447a;}
-  .badge.plan-premium{background:#efe4ff; color:#7a4dcf;}
   .badge{display:inline-block; font-size:10px; font-weight:800; padding:3px 9px; border-radius:999px; letter-spacing:.4px; text-transform:uppercase;}
   .badge.free{background:#dcffde; color:#3a8a4a;}
   .badge.used{background:#f3e6ec; color:var(--muted);}
@@ -118,12 +101,8 @@
         </div>
         <div>
           <label>Тэмдэглэл (заавал биш)</label>
-          <input id="note" type="text" placeholder="жишээ: Дулмаа — @dulmaa_ig" />
+          <input id="note" type="text" placeholder="жишээ: Дулмаа — 5000₮ — @dulmaa_ig" />
         </div>
-      </div>
-      <div style="margin-top:14px;">
-        <label>Багц</label>
-        <div class="plan-pick" id="planPick"></div>
       </div>
       <div class="toolbar" style="margin-top:14px;">
         <button class="btn" id="genBtn">💫 Үүсгэх</button>
@@ -143,7 +122,6 @@
 <script src="assets/utils.js"></script>
 <script src="assets/config.js"></script>
 <script src="assets/api.js"></script>
-<script src="assets/bolzoo-plans.js"></script>
 <script>
 (function(){
   var $ = BolzooUtils.$, esc = BolzooUtils.esc, fmtWhen = BolzooUtils.fmtWhen;
@@ -184,38 +162,11 @@
 
   function isToday(iso){ if(!iso) return false; var d=new Date(iso), n=new Date(); return d.toDateString()===n.toDateString(); }
 
-  /* ---------- Багц ---------- */
-  var selectedPlan = 'premium';
-
-  (function renderPlanPick(){
-    var host = $('planPick'), html = '';
-    BolzooPlans.LIST.forEach(function(p){
-      html += '<button type="button" class="plan-btn' + (p.id === selectedPlan ? ' on' : '') + '" data-plan="' + p.id + '">'
-        + '<span class="pb-emoji">' + p.emoji + '</span>'
-        + '<span><strong>' + esc(p.label) + '</strong><small>' + BolzooPlans.money(p.price) + '</small></span>'
-        + '</button>';
-    });
-    host.innerHTML = html;
-    host.addEventListener('click', function(e){
-      var t = e.target.closest('.plan-btn'); if(!t) return;
-      selectedPlan = t.getAttribute('data-plan');
-      for(var i=0;i<host.children.length;i++){
-        host.children[i].classList.toggle('on', host.children[i] === t);
-      }
-    });
-  })();
-
-  function planBadge(plan){
-    var p = BolzooPlans.get(plan);
-    return '<span class="badge plan-' + p.id + '">' + p.emoji + ' ' + esc(p.label) + '</span>';
-  }
-
   function renderTable(rows){
     var wrap = $('tableWrap');
     if(!rows.length){ wrap.innerHTML = '<div class="empty">Одоохондоо код байхгүй байна. Дээрх формоор эхнийхээ үүсгээрэй.</div>'; return; }
     var html = '<table><thead><tr>'
       + '<th>Код</th>'
-      + '<th>Багц</th>'
       + '<th>Төлөв</th>'
       + '<th>Үүсгэсэн</th>'
       + '<th>Ашигласан</th>'
@@ -225,7 +176,6 @@
     rows.forEach(function(r){
       html += '<tr class="'+(r.used?'used':'')+'">'
         + '<td class="code-cell" data-label="Код">'+esc(r.code)+'</td>'
-        + '<td data-label="Багц">'+planBadge(r.plan)+'</td>'
         + '<td data-label="Төлөв">'+(r.used ? '<span class="badge used">Ашигласан</span>' : '<span class="badge free">Хоосон</span>')+'</td>'
         + '<td data-label="Үүсгэсэн">'+esc(fmtWhen(r.created_at))+'</td>'
         + '<td data-label="Ашигласан">'+(r.used ? esc(fmtWhen(r.used_at)) + (r.used_for_invite_id ? '<br><span style="font-size:11px; color:var(--muted); font-family:ui-monospace,Menlo,monospace;">→ '+esc(r.used_for_invite_id)+'</span>' : '') : '—')+'</td>'
@@ -265,7 +215,7 @@
     $('genBtn').disabled = true;
     $('genStatus').textContent = '⏳ Үүсгэж байна…';
     try{
-      var rows = await BolzooAPI.adminCreateCodes(getPw(), qty, note, selectedPlan);
+      var rows = await BolzooAPI.adminCreateCodes(getPw(), qty, note);
       var box = $('newCodes');
       box.style.display = 'block';
       box.textContent = rows.map(function(r){ return r.code; }).join('\n');

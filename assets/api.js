@@ -100,33 +100,26 @@
   }
 
   /* ------------ Access codes ------------ */
-  // Багцгүй хуучин кодыг доошлуулахгүй — bolzoo-plans.js-ийн DEFAULT_PLAN-тай ижил
-  var DEFAULT_PLAN = 'premium';
-  function planOf(row){
-    return (row && row.plan) ? row.plan : DEFAULT_PLAN;
-  }
-
   async function validateCode(code){
     if(!code) return { ok:false, reason:'empty' };
     if(HAS_BACKEND){
       try{
-        var rows = await req('GET', '/access_codes?code=eq.'+encodeURIComponent(code)+'&select=code,used,plan');
+        var rows = await req('GET', '/access_codes?code=eq.'+encodeURIComponent(code)+'&select=code,used');
         if(!rows || !rows.length) return { ok:false, reason:'not_found' };
         if(rows[0].used) return { ok:false, reason:'used' };
-        return { ok:true, plan:planOf(rows[0]) };
+        return { ok:true };
       }catch(e){ return { ok:false, reason:'error', error:e.message }; }
     } else {
       var c = lsCodes()[code];
       if(!c) return { ok:false, reason:'not_found' };
       if(c.used) return { ok:false, reason:'used' };
-      return { ok:true, plan:planOf(c) };
+      return { ok:true };
     }
   }
 
-  async function adminCreateCodes(pw, qty, note, plan){
-    plan = (plan === 'basic' || plan === 'premium') ? plan : DEFAULT_PLAN;
+  async function adminCreateCodes(pw, qty, note){
     if(HAS_BACKEND){
-      var rows = await rpc('admin_create_codes', { admin_pw: pw, qty: Number(qty)||1, note_: note || null, plan_: plan });
+      var rows = await rpc('admin_create_codes', { admin_pw: pw, qty: Number(qty)||1, note_: note || null });
       return rows || [];
     } else {
       if(pw !== LOCAL_ADMIN_PW) throw new Error('Invalid admin password (local default: '+LOCAL_ADMIN_PW+')');
@@ -134,7 +127,7 @@
       var created = [];
       for(var i=0;i<(Number(qty)||1);i++){
         var c; do { c = genLocalCode(); } while (all[c]);
-        var row = { code:c, plan:plan, used:false, used_at:null, used_for_invite_id:null, note:note||null, created_at:new Date().toISOString() };
+        var row = { code:c, used:false, used_at:null, used_for_invite_id:null, note:note||null, created_at:new Date().toISOString() };
         all[c] = row;
         created.push(row);
       }
@@ -188,9 +181,7 @@
       if(c.used) throw new Error('Access code already used');
       var token = uuid4();
       var createdAt = new Date().toISOString();
-      // Backend горимд серверийн RPC хийдэг зүйлийг энд давтана
-      var saved = window.BolzooPlans ? BolzooPlans.sanitizeConfig(config, planOf(c)) : config;
-      lsSet('bolzoo:invites:'+id, { config:saved, response:null, opened_at:null, responded_at:null, created_at:createdAt });
+      lsSet('bolzoo:invites:'+id, { config:config, response:null, opened_at:null, responded_at:null, created_at:createdAt });
       setOwnerToken(id, token);
       rememberMine(id);
       c.used = true;

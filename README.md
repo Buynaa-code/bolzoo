@@ -20,37 +20,8 @@ Two invite modes, picked in `create.html`:
 - **assets/img/** — cut-out cat photos (WebP with alpha)
 - **sql/schema.sql** — Supabase table + RLS policies
 
-## Plans
-
-Access codes carry a plan. Sell the code, the code decides what the buyer can build.
-
-| | Энгийн — 9,900₮ | Онцгой — 14,900₮ |
-|---|---|---|
-| Modes, themes, song, email reply | ✅ | ✅ |
-| Letter length | 300 | 600 |
-| Paper textures | 3 | all 8 |
-| Cat artwork | drawn only | real photos too |
-| Promise coupons | — | up to 5 |
-| Location + Maps, special letter | — | ✅ |
-
-- **assets/bolzoo-plans.js** — the single source of truth for prices and limits
-- **unelgee.html** — public pricing page, built from that same file (share it on Instagram)
-- **admin.html** — pick the plan when generating codes
-
-Gating is enforced in **three** places and all three must be updated together:
-`assets/bolzoo-plans.js` (UI), `sql/schema.sql` → `_apply_plan_limits()` (Supabase),
-and `server.js` → `applyPlanLimits()` (local dev). The client-side lock is only a
-convenience — the RPC is what actually strips premium fields from a basic invite.
-
-Codes created before plans existed have no `plan` value and are treated as
-**premium**, so nobody who already paid gets downgraded. Change `DEFAULT_PLAN`
-in `assets/bolzoo-plans.js` (and the column default in `sql/schema.sql`) to flip that.
-
-Deploying the plan change to an existing Supabase project means re-running
-`sql/schema.sql` — it is written to be idempotent (`add column if not exists`, `create or replace`).
-
 `config` is a `jsonb` column, so the sorry-mode fields (`mode`, `sorryReason`, `sorryLetter`,
-`paper`, `sticker`, `promises`, `plan`) needed no schema migration.
+`paper`, `sticker`, `promises`) needed no schema migration.
 
 Adding a new paper texture or cat image is a one-entry change in the matching
 `assets/bolzoo-*.js` module — the pickers in `create.html` are built from those lists.

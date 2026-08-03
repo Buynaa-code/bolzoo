@@ -62,16 +62,6 @@ create table if not exists public.access_codes (
   created_at          timestamptz not null default now()
 );
 
--- Багц: 'basic' (9,900₮) | 'premium' (14,900₮).
--- Аль хэдийн зарагдсан хуучин кодыг доошлуулахгүйн тулд default нь 'premium'.
--- Багцын агуулгыг assets/bolzoo-plans.js-тэй ЗЭРЭГ шинэчилж байх ёстой.
-alter table public.access_codes
-  add column if not exists plan text not null default 'premium';
-
-alter table public.access_codes drop constraint if exists access_codes_plan_check;
-alter table public.access_codes
-  add constraint access_codes_plan_check check (plan in ('basic','premium'));
-
 create index if not exists access_codes_created_at_idx on public.access_codes (created_at desc);
 create index if not exists access_codes_used_idx on public.access_codes (used);
 
@@ -85,6 +75,16 @@ create policy "anon can select access codes"
   using (true);
 
 -- No anon insert/update/delete — those go through RPCs (admin_* + create_invite_with_code)
+
+/* ---------- Цэвэрлэгээ ----------
+ * Түр хугацаанд хоёр багцтай (Энгийн/Онцгой) байсныг больж, бүх боломжийг
+ * нэг үнэд оруулсан. Өмнөх хувилбарыг ажиллуулж байсан бол доорх мөрүүд
+ * үлдэгдлийг цэвэрлэнэ. Хэзээ ч ажиллуулаагүй бол юу ч болохгүй.
+ */
+drop function if exists public._apply_plan_limits(jsonb, text);
+drop function if exists public.admin_create_codes(text, int, text, text);
+alter table public.access_codes drop constraint if exists access_codes_plan_check;
+alter table public.access_codes drop column if exists plan;
 
 /* ---------- Helpers ---------- */
 
@@ -123,58 +123,6 @@ begin
 end;
 $$;
 
-/* ---------- Багцын хязгаар ---------- */
-
--- Тухайн багцад зөвшөөрөгдөөгүй талбаруудыг config-оос таслана.
--- Энэ бол ЖИНХЭНЭ хамгаалалт: create.html дээрх хаалтыг тойрч болно ч
--- урилга энд дамжин орох тул премиум агуулга Энгийн кодоор хадгалагдахгүй.
-create or replace function public._apply_plan_limits(cfg jsonb, plan_ text)
-returns jsonb
-language plpgsql
-immutable
-as $$
-declare
-  out_cfg jsonb := coalesce(cfg, '{}'::jsonb);
-  trimmed jsonb;
-  letter_max int;
-  promise_max int;
-begin
-  out_cfg := jsonb_set(out_cfg, '{plan}', to_jsonb(plan_));
-
-  if plan_ = 'basic' then
-    letter_max := 300;
-    promise_max := 0;
-    -- Энгийн багцад байхгүй талбарууд
-    out_cfg := out_cfg - 'locationName' - 'locationUrl' - 'specialLetter' - 'promises';
-    -- Зөвшөөрөгдсөн цаас / стикер
-    if out_cfg ? 'paper' and not (out_cfg->>'paper' = any (array['cream','blush','ruled'])) then
-      out_cfg := jsonb_set(out_cfg, '{paper}', to_jsonb('cream'::text));
-    end if;
-    if out_cfg ? 'sticker' and not (out_cfg->>'sticker' = any (array['draw','none'])) then
-      out_cfg := jsonb_set(out_cfg, '{sticker}', to_jsonb('draw'::text));
-    end if;
-  else
-    letter_max := 600;
-    promise_max := 5;
-  end if;
-
-  if out_cfg ? 'sorryLetter' then
-    out_cfg := jsonb_set(out_cfg, '{sorryLetter}', to_jsonb(left(out_cfg->>'sorryLetter', letter_max)));
-  end if;
-
-  if promise_max > 0 and jsonb_typeof(out_cfg->'promises') = 'array'
-     and jsonb_array_length(out_cfg->'promises') > promise_max then
-    select coalesce(jsonb_agg(elem order by ord), '[]'::jsonb)
-      into trimmed
-      from jsonb_array_elements(out_cfg->'promises') with ordinality as t(elem, ord)
-     where ord <= promise_max;
-    out_cfg := jsonb_set(out_cfg, '{promises}', trimmed);
-  end if;
-
-  return out_cfg;
-end;
-$$;
-
 /* ---------- RPCs ---------- */
 
 -- Redeem a code and create an invite in one atomic step.
@@ -202,8 +150,7 @@ begin
   if code_row.used then raise exception 'Access code already used'; end if;
 
   insert into public.invites(id, owner_token, config, created_at)
-    values (p_invite_id, new_owner,
-            public._apply_plan_limits(p_config, code_row.plan), now_ts);
+    values (p_invite_id, new_owner, p_config, now_ts);
 
   update public.access_codes
     set used = true, used_at = now_ts, used_for_invite_id = p_invite_id
@@ -275,15 +222,10 @@ $$;
 grant execute on function public.delete_own_invite(text, uuid) to anon;
 
 -- Admin: create N new codes at once.
--- plan_ нэмэгдсэн тул хуучин 3 аргументтай хувилбарыг эхлээд устгана
--- (үгүй бол default-тай шинэ функцтэй давхцаж "ambiguous" алдаа өгнө).
-drop function if exists public.admin_create_codes(text, int, text);
-
 create or replace function public.admin_create_codes(
   admin_pw text,
   qty      int,
-  note_    text default null,
-  plan_    text default 'premium'
+  note_    text default null
 )
 returns setof public.access_codes
 language plpgsql
@@ -297,14 +239,13 @@ declare
 begin
   perform public._check_admin_pw(admin_pw);
   if qty is null or qty < 1 or qty > 100 then raise exception 'qty must be between 1 and 100'; end if;
-  if plan_ is null or plan_ not in ('basic','premium') then raise exception 'plan must be basic or premium'; end if;
 
   for i in 1..qty loop
     -- retry in the unlikely event of collision
     loop
       new_code := public._gen_code();
       begin
-        insert into public.access_codes(code, note, plan) values (new_code, note_, plan_);
+        insert into public.access_codes(code, note) values (new_code, note_);
         exit;
       exception when unique_violation then
         -- try again
@@ -317,7 +258,7 @@ begin
 end;
 $$;
 
-grant execute on function public.admin_create_codes(text, int, text, text) to anon;
+grant execute on function public.admin_create_codes(text, int, text) to anon;
 
 -- Admin: list all codes.
 create or replace function public.admin_list_codes(admin_pw text)

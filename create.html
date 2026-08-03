@@ -244,53 +244,9 @@
   [data-mode="date"] .only-sorry{display:none;}
   [data-mode="sorry"] .only-date{display:none;}
 
-  /* ---------- Багц ---------- */
-  .plan-bar{
-    display:flex; align-items:center; gap:12px; flex-wrap:wrap;
-    margin:14px 0 0; padding:13px 16px;
-    border:1px solid rgba(248,215,226,.85); border-radius:12px;
-    background:linear-gradient(135deg,#fffaf7,#fff2f8);
-  }
-  .plan-bar.premium{border-color:#e2c9ff; background:linear-gradient(135deg,#fbf7ff,#f4ecff);}
-  .plan-chip{
-    display:inline-flex; align-items:center; gap:7px;
-    padding:6px 13px; border-radius:999px;
-    background:#fff; border:1px solid rgba(248,215,226,.9);
-    color:var(--hot); font-size:13px; font-weight:900; white-space:nowrap;
-  }
-  .plan-bar.premium .plan-chip{border-color:#dcc4ff; color:var(--violet);}
-  .plan-bar p{margin:0; flex:1; min-width:180px; color:#7d687d; font-size:12.5px; line-height:1.45; font-weight:700;}
-  .plan-bar a{color:var(--hot); font-weight:900; text-decoration:none; font-size:12.5px; white-space:nowrap;}
-  .plan-bar a:hover{text-decoration:underline;}
-
-  /* Онцгой багцын шошго — түгжигдээгүй үед ч ялгаж харуулна */
-  .pro-tag{
-    display:inline-flex; align-items:center; gap:4px;
-    margin-left:auto; padding:3px 9px; border-radius:999px;
-    background:linear-gradient(135deg,#f3e8ff,#ffe6f4);
-    color:var(--violet); font-size:10px; font-weight:900; letter-spacing:.3px;
-  }
-  .field.locked .pro-tag{background:#f0eaf4; color:#9b8aa8;}
-  .field.locked input, .field.locked textarea{
-    background:#faf7fa; color:#a496a8; cursor:not-allowed;
-  }
-  .field.locked .hint{color:#a99bb0;}
-  .field.locked .chip,
-  .field.locked .promise-add .btn,
-  .field.locked .promise-picked,
-  .field.locked .promise-empty{opacity:.45; pointer-events:none;}
-  .lock-hint{
-    display:none; align-items:center; gap:7px;
-    margin-top:8px; padding:9px 12px;
-    border-radius:10px; background:#f7f1fb;
-    color:#7c6690; font-size:12px; font-weight:800; line-height:1.4;
-  }
-  .field.locked .lock-hint{display:flex;}
-
   /* ---------- Цаас / стикер сонгогч ---------- */
   .papers{display:grid; grid-template-columns:repeat(4,1fr); gap:12px;}
   .paper-opt, .sticker-opt{
-    position:relative;
     padding:0; cursor:pointer; overflow:hidden;
     border:1px solid rgba(248,215,226,.75); border-radius:12px;
     background:#fff; font-family:'Nunito',sans-serif;
@@ -300,14 +256,6 @@
   .paper-opt.on, .sticker-opt.on{
     border:2px solid var(--hot);
     box-shadow:0 14px 28px -20px rgba(255,77,130,.75);
-  }
-  /* Багцад багтаагүй сонголт */
-  .paper-opt.locked, .sticker-opt.locked{opacity:.5; filter:grayscale(.45);}
-  .paper-opt.locked:hover, .sticker-opt.locked:hover{transform:none;}
-  .paper-opt.locked::after, .sticker-opt.locked::after{
-    content:"🔒"; position:absolute; top:5px; right:6px;
-    font-size:12px; line-height:1;
-    text-shadow:0 1px 3px rgba(255,255,255,.9);
   }
   .paper-swatch{
     height:54px; padding:0 11px;
@@ -617,11 +565,6 @@
             Кодгүй бол Instagram/Messenger-ээр надтай холбогдоно уу. Гүйлгээ хийсний дараа код илгээгдэнэ.<br>
             Нэг код = нэг урилга.
           </div>
-          <div class="plan-bar" id="planBar" style="display:none;">
-            <span class="plan-chip" id="planChip"></span>
-            <p id="planNote"></p>
-            <a href="unelgee.html" target="_blank" rel="noopener">Багцууд →</a>
-          </div>
         </div>
         <div class="field">
           <label><span class="label-icon">♙</span><span class="lbl" id="lblRecipient">УРИЛГЫН АВАГЧИЙН НЭР *</span></label>
@@ -673,23 +616,20 @@
           <textarea id="customNote" placeholder="жишээ: чиний хариу л надад бүх зүйл" maxlength="120"></textarea>
           <div class="hint">Энэ текст урилгын доод хэсэгт харагдана 💕</div>
         </div>
-        <div class="field only-date" data-pro="location">
-          <label><span class="label-icon">📍</span><span class="lbl">УУЛЗАХ ГАЗАР (ЗААВАЛ БИШ)</span><span class="pro-tag">✨ Онцгой</span></label>
+        <div class="field only-date">
+          <label><span class="label-icon">📍</span><span class="lbl">УУЛЗАХ ГАЗАР (ЗААВАЛ БИШ)</span></label>
           <input id="locationName" type="text" placeholder="жишээ: Café Bene, State Circus" maxlength="60" />
           <div class="hint">Тийм газарт үүссэн бол энэ хэсэгт харагдана</div>
-          <div class="lock-hint">🔒 Энэ талбар Онцгой багцад багтдаг</div>
         </div>
-        <div class="field only-date" data-pro="location">
-          <label><span class="label-icon">🗺</span><span class="lbl">GOOGLE MAPS ЛИНК (ЗААВАЛ БИШ)</span><span class="pro-tag">✨ Онцгой</span></label>
+        <div class="field only-date">
+          <label><span class="label-icon">🗺</span><span class="lbl">GOOGLE MAPS ЛИНК (ЗААВАЛ БИШ)</span></label>
           <input id="locationUrl" type="text" placeholder="https://maps.app.goo.gl/..." />
           <div class="hint">Google Maps share линкээ оруулна уу ✨</div>
-          <div class="lock-hint">🔒 Энэ талбар Онцгой багцад багтдаг</div>
         </div>
-        <div class="field only-date" data-pro="specialLetter">
-          <label><span class="label-icon">💌</span><span class="lbl">ТУСГАЙ ЗАХИДАЛ (ЗААВАЛ БИШ)</span><span class="pro-tag">✨ Онцгой</span></label>
+        <div class="field only-date">
+          <label><span class="label-icon">💌</span><span class="lbl">ТУСГАЙ ЗАХИДАЛ (ЗААВАЛ БИШ)</span></label>
           <textarea id="specialLetter" placeholder="жишээ: Чамайг анх харснаас хойш..." maxlength="300"></textarea>
           <div class="hint">Таны хайртад зориулсан захидал энэ хэсэгт харагдана ❤️</div>
-          <div class="lock-hint">🔒 Энэ талбар Онцгой багцад багтдаг</div>
         </div>
 
         <!-- ===== Зөвхөн аргадах горим ===== -->
@@ -701,7 +641,7 @@
         <div class="field only-sorry">
           <label><span class="label-icon">✍️</span><span class="lbl">УУЧЛАЛЫН ЗАХИДАЛ</span></label>
           <textarea id="sorryLetter" rows="6" placeholder="жишээ: Би чамайг гомдоосон гэдгээ мэдэж байна…" maxlength="600"></textarea>
-          <div class="hint">Хоосон орхивол найрсаг үлгэр текст автоматаар тавигдана 🥺 <span id="letterCount"></span></div>
+          <div class="hint">Хоосон орхивол найрсаг үлгэр текст автоматаар тавигдана 🥺</div>
         </div>
         <div class="field only-sorry">
           <label><span class="label-icon">📜</span><span class="lbl">ЗАХИДЛЫН ЦААС</span></label>
@@ -713,8 +653,8 @@
           <div class="stickers" id="stickers"></div>
           <div class="hint">Захидлын дээр гарч ирэх зураг</div>
         </div>
-        <div class="field only-sorry" data-pro="promises">
-          <label><span class="label-icon">🤞</span><span class="lbl">АМЛАЛТУУД (ЗААВАЛ БИШ)</span><span class="pro-tag">✨ Онцгой</span></label>
+        <div class="field only-sorry">
+          <label><span class="label-icon">🤞</span><span class="lbl">АМЛАЛТУУД (ЗААВАЛ БИШ)</span></label>
           <div class="promise-chips" id="promiseChips"></div>
           <div class="promise-add">
             <input id="promiseInput" type="text" placeholder="өөрийн амлалт бичих…" maxlength="70" />
@@ -722,7 +662,6 @@
           </div>
           <ul class="promise-picked" id="promisePicked"></ul>
           <div class="promise-empty" id="promiseEmpty">Амлалт нэмбэл тусдаа “купон” хуудас болж харагдана 🎟</div>
-          <div class="lock-hint">🔒 Амлалтын купон Онцгой багцад багтдаг</div>
         </div>
 
         <div class="link-box" id="linkBox" style="display:none;"></div>
@@ -784,7 +723,6 @@
 <script src="assets/bolzoo-cat.js"></script>
 <script src="assets/bolzoo-paper.js"></script>
 <script src="assets/bolzoo-sticker.js"></script>
-<script src="assets/bolzoo-plans.js"></script>
 <script>
 (function(){
   var $ = BolzooUtils.$;
@@ -889,7 +827,6 @@
     });
     host.addEventListener('click', function(e){
       var t = e.target.closest('.paper-opt'); if(!t) return;
-      if(t.classList.contains('locked')){ setStatus('🔒 Энэ цаас Онцгой багцад багтдаг'); return; }
       currentPaper = t.getAttribute('data-paper');
       markSelected('papers', 'data-paper', currentPaper);
       schedulePreview();
@@ -909,7 +846,6 @@
     host.innerHTML = html;
     host.addEventListener('click', function(e){
       var t = e.target.closest('.sticker-opt'); if(!t) return;
-      if(t.classList.contains('locked')){ setStatus('🔒 Энэ зураг Онцгой багцад багтдаг'); return; }
       currentSticker = t.getAttribute('data-sticker');
       markSelected('stickers', 'data-sticker', currentSticker);
       schedulePreview();
@@ -925,6 +861,8 @@
     'Утсаа тавьж, чамайг сонсоно',
     'Дахиж ийм зүйл давтахгүй'
   ];
+  var MAX_PROMISES = 5;
+
   function renderPromiseChips(){
     var host = $('promiseChips'), html = '';
     PROMISE_PRESETS.forEach(function(p, i){
@@ -948,9 +886,8 @@
   function addPromise(text){
     text = String(text || '').trim();
     if(!text) return;
-    var max = maxPromisesNow();
-    if(promises.length >= max){
-      setStatus('⚠️ Хамгийн ихдээ ' + max + ' амлалт нэмнэ');
+    if(promises.length >= MAX_PROMISES){
+      setStatus('⚠️ Хамгийн ихдээ ' + MAX_PROMISES + ' амлалт нэмнэ');
       return;
     }
     if(promises.indexOf(text) !== -1) return;
@@ -990,106 +927,6 @@
   });
   renderPromiseChips();
   renderPromiseList();
-
-  /* ---------- Багцын хаалт ----------
-   * currentPlan === null  → код хараахан шалгагдаагүй. Юуг ч түгжихгүй, зөвхөн
-   *                         "✨ Онцгой" шошгоор ялгаж харуулна (хүн preview хийж үзэж болно).
-   * 'basic' / 'premium'   → тухайн багцын дагуу түгжинэ.
-   */
-  var currentPlan = null;
-
-  function planOrNull(){ return currentPlan ? BolzooPlans.get(currentPlan) : null; }
-
-  function setPlan(plan){
-    var next = (plan && BolzooPlans.PLANS[plan]) ? plan : null;
-    if(next === currentPlan) return;
-    currentPlan = next;
-    applyPlanUI();
-  }
-
-  function applyPlanUI(){
-    var p = planOrNull();
-
-    // --- Багцын мөр ---
-    var bar = $('planBar');
-    if(!p){
-      bar.style.display = 'none';
-    } else {
-      bar.style.display = 'flex';
-      bar.classList.toggle('premium', p.id === 'premium');
-      $('planChip').textContent = p.emoji + ' ' + p.label + ' — ' + BolzooPlans.money(p.price);
-      $('planNote').textContent = p.id === 'premium'
-        ? 'Бүх боломж нээлттэй ✨'
-        : 'Онцгой багцад: бүх цаас, жинхэнэ муурын зураг, амлалтын купон, уулзах газар.';
-    }
-
-    // --- Цаас / стикер ---
-    lockOptions('papers', 'data-paper', p ? p.papers : null);
-    lockOptions('stickers', 'data-sticker', p ? p.stickers : null);
-
-    if(p && !BolzooPlans.allowsPaper(p, currentPaper)){
-      currentPaper = p.papers[0];
-      markSelected('papers', 'data-paper', currentPaper);
-    }
-    if(p && !BolzooPlans.allowsSticker(p, currentSticker)){
-      currentSticker = p.stickers[0];
-      markSelected('stickers', 'data-sticker', currentSticker);
-    }
-
-    // --- Түгжигдэх талбарууд ---
-    lockField('location', !p || p.location);
-    lockField('specialLetter', !p || p.specialLetter);
-    lockField('promises', !p || p.maxPromises > 0);
-
-    // --- Захидлын урт ---
-    var max = p ? p.letterMax : BolzooPlans.get('premium').letterMax;
-    var letter = $('sorryLetter');
-    letter.setAttribute('maxlength', String(max));
-    if(letter.value.length > max){ letter.value = letter.value.slice(0, max); }
-    updateLetterCount();
-
-    // --- Амлалтын тоо ---
-    var maxProm = p ? p.maxPromises : BolzooPlans.get('premium').maxPromises;
-    if(promises.length > maxProm){ promises = promises.slice(0, maxProm); }
-    renderPromiseChips();
-    renderPromiseList();
-
-    schedulePreview();
-  }
-
-  function lockOptions(hostId, attr, allowed){
-    var kids = $(hostId).children;
-    for(var i=0;i<kids.length;i++){
-      var locked = !!allowed && allowed.indexOf(kids[i].getAttribute(attr)) === -1;
-      kids[i].classList.toggle('locked', locked);
-    }
-  }
-
-  function lockField(proName, allowed){
-    var fields = document.querySelectorAll('[data-pro="' + proName + '"]');
-    for(var i=0;i<fields.length;i++){
-      fields[i].classList.toggle('locked', !allowed);
-      var input = fields[i].querySelector('input, textarea');
-      if(input){
-        input.disabled = !allowed;
-        if(!allowed){ input.value = ''; }
-      }
-    }
-  }
-
-  function updateLetterCount(){
-    var letter = $('sorryLetter');
-    var max = Number(letter.getAttribute('maxlength')) || 600;
-    $('letterCount').textContent = '(' + letter.value.length + '/' + max + ')';
-  }
-  $('sorryLetter').addEventListener('input', updateLetterCount);
-
-  function maxPromisesNow(){
-    var p = planOrNull();
-    return p ? p.maxPromises : BolzooPlans.get('premium').maxPromises;
-  }
-
-  applyPlanUI();
 
   function collectConfig(){
     var base = {
@@ -1215,25 +1052,18 @@
   async function checkCode(){
     var code = normalizeCode($('accessCode').value);
     $('accessCode').value = code;
-    if(!code){ setPlan(null); setCodeUI('', ''); return; }
+    if(!code){ setCodeUI('', ''); return; }
     if(code === lastCheckedCode) return;
     lastCheckedCode = code;
     setCodeUI('', '⏳ шалгаж байна…');
     try{
       var r = await BolzooAPI.validateCode(code);
       if(lastCheckedCode !== code) return; // race: newer check in flight
-      if(r.ok){
-        setPlan(r.plan);
-        var p = BolzooPlans.get(r.plan);
-        setCodeUI('ok', '✅ ' + p.emoji + ' ' + p.label + ' багцын код — үргэлжлүүлээрэй');
-        return;
-      }
-      setPlan(null);
+      if(r.ok){ setCodeUI('ok', '✅ Код хүчинтэй — үргэлжлүүлээрэй'); return; }
       if(r.reason === 'used')      setCodeUI('bad', '❌ Энэ код нэгэнт ашиглагдсан байна');
       else if(r.reason === 'not_found') setCodeUI('bad', '❌ Ийм код олдсонгүй');
       else                          setCodeUI('bad', '❌ Шалгах үед алдаа гарлаа');
     }catch(e){
-      setPlan(null);
       setCodeUI('bad', '❌ Шалгах үед алдаа: ' + (e.message||e));
     }
   }
@@ -1275,12 +1105,10 @@
     $('generate').disabled = true;
     setStatus('⏳ Хадгалж байна...');
     try{
-      // Багцад багтаагүй утгыг сервер рүү явуулахгүй (сервер тал дээр мөн шалгана)
-      var res = await BolzooAPI.createInvite(BolzooPlans.sanitizeConfig(cfg, currentPlan), code);
+      var res = await BolzooAPI.createInvite(cfg, code);
       var url = buildShortUrl(res.id, true);
       var what = currentMode === 'sorry' ? 'Захидал' : 'Урилга';
       showLink(url, '✅ '+what+' үүслээ! Богино линк бэлэн ('+res.id+')');
-      setPlan(null);
       setCodeUI('bad', '⚠️ Энэ код ашиглагдлаа. Дараагийн урилгад шинэ код авна уу.');
       $('accessCode').value = '';
       lastCheckedCode = '';
@@ -1343,7 +1171,6 @@
     promises = [];
     renderPromiseChips();
     renderPromiseList();
-    setPlan(null);
 
     lastCheckedCode = '';
     setCodeUI('', '');
