@@ -621,19 +621,10 @@
     window.scrollTo(0, 0);
   }
 
-  /* ---------- Уучлалын хэмжүүр ---------- */
-  var LEVELS = [
-    { max:15,  face:'😿', label:'Одоохондоо их гомдолтой' },
-    { max:35,  face:'😾', label:'Бага зэрэг уурлаж байна' },
-    { max:55,  face:'🙂', label:'Зөөлөрч байна' },
-    { max:75,  face:'😊', label:'Бараг уучлах шахлаа' },
-    { max:92,  face:'🥰', label:'Тэгье дээ, уучиллаа' },
-    { max:100, face:'😻', label:'Бүрэн уучлаа! 💗' }
-  ];
-  function levelOf(v){
-    for(var i = 0; i < LEVELS.length; i++){ if(v <= LEVELS[i].max) return LEVELS[i]; }
-    return LEVELS[LEVELS.length - 1];
-  }
+  /* ---------- Уучлалын хэмжүүр ----------
+   * Түвшний тайлбар assets/utils.js-д — dashboard мөн ижил үг хэрэглэнэ.
+   */
+  var levelOf = BolzooUtils.forgiveLevel;
   function updateMeter(){
     var v = Number($('meter').value);
     state.level = v;
@@ -687,7 +678,9 @@
 
   /* ---------- Хариу хадгалах ---------- */
   function finish(forgiven){
-    var level = forgiven ? Math.max(state.level, 50) : state.level;
+    // Хэмжүүрийг нь хүчээр өөрчлөхгүй — "уучиллаа, гэхдээ бага зэрэг гомдолтой
+    // байна" гэдэг бол жинхэнэ хариулт. Илгээгчид үнэнийг нь дамжуулна.
+    var level = state.level;
     var reply = $('replyText').value.trim();
 
     $('doneEmoji').textContent = forgiven ? levelOf(level).face : '🫂';
@@ -716,6 +709,8 @@
       at: new Date().toISOString()
     }).then(function(){
       $('sendStatus').textContent = '✅ Хариу илгээгдлээ';
+      // Илгээгч рүү имэйл мэдэгдэл (тохируулсан бол)
+      BolzooAPI.notifyResponse(INVITE_ID);
     }).catch(function(e){
       $('sendStatus').textContent = '⚠️ Хадгалж чадсангүй: ' + (e.message || e);
     });

@@ -29,6 +29,19 @@
   .badge.pending{background:#f3e6ec; color:var(--muted);}
   .badge.opened{background:#fff1cf; color:#b47f16;}
   .badge.responded{background:#dcffde; color:#3a8a4a;}
+  .recover{
+    margin-bottom:16px; padding:15px 18px;
+    border:1px solid #ffe0cf; border-radius:14px;
+    background:linear-gradient(135deg,#fffaf5,#fff4ef);
+  }
+  .recover-head{display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;}
+  .recover-head strong{color:var(--ink); font-size:14px; font-weight:900;}
+  .recover p{margin:8px 0 0; color:var(--muted); font-size:12.5px; line-height:1.5; font-weight:700;}
+  .recover-form{display:grid; grid-template-columns:minmax(0,1fr) auto; gap:10px; margin-top:12px;}
+  @media (max-width:520px){ .recover-form{grid-template-columns:1fr;} }
+  .recover-status{margin-top:8px; font-size:12.5px; font-weight:800; min-height:16px;}
+  .recover-status.ok{color:#3a8a4a;}
+  .recover-status.bad{color:#c74747;}
   .badge.date{background:#ffe6ef; color:#d1447a;}
   .badge.sorry{background:#efe4ff; color:#7a4dcf;}
   .response{margin-top:10px; padding:10px 14px; background:#fff8f4; border:1px dashed var(--coral-soft); border-radius:12px; font-size:13px; line-height:1.5;}
@@ -53,6 +66,20 @@
 
     <div class="backend-warn" id="backendWarn" style="display:none;">
       ⚠️ Supabase backend тохируулаагүй тул зөвхөн энэ browser дээрх урилгууд харагдана. Backend тохируулбал бүх төхөөрөмжөөс харах, хариу цуглуулах боломжтой болно (assets/config.js).
+    </div>
+
+    <div class="recover" id="recover">
+      <div class="recover-head">
+        <strong>📱 Энэ жагсаалт зөвхөн энэ browser-т хадгалагдана</strong>
+        <button class="btn small secondary" id="recoverToggle" type="button">Урилга нэмэх</button>
+      </div>
+      <p>Утсаа солих, түүхээ цэвэрлэхэд жагсаалт алга болно. Санаа зовох хэрэггүй —
+         урилга нь серверт хэвээрээ. Мессенжерт илгээсэн <b>линкээ</b> доор хийвэл буцаад гарч ирнэ.</p>
+      <div class="recover-form" id="recoverForm" style="display:none;">
+        <input id="recoverInput" type="text" placeholder="урилгын линк эсвэл ID…" />
+        <button class="btn small" id="recoverAdd" type="button">Нэмэх</button>
+      </div>
+      <div class="recover-status" id="recoverStatus"></div>
     </div>
 
     <div class="stats">
@@ -109,9 +136,14 @@
     var when = '<span class="card-meta">Хариу ирсэн: ' + esc(fmtWhen(inv.responded_at)) + '</span>';
 
     if(r.type === 'sorry'){
+      // Хувь ганцаараа ойлгомжгүй тул нүүр + тайлбартай нь хамт харуулна
+      var lv = BolzooUtils.forgiveLevel(r.level);
+      var meter = (r.level == null)
+        ? '—'
+        : lv.face + ' ' + esc(lv.label) + ' <b>(' + esc(String(r.level)) + '%)</b>';
       return '<div class="response">'
         + '<b>' + (r.forgiven ? '💗 Уучилсан' : '🫂 Хараахан үгүй') + '</b><br>'
-        + '<b>📊 Уучлалын хэмжүүр:</b> ' + esc(String(r.level == null ? '—' : r.level)) + '%<br>'
+        + '<b>📊 Уучлалын хэмжүүр:</b> ' + meter + '<br>'
         + (r.reply ? '<b>✍️ Хэлсэн үг:</b> ' + esc(r.reply) + '<br>' : '')
         + when
         + '</div>';
@@ -161,6 +193,37 @@
       main.appendChild(el);
     });
   }
+
+  /* ---------- Линкээр сэргээх ---------- */
+  function setRecoverStatus(state, msg){
+    var el = $('recoverStatus');
+    el.className = 'recover-status' + (state ? ' ' + state : '');
+    el.textContent = msg || '';
+  }
+  $('recoverToggle').addEventListener('click', function(){
+    var form = $('recoverForm');
+    var open = form.style.display !== 'none';
+    form.style.display = open ? 'none' : 'grid';
+    this.textContent = open ? 'Урилга нэмэх' : 'Хаах';
+    if(!open) $('recoverInput').focus();
+  });
+  async function recoverInvite(){
+    var val = $('recoverInput').value.trim();
+    if(!val){ setRecoverStatus('bad', 'Линк эсвэл ID оруулна уу'); return; }
+    setRecoverStatus('', '⏳ хайж байна…');
+    try{
+      await BolzooAPI.trackInvite(val);
+      $('recoverInput').value = '';
+      setRecoverStatus('ok', '✅ Нэмэгдлээ');
+      await load();
+    }catch(e){
+      setRecoverStatus('bad', '❌ ' + (e.message || e));
+    }
+  }
+  $('recoverAdd').addEventListener('click', recoverInvite);
+  $('recoverInput').addEventListener('keydown', function(e){
+    if(e.key === 'Enter'){ e.preventDefault(); recoverInvite(); }
+  });
 
   function updateStats(list_){
     $('statTotal').textContent = list_.length;

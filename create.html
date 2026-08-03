@@ -703,7 +703,7 @@
         <h2>💡 Туслах зөвлөгөө</h2>
         <div class="tip-row"><span>🔑</span><p>Кодоо хадгал — дараагийн урилгад ашиглана.</p></div>
         <div class="tip-row"><span>🎟</span><p>Preview хийж хараад линкээ илгээнэ үү.</p></div>
-        <div class="tip-row"><span>💌</span><p>Хариу ирсэн даруйд таны имэйл рүү мэдэгдэх болно.</p></div>
+        <div class="tip-row"><span>💌</span><p id="tipResponse">Хариу ирсэн даруйд “Миний урилгууд” хуудсанд харагдана.</p></div>
       </section>
 
       <section class="side-card music-card">
@@ -728,12 +728,19 @@
   var $ = BolzooUtils.$;
   var esc = BolzooUtils.esc;
   var currentTheme = 'coral';
+  // Автомат имэйл тохируулсан эсэх (assets/config.js → emailWebhookUrl).
+  // Тохируулаагүй бол "имэйлээр ирнэ" гэж амлахгүй — хариу нь dashboard дээр л харагдана.
+  var AUTO_EMAIL = !!(window.BolzooAPI && BolzooAPI.hasEmailWebhook);
   var currentMode = 'date';       // 'date' | 'sorry'
   var currentPaper = 'cream';
   var currentSticker = 'roses';
   var promises = [];
 
   // Backend status badge
+  if(AUTO_EMAIL){
+    $('tipResponse').textContent = 'Хариу ирсэн даруйд таны имэйл рүү мэдэгдэх болно.';
+  }
+
   var badge = $('backendBadge');
   var kind = window.BolzooAPI ? window.BolzooAPI.backendKind : 'localStorage';
   var lbl = BolzooUtils.backendLabel(kind);
@@ -756,7 +763,9 @@
       recipient: 'УРИЛГЫН АВАГЧИЙН НЭР *',
       recipientHint: 'Урилгыг хэнд илгээх вэ? (Жишээ нь: надтай болзоонд явах уу?)',
       senderHint: 'Ticket дээр “X”-ийн нэрийг тань харуулна',
-      emailHint: 'Хүлээн авагч “тийм” эсвэл “үгүй” хариу имэйлээр ирнэ',
+      emailHint: AUTO_EMAIL
+        ? 'Хүлээн авагч хариулмагц “тийм/үгүй” нь энэ хаяг руу имэйлээр ирнэ'
+        : 'Хүлээн авагч хариулмагц “Миний урилгууд” хуудсанд шууд харагдана',
       page: 'bolzoo.html'
     },
     sorry: {
@@ -766,14 +775,16 @@
       recipient: 'ХЭНД УУЧЛАЛ ГУЙХ ВЭ *',
       recipientHint: 'Захидлыг хэнд илгээх вэ? Нэр нь захидлын дээр гарч ирнэ',
       senderHint: 'Захидлын доор гарын үсэг болж харагдана',
-      emailHint: 'Уучилсан эсэх, уучлалын хэмжүүр таны имэйл рүү ирнэ',
+      emailHint: AUTO_EMAIL
+        ? 'Уучилсан эсэх, уучлалын хэмжүүр энэ хаяг руу имэйлээр ирнэ'
+        : 'Уучилсан эсэх, уучлалын хэмжүүр “Миний урилгууд” хуудсанд харагдана',
       page: 'argadah.html'
     }
   };
 
-  function setMode(mode){
-    if(!MODE_COPY[mode] || mode === currentMode) return;
-    currentMode = mode;
+  // Горимын бичвэрийг буулгана. Анхны ачаалалт дээр ч дуудагдана —
+  // эс тэгвэл HTML-д бичсэн статик текст үлдэж, имэйлийн амлалт буруу болно.
+  function applyModeCopy(mode){
     var c = MODE_COPY[mode];
     $('formCard').setAttribute('data-mode', mode);
     $('pageIcon').textContent = c.icon;
@@ -789,12 +800,20 @@
     for(var i=0;i<tabs.length;i++){
       tabs[i].classList.toggle('on', tabs[i].getAttribute('data-mode') === mode);
     }
+  }
+
+  function setMode(mode){
+    if(!MODE_COPY[mode] || mode === currentMode) return;
+    currentMode = mode;
+    applyModeCopy(mode);
     // Горим солигдвол линк хүчингүй — шинээр үүсгэнэ
     $('linkBox').style.display = 'none';
     $('linkActions').style.display = 'none';
     setStatus('');
     updatePreview();
   }
+
+  applyModeCopy(currentMode);
 
   $('modeTabs').addEventListener('click', function(e){
     var t = e.target.closest('.mode-tab'); if(!t) return;

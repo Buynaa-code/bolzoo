@@ -758,7 +758,7 @@
               <div class="letter-body" id="letterBody"></div>
             </div>
             <div class="letter-dots" aria-hidden="true"><i class="on"></i><i></i><i></i></div>
-            <button class="btn send letter-send" id="sendResponse" type="button">Хариу бичих ✎</button>
+            <button class="btn send letter-send" id="sendResponse" type="button">📧 Хариугаа имэйлээр илгээх</button>
             <div class="send-status" id="sendStatus" aria-live="polite"></div>
           </div>
         </div>
@@ -971,6 +971,10 @@
       for(var i=0;i<KINDS.length;i++){ if(KINDS[i].id===state.kind){ return KINDS[i]; } }
       return KINDS[KINDS.length-1];
     }
+    // Илгээгч уулзах газар өгсөн эсэх
+    function hasLocation(){
+      return !!(String(CONFIG.locationName || '').trim() || String(CONFIG.locationUrl || '').trim());
+    }
     function locationParts(){
       var raw = String(CONFIG.locationName || '').trim();
       if(!raw){
@@ -1051,7 +1055,8 @@
     var VIDEO_ID = CONFIG.videoId;
     var YT_VOLUME = 55;
     var RESPONSE_EMAIL = CONFIG.responseEmail;
-    var APPS_SCRIPT_URL = '';       // optional: Apps Script Web App URL тавивал автоматаар илгээнэ
+    // Автомат имэйлийн тохиргоо assets/config.js дотор (emailWebhookUrl)
+    var AUTO_EMAIL = !!(window.BolzooAPI && BolzooAPI.hasEmailWebhook);
 
     /* ---------- kawaii cat avatars (assets/bolzoo-cat.js) ---------- */
     BolzooCat.mountAll();
@@ -1204,16 +1209,30 @@
       $('dateValue').textContent = fmtDateDots(d.y,d.m,d.d);
       $('weekdayPill').textContent = fmtWeekday(d.y,d.m,d.d);
       $('timeValue').textContent = state.time;
-      $('locationName').textContent = loc.name;
-      $('locationAddress').textContent = loc.address;
-      $('locationOpen').href = mapsUrl;
+      // Илгээгч уулзах газар бөглөөгүй бол хуурамч байршил ҮЗҮҮЛЭХГҮЙ —
+      // "Уулзах газар / Улаанбаатар" гэсэн орлуулга нь жинхэнэ мэдээлэл мэт
+      // харагдаж, хүлээн авагчийг төөрөгдүүлдэг байсан.
+      var locationBox = $('locationBox');
+      var locationOpen = $('locationOpen');
       var mapTile = document.getElementById('mapTile');
-      if(mapTile){ mapTile.href = mapsUrl; }
+      var showLoc = hasLocation();
+      if(showLoc){
+        $('locationName').textContent = loc.name;
+        $('locationAddress').textContent = loc.address;
+        locationOpen.href = mapsUrl;
+        if(mapTile){ mapTile.href = mapsUrl; }
+      }
+      locationBox.style.display = showLoc ? '' : 'none';
+      locationOpen.style.display = showLoc ? '' : 'none';
+      if(mapTile){ mapTile.style.display = showLoc ? '' : 'none'; }
       $('ticketDetails').innerHTML =
         '<div class="ticket-detail ticket-seat"><span class="ticket-icon">🪑</span><span>Суудал</span><strong>A5</strong></div>' +
         '<div class="ticket-detail ticket-number"><span class="ticket-icon">🎟</span><span>Ticket No.</span><strong>'+state.ticketNo+'</strong></div>';
       $('doneMsg').textContent = CONFIG.doneNote || 'Дараагийн уулзалтыг хэдийнээ төлөвлөөд эхэлжээ! 💕';
-      $('sendStatus').textContent='';
+      // Автомат имэйлтэй бол хариу нь аль хэдийн очсон — гараар илгээх товч хэрэггүй
+      var sendBtn = $('sendResponse');
+      if(sendBtn){ sendBtn.style.display = AUTO_EMAIL ? 'none' : ''; }
+      $('sendStatus').textContent = AUTO_EMAIL ? '✅ Хариу илгээгдлээ' : '';
       document.getElementById('letterBody').textContent =
         (CONFIG.specialLetter && CONFIG.specialLetter.trim()) ? CONFIG.specialLetter.trim() : defaultLetter();
       document.getElementById('letterBtn').style.display = 'flex';
@@ -1223,7 +1242,10 @@
       twinkle();
       // Persist response to backend if we have an invite ID
       if(INVITE_ID && window.BolzooAPI){
-        BolzooAPI.saveResponse(INVITE_ID, responsePayload()).catch(function(e){
+        BolzooAPI.saveResponse(INVITE_ID, responsePayload()).then(function(){
+          // Илгээгч рүү имэйл мэдэгдэл (тохируулсан бол)
+          BolzooAPI.notifyResponse(INVITE_ID);
+        }).catch(function(e){
           console.warn('Response save failed:', e);
         });
       }
@@ -1276,24 +1298,10 @@
         setSendStatus('Gmail нээгдэхгүй бол To талбарт хаягаа гараар бичээрэй 💌');
       }
     }
+    // Автомат имэйл нь хариу хадгалагдах үед BolzooAPI.notifyResponse-оор явдаг.
+    // Энэ товч зөвхөн webhook тохируулаагүй үеийн нөөц зам.
     function sendViaGmail(){
       if(!state.date) return;
-      if(APPS_SCRIPT_URL){
-        setSendStatus('Хариуг илгээж байна...');
-        fetch(APPS_SCRIPT_URL, {
-          method:'POST',
-          mode:'no-cors',
-          headers:{'Content-Type':'text/plain;charset=utf-8'},
-          body:JSON.stringify(responsePayload())
-        }).then(function(){
-          setSendStatus('Хариу илгээгдлээ 💌');
-          chime();
-        }).catch(function(){
-          setSendStatus('Автомат илгээлт болохгүй байна. Gmail compose нээж үзье.');
-          sendViaGmailCompose();
-        });
-        return;
-      }
       sendViaGmailCompose();
     }
     function sendViaGmailCompose(){
@@ -1354,8 +1362,9 @@
         countdownText: countdownText(),
         countdownParts: countdownParts(),
         subtitle: CONFIG.senderName ? CONFIG.senderName + '-тай хамт' : 'Чиний тусгай хэн нэгэнтэй хамт',
-        locationName: loc.name,
-        locationAddress: loc.address
+        // Газар тохироогүй бол тасалбар дээр "Тохирно" гэж үнэнээр нь бичнэ
+        locationName: hasLocation() ? loc.name : '',
+        locationAddress: hasLocation() ? loc.address : ''
       });
       pop('G5');
     }

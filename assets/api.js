@@ -226,6 +226,41 @@
     }
   }
 
+  /**
+   * Хариу хадгалсны дараа илгээгч рүү имэйл явуулах webhook-ыг зэвүүлнэ.
+   * Тохируулаагүй бол юу ч хийхгүй. Хариу нь аль хэдийн DB-д хадгалагдсан
+   * тул имэйл амжилтгүй болсон ч мэдээлэл алдагдахгүй — тиймээс алдааг
+   * хэрэглэгчид харуулахгүй, зөвхөн console-д бичнэ.
+   */
+  function notifyResponse(id){
+    var url = C.emailWebhookUrl;
+    if(!url || !id) return Promise.resolve(false);
+    return fetch(url, {
+      method: 'POST',
+      mode: 'no-cors',                              // Apps Script CORS header буцаадаггүй
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ inviteId: id })
+    }).then(function(){ return true; })
+      .catch(function(e){ console.warn('Email webhook failed:', e); return false; });
+  }
+
+  /**
+   * Одоо байгаа урилгыг энэ browser-ийн жагсаалтад буцааж нэмнэ.
+   * (Утсаа сольсон / түүхээ цэвэрлэсэн хүн линкээрээ сэргээхэд.)
+   * Зөвхөн харах эрх — устгахад хэрэгтэй owner_token сэргэхгүй.
+   */
+  async function trackInvite(idOrUrl){
+    var raw = String(idOrUrl || '').trim();
+    if(!raw) throw new Error('Линк эсвэл ID оруулна уу');
+    // Линк дотроос ?id=xxx-г салгаж авна, эсвэл шууд ID гэж үзнэ
+    var m = raw.match(/[?&]id=([^&#\s]+)/);
+    var id = m ? decodeURIComponent(m[1]) : raw;
+    var rec = await getInvite(id);
+    if(!rec) throw new Error('Ийм урилга олдсонгүй');
+    rememberMine(id);
+    return rec;
+  }
+
   async function listMyInvites(){
     var mine = listMine();
     if(!mine.length) return [];
@@ -261,7 +296,10 @@
     getInvite: getInvite,
     markOpened: markOpened,
     saveResponse: saveResponse,
+    notifyResponse: notifyResponse,
+    hasEmailWebhook: !!C.emailWebhookUrl,
     listMyInvites: listMyInvites,
+    trackInvite: trackInvite,
     deleteInvite: deleteInvite,
     getOwnerToken: getOwnerToken,
     validateCode: validateCode,
