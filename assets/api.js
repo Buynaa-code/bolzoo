@@ -326,6 +326,28 @@
     forgetMine(id);
   }
 
+  async function recoverInvite(code){
+    if(!HAS_BACKEND) throw new Error('Backend тохируулаагүй тул сэргээх боломжгүй');
+    var data = await appReq('POST', '/api/recover-invite', { code: code });
+    if(!data || !data.ok){
+      var reason = data && data.reason;
+      var msg = reason === 'not_used_yet' ? 'Энэ код хэрэглэгдээгүй байна — /create дээр урилга үүсгэж болно.'
+              : reason === 'invite_missing' ? 'Урилга олдсонгүй (магадгүй устгагдсан).'
+              : 'Код олдсонгүй. Дахин шалгана уу.';
+      var err = new Error(msg);
+      err.reason = reason || 'not_found';
+      throw err;
+    }
+    return data;
+  }
+
+  function rememberOwnedInvite(id, ownerToken){
+    if(!id || !ownerToken) return false;
+    setOwnerToken(id, ownerToken);
+    rememberMine(id);
+    return true;
+  }
+
   window.BolzooAPI = {
     hasBackend: HAS_BACKEND,
     backendKind: BACKEND_KIND,
@@ -338,6 +360,8 @@
     deleteInvite: deleteInvite,
     getOwnerToken: getOwnerToken,
     validateCode: validateCode,
+    recoverInvite: recoverInvite,
+    rememberOwnedInvite: rememberOwnedInvite,
     adminCreateCodes: adminCreateCodes,
     adminListCodes: adminListCodes,
     adminDeleteCode: adminDeleteCode,

@@ -1496,6 +1496,15 @@
           </p>
         </div>
       </div>
+      <div class="success-inbox" id="successRecovery" style="background:linear-gradient(135deg,#f2fff2,#fff8f4); border-color:rgba(90,186,122,.35);">
+        <span class="success-inbox-ic" aria-hidden="true">🔑</span>
+        <div style="min-width:0;">
+          <b style="color:#215a34;">Өөр browser/утаснаас хариу харах линк</b>
+          <p style="color:#3a5a44;">Дараах линкийг өөртөө bookmark хийж эсвэл өөрийнхөө имэйл рүү илгээгээрэй. Ямар ч browser-с дарахад хариу энэ browser шиг харагдана. Бусад хүнд илгээхгүй байхыг зөвлөж байна — линк дотор хувийн token байгаа.</p>
+          <div class="success-link" id="successRecoveryLink" style="margin-top:8px;"></div>
+          <button class="success-copy" id="successRecoveryCopyBtn" type="button" style="margin-top:8px;">📋 Хариу харах линк хуулах</button>
+        </div>
+      </div>
       <p class="success-hint">1 код = 1 урилга. Дараагийнхаа төлөө <a href="pay.html" id="successNewCode">шинэ код авах →</a></p>
     </div>
   </div>
@@ -2181,12 +2190,17 @@
     }
     return true;
   }
-  function showLink(url, msg){
+  function buildRecoveryUrl(inviteId, ownerToken){
+    if(!inviteId || !ownerToken) return '';
+    var base = new URL('dashboard.html', window.location.href).href;
+    return base + '#recover=' + encodeURIComponent(inviteId) + '~' + encodeURIComponent(ownerToken);
+  }
+  function showLink(url, msg, inviteId, ownerToken){
     $('linkBox').textContent = url;
     $('linkBox').style.display = 'block';
     $('linkActions').style.display = 'flex';
     setStatus(msg || '✅ Линк бэлэн!');
-    openSuccessModal(url, $('recipientName').value.trim());
+    openSuccessModal(url, $('recipientName').value.trim(), buildRecoveryUrl(inviteId, ownerToken));
   }
 
   /* ---------- Success modal ---------- */
@@ -2202,10 +2216,27 @@
     var t = document.createElement('textarea'); t.value=text; document.body.appendChild(t); t.select(); document.execCommand('copy'); t.remove();
     return Promise.resolve();
   }
-  function openSuccessModal(url, recipientName){
+  function openSuccessModal(url, recipientName, recoveryUrl){
     $('successLink').textContent = url;
     $('successStatus').textContent = '';
     $('successRecipient').textContent = recipientName && recipientName.trim() ? recipientName.trim() : 'хайртай хүн';
+
+    var recoveryBox = $('successRecovery');
+    var recoveryLinkEl = $('successRecoveryLink');
+    if(recoveryBox && recoveryLinkEl){
+      if(recoveryUrl){
+        recoveryLinkEl.textContent = recoveryUrl;
+        recoveryLinkEl.dataset.url = recoveryUrl;
+        recoveryBox.style.display = '';
+      } else {
+        recoveryBox.style.display = 'none';
+      }
+    }
+    var recoveryCopyBtn = $('successRecoveryCopyBtn');
+    if(recoveryCopyBtn){
+      recoveryCopyBtn.classList.remove('copied');
+      recoveryCopyBtn.textContent = '📋 Хариу харах линк хуулах';
+    }
 
     var copyBtn = $('successCopyBtn');
     copyBtn.classList.remove('copied');
@@ -2274,6 +2305,18 @@
       $('successStatus').textContent = 'Messenger/Instagram-т paste хийгээд илгээгээрэй 💌';
     });
   });
+  var recoveryCopy = $('successRecoveryCopyBtn');
+  if(recoveryCopy){
+    recoveryCopy.addEventListener('click', function(){
+      var link = $('successRecoveryLink');
+      var url = (link && (link.dataset.url || link.textContent)) || '';
+      if(!url) return;
+      copyToClipboard(url).then(function(){
+        recoveryCopy.classList.add('copied');
+        recoveryCopy.textContent = '✅ Хуулагдлаа — bookmark хийгээрэй';
+      });
+    });
+  }
   $('shareInstagram').addEventListener('click', function(){
     // Copy first so paste-in-DM works as soon as Instagram opens.
     var url = this.dataset.url || $('successLink').textContent;
@@ -2299,7 +2342,7 @@
       var split = splitConfig(cfg);
       var res = await BolzooAPI.createInvite(split.public, code, split.private);
       var url = buildShortUrl(res.id, true);
-      showLink(url, '✅ Урилга үүслээ! Богино линк бэлэн ('+res.id+')');
+      showLink(url, '✅ Урилга үүслээ! Богино линк бэлэн ('+res.id+')', res.id, res.ownerToken);
       setCodeUI('bad', '⚠️ Энэ код ашиглагдлаа.');
       // Upgrade the status message to include a direct new-code path so the
       // "why is my button disabled again" moment has an obvious next step.

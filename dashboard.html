@@ -46,6 +46,19 @@
   .card-actions{display:flex; flex-direction:column; gap:6px; align-items:flex-end;}
   .backend-warn{background:#fff1cf; color:#8a6a20; padding:10px 14px; border-radius:12px; margin-bottom:18px; font-size:13px; font-weight:700;}
   .id-mono{font-family:ui-monospace, Menlo, monospace; font-size:12px; color:var(--muted);}
+  .recover-box{margin:0 0 18px; padding:14px 16px; border-radius:14px; background:linear-gradient(135deg,#fff4f8,#fff8f4); border:1px solid rgba(247,106,142,.28);}
+  .recover-box summary{cursor:pointer; font-family:'Nunito',sans-serif; font-weight:900; color:var(--coral-deep); font-size:14px; list-style:none; display:flex; align-items:center; gap:8px;}
+  .recover-box summary::-webkit-details-marker{display:none;}
+  .recover-box summary::after{content:'▾'; margin-left:auto; transition:transform .2s;}
+  .recover-box[open] summary::after{transform:rotate(180deg);}
+  .recover-body{margin-top:12px; display:flex; flex-direction:column; gap:8px;}
+  .recover-body .hint{font-size:12px; color:var(--muted); line-height:1.5;}
+  .recover-form{display:flex; gap:8px; flex-wrap:wrap;}
+  .recover-form input{flex:1 1 200px; min-width:0; padding:11px 14px; border-radius:10px; border:1px solid rgba(0,0,0,.12); font-family:ui-monospace, Menlo, monospace; font-size:14px; letter-spacing:.06em; text-transform:uppercase;}
+  .recover-form input:focus{outline:2px solid rgba(247,106,142,.35); border-color:transparent;}
+  .recover-status{font-size:12px; font-weight:800; min-height:16px;}
+  .recover-status.ok{color:#2e7a3e;}
+  .recover-status.bad{color:#c92e5b;}
 </style>
 </head>
 <body>
@@ -67,9 +80,21 @@
     <div class="privacy-note">
       <span class="privacy-note-ic" aria-hidden="true">🔒</span>
       <div>
-        <b>Энэ хуудсыг зөвхөн та л харна.</b> Урилгын линкийг илгээсэн crush эсвэл бусад хүн энэ жагсаалт руу нэвтрэх боломжгүй — жагсаалт нь зөвхөн энэ browser дээр хадгалагдана. Хариу нь мөн таны имэйл рүү шууд ирнэ.
+        <b>Энэ хуудсыг зөвхөн та л харна.</b> Урилгын линкийг илгээсэн crush эсвэл бусад хүн энэ жагсаалт руу нэвтрэх боломжгүй — жагсаалт нь зөвхөн энэ browser дээр хадгалагдана. Өөр browser эсвэл утаснаас хариу харах бол доорх "Урилгаа сэргээх"-ээр эрхийн кодоороо буцааж авна уу.
       </div>
     </div>
+
+    <details class="recover-box" id="recoverBox">
+      <summary>🔑 Урилгаа сэргээх — өмнөх эрхийн кодоороо</summary>
+      <div class="recover-body">
+        <p class="hint">Browser цэвэрлэсэн, өөр төхөөрөмжөөс нэвтэрсэн үү? Урилга үүсгэхэд ашигласан <b>LOV-XXXXXX</b> кодоо оруулаад тухайн урилгын хариугаа энэ browser-т сэргээгээрэй. Код нь QPay төлбөрийн түүхэнд эсвэл өмнө хуулж авсан газарт байгаа.</p>
+        <form class="recover-form" id="recoverForm" autocomplete="off">
+          <input id="recoverCode" type="text" placeholder="LOV-XXXXXX" maxlength="10" spellcheck="false" />
+          <button class="btn small" type="submit" id="recoverBtn">Сэргээх</button>
+        </form>
+        <div class="recover-status" id="recoverStatus"></div>
+      </div>
+    </details>
 
     <div class="backend-warn" id="backendWarn" style="display:none;">
       ⚠️ Supabase backend тохируулаагүй тул зөвхөн энэ browser дээрх урилгууд харагдана. Backend тохируулбал бүх төхөөрөмжөөс харах, хариу цуглуулах боломжтой болно (assets/config.js).
@@ -84,9 +109,12 @@
     <div class="list" id="list">
       <div class="empty" id="empty" style="display:none;">
         <h2>Урилга байхгүй байна 💌</h2>
-        <p class="subtitle">Эхний урилгаа үүсгээд туршиж үзье!</p>
-        <p class="subtitle" style="margin-top:8px; font-size:12px;">🔒 Жагсаалт зөвхөн энэ browser дээр хадгалагддаг. Өөр төхөөрөмжөөс үүсгэсэн урилгын хариу таны имэйл рүү ирэхийг мартав уу.</p>
-        <a class="btn" href="create.html" style="margin-top:10px;">+ Шинэ урилга үүсгэх</a>
+        <p class="subtitle">Энэ browser-с үүсгэсэн урилга алга.</p>
+        <p class="subtitle" style="margin-top:10px; font-size:13px;">Өмнө нь өөр browser эсвэл утаснаас урилга үүсгэсэн үү? Дээрх <b>🔑 Урилгаа сэргээх</b> хэсгээр эрхийн кодоороо буцааж авах боломжтой — <u>дахин код худалдаж авах шаардлагагүй</u>.</p>
+        <div style="margin-top:16px; display:flex; gap:8px; justify-content:center; flex-wrap:wrap;">
+          <button class="btn" type="button" id="emptyRecoverBtn">🔑 Урилгаа сэргээх</button>
+          <a class="btn secondary" href="create.html">+ Шинэ урилга үүсгэх</a>
+        </div>
       </div>
     </div>
   </div>
@@ -278,6 +306,64 @@
       });
     }
   });
+
+  /* ---------- Recovery: LOV code OR #recover=id~token URL hash ---------- */
+  function setRecoverStatus(msg, tone){
+    var el = $('recoverStatus'); if(!el) return;
+    el.textContent = msg || '';
+    el.classList.remove('ok','bad');
+    if(tone) el.classList.add(tone);
+  }
+  async function recoverAndLoad(code){
+    var normalized = String(code || '').trim().toUpperCase();
+    if(!normalized) return;
+    setRecoverStatus('⏳ Шалгаж байна…', null);
+    $('recoverBtn').disabled = true;
+    try{
+      var data = await BolzooAPI.recoverInvite(normalized);
+      BolzooAPI.rememberOwnedInvite(data.id, data.owner_token);
+      setRecoverStatus('✅ Сэргээв. Жагсаалт шинэчлэгдэж байна…', 'ok');
+      await load();
+      // Success бол recovery box-ыг хаах — санамжийг status-т үлдээнэ
+      var box = $('recoverBox'); if(box) box.open = false;
+    }catch(err){
+      setRecoverStatus('⚠️ ' + (err.message || 'Сэргээж чадсангүй'), 'bad');
+    }finally{
+      $('recoverBtn').disabled = false;
+    }
+  }
+
+  var recoverForm = $('recoverForm');
+  if(recoverForm){
+    recoverForm.addEventListener('submit', function(e){
+      e.preventDefault();
+      recoverAndLoad($('recoverCode').value);
+    });
+  }
+  var emptyRecoverBtn = $('emptyRecoverBtn');
+  if(emptyRecoverBtn){
+    emptyRecoverBtn.addEventListener('click', function(){
+      var box = $('recoverBox');
+      if(box){ box.open = true; box.scrollIntoView({behavior:'smooth', block:'center'}); }
+      setTimeout(function(){ var i = $('recoverCode'); if(i) i.focus(); }, 250);
+    });
+  }
+
+  // URL hash: #recover=<id>~<owner_token>  (success modal-с ирсэн сэргээх линк)
+  (function processRecoverHash(){
+    var hash = String(location.hash || '');
+    var m = hash.match(/[#&]recover=([^&~]+)~([^&]+)/);
+    if(!m) return;
+    var id = decodeURIComponent(m[1]);
+    var token = decodeURIComponent(m[2]);
+    if(!id || !token) return;
+    var added = BolzooAPI.rememberOwnedInvite(id, token);
+    if(!added) return;
+    // Hash-ыг URL-с арилгах — token дэлгэц дээр үлдэхгүй
+    try{ history.replaceState(null, '', location.pathname + location.search); }catch(_){}
+    setRecoverStatus('✅ Урилгын хариу энэ browser-т сэргээгдлээ 💗', 'ok');
+    var box = $('recoverBox'); if(box) box.open = true;
+  })();
 
   $('refresh').addEventListener('click', load);
   load();
