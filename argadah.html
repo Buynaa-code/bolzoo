@@ -285,6 +285,18 @@
   }
   .center{display:flex; justify-content:center;}
   .send-status{min-height:20px; margin:12px 0 0; text-align:center; font-size:13px; font-weight:800; color:var(--coral-deep);}
+  /* Демо дуусахад гарах хөрвүүлэлтийн зурвас */
+  .demo-cta{
+    display:block; margin-top:6px; padding:14px 16px;
+    border:1px dashed var(--coral-soft); border-radius:14px;
+    background:linear-gradient(135deg,#fff8fb,#fff0f6);
+    color:var(--muted); font-size:13.5px; line-height:1.6;
+  }
+  .demo-cta a{
+    display:inline-block; margin-top:6px;
+    color:var(--coral-deep); font-size:14.5px; font-weight:900; text-decoration:none;
+  }
+  .demo-cta a:hover{text-decoration:underline;}
   .restart{
     display:block; margin:16px auto 0; border:0; background:none; cursor:pointer;
     color:var(--muted); font-family:'Nunito',sans-serif; font-size:13px; font-weight:800;
@@ -443,7 +455,11 @@
     return m ? m[1] : '';
   }
 
-  var INVITE_ID = new URLSearchParams(window.location.search).get('id') || null;
+  var QS = new URLSearchParams(window.location.search);
+  var INVITE_ID = QS.get('id') || null;
+  // unelgee.html-ээс ирсэн "туршиж үзэх" горим. create.html-ийн preview
+  // iframe мөн id-гүй ажилладаг тул тэр хоёрыг заавал ялгах хэрэгтэй.
+  var IS_DEMO = QS.get('demo') === '1';
   var DEFAULT_VIDEO = 'qsPzEsxyzB8';   // илгээгч дуу сонгоогүй үеийн үндсэн ая
 
   var CONFIG = (function(){
@@ -706,6 +722,12 @@
       if(audio && audio.chime){ audio.chime(); }
     }
 
+    if(IS_DEMO){
+      $('sendStatus').innerHTML =
+        '<span class="demo-cta">Энэ бол туршилт байлаа 💌<br>'
+        + '<a href="unelgee.html">Хайртдаа жинхэнийг нь илгээх →</a></span>';
+      return;
+    }
     if(!INVITE_ID || !window.BolzooAPI){
       $('sendStatus').textContent = '(preview горим — хариу хадгалагдсангүй)';
       return;

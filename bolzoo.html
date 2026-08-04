@@ -534,6 +534,18 @@
     background:linear-gradient(100deg,#ff4f8b,#9667e8);
   }
   .screen[data-screen="done"] .send-status{margin:10px 0 0;}
+  /* Демо дуусахад гарах хөрвүүлэлтийн зурвас */
+  .demo-cta{
+    display:block; max-width:360px; margin:14px auto 0; padding:14px 16px;
+    border:1px dashed var(--coral-soft); border-radius:14px;
+    background:linear-gradient(135deg,#fff8fb,#fff0f6);
+    color:var(--muted); font-size:13.5px; line-height:1.6;
+  }
+  .demo-cta a{
+    display:inline-block; margin-top:6px;
+    color:var(--coral-deep); font-size:14.5px; font-weight:900; text-decoration:none;
+  }
+  .demo-cta a:hover{text-decoration:underline;}
 
   @media (max-width:620px){
     body[data-screen="done"]{padding:14px 10px 28px;}
@@ -748,6 +760,7 @@
         </div>
 
         <p class="invite-note" id="doneMsg">Дараагийн уулзалтыг хэдийнээ төлөвлөөд эхэлжээ! 💕</p>
+        <div id="demoCta"></div>
 
         <div class="letter-modal" id="letterModal" style="display:none;">
           <div class="letter-content">
@@ -808,7 +821,11 @@
       var m=v.match(/(?:v=|youtu\.be\/|embed\/|shorts\/)([a-zA-Z0-9_-]{11})/);
       return m?m[1]:'';
     }
-    var INVITE_ID = new URLSearchParams(window.location.search).get('id') || null;
+    var QS = new URLSearchParams(window.location.search);
+    var INVITE_ID = QS.get('id') || null;
+    // unelgee.html-ээс ирсэн "туршиж үзэх" горим. create.html-ийн preview
+    // iframe мөн id-гүй ажилладаг тул тэр хоёрыг заавал ялгах хэрэгтэй.
+    var IS_DEMO = QS.get('demo') === '1';
     var CONFIG = (function(){
       var defaults = {
         recipientName: '',
@@ -1229,10 +1246,17 @@
         '<div class="ticket-detail ticket-seat"><span class="ticket-icon">🪑</span><span>Суудал</span><strong>A5</strong></div>' +
         '<div class="ticket-detail ticket-number"><span class="ticket-icon">🎟</span><span>Ticket No.</span><strong>'+state.ticketNo+'</strong></div>';
       $('doneMsg').textContent = CONFIG.doneNote || 'Дараагийн уулзалтыг хэдийнээ төлөвлөөд эхэлжээ! 💕';
-      // Автомат имэйлтэй бол хариу нь аль хэдийн очсон — гараар илгээх товч хэрэггүй
+      // Автомат имэйлтэй бол хариу нь аль хэдийн очсон — гараар илгээх товч хэрэггүй.
+      // Демо үед ч хэрэггүй: хэнд ч илгээх зүйл алга.
       var sendBtn = $('sendResponse');
-      if(sendBtn){ sendBtn.style.display = AUTO_EMAIL ? 'none' : ''; }
-      $('sendStatus').textContent = AUTO_EMAIL ? '✅ Хариу илгээгдлээ' : '';
+      if(sendBtn){ sendBtn.style.display = (AUTO_EMAIL || IS_DEMO) ? 'none' : ''; }
+      // Демогийн уриалгыг захидлын цонх дотор биш, тасалбарын доор ИЛ тавина —
+      // цонхоо нээгээгүй хүн хөрвүүлэлтийн мөчийг харахгүй өнгөрөх учиртай.
+      $('sendStatus').textContent = (AUTO_EMAIL && !IS_DEMO) ? '✅ Хариу илгээгдлээ' : '';
+      $('demoCta').innerHTML = IS_DEMO
+        ? '<span class="demo-cta">Энэ бол туршилт байлаа 💌<br>'
+          + '<a href="unelgee.html">Хайртдаа жинхэнийг нь илгээх →</a></span>'
+        : '';
       document.getElementById('letterBody').textContent =
         (CONFIG.specialLetter && CONFIG.specialLetter.trim()) ? CONFIG.specialLetter.trim() : defaultLetter();
       document.getElementById('letterBtn').style.display = 'flex';

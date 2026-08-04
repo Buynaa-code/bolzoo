@@ -64,6 +64,17 @@
   }
   .card-price .btn{display:block; width:100%; margin-top:26px; padding:15px 20px; font-size:16px; text-align:center;}
 
+  .try{
+    margin-top:28px; padding:26px 24px; text-align:center;
+    border:1px solid rgba(248,215,226,.85); border-radius:22px;
+    background:linear-gradient(150deg,#fffdfb,#fff4f9);
+    box-shadow:0 20px 48px -36px rgba(105,39,78,.45);
+  }
+  .try h2{margin:0 0 8px; font-family:'Comfortaa',sans-serif; font-weight:700; font-size:19px; color:#4b173f;}
+  .try p{margin:0 auto 18px; max-width:420px; color:var(--muted); font-size:13.5px; line-height:1.55; font-weight:700;}
+  .try-btns{display:flex; gap:12px; justify-content:center; flex-wrap:wrap;}
+  .try-btns .btn{flex:1 1 200px; max-width:260px; padding:13px 18px; font-size:14px;}
+
   .how{
     margin-top:28px; padding:26px 24px;
     border:1px solid rgba(248,215,226,.85); border-radius:22px;
@@ -130,6 +141,15 @@
       <a class="btn" href="create.html">Урилгаа үүсгэх →</a>
     </section>
 
+    <section class="try">
+      <h2>🎬 Худалдаж авахаасаа өмнө туршаад үз</h2>
+      <p>Жинхэнэ урилга яг ийм харагдана. Хүлээн авагчийн нүдээр бүтнээр нь үзээрэй — бүртгэл, код шаардахгүй.</p>
+      <div class="try-btns">
+        <a class="btn secondary" id="tryDate" href="#">💌 Болзооны урилга</a>
+        <a class="btn secondary" id="trySorry" href="#">🥺 Аргадах захидал</a>
+      </div>
+    </section>
+
     <section class="how">
       <h2>🪄 Хэрхэн ажилладаг вэ</h2>
       <div class="steps">
@@ -185,5 +205,56 @@
       <a class="btn secondary" href="create.html">Кодтой юу? Урилгаа үүсгэх →</a>
     </footer>
   </div>
+
+<script>
+/**
+ * "Туршиж үзэх" — жинхэнэ хуудсуудыг л нээнэ.
+ *
+ * bolzoo.html / argadah.html хоёр #c=<base64> горимд backend огт шаарддаггүй
+ * тул демо гэдэг нь тусдаа хуудас биш, зүгээр л бэлэн config-той линк.
+ * Ингэснээр демо хэзээ ч жинхэнэ аппаас зөрөхгүй — цаас, текст засвал
+ * демо шууд шинэчлэгдэнэ.
+ *
+ * ?demo=1 нь тэр хоёр хуудсанд "энэ бол туршилт" гэдгийг мэдэгдэнэ —
+ * create.html-ийн preview iframe-ээс ялгахын тулд хэрэгтэй.
+ */
+(function(){
+  var DEMOS = {
+    date: {
+      mode:'date',
+      recipientName:'Аная',
+      senderName:'Мики',
+      theme:'coral',
+      locationName:'Café Bene, Сүхбаатар дүүрэг',
+      customNote:'чиний хариу л надад бүх зүйл',
+      specialLetter:'Чамайг анх харснаас хойш өдөр бүр арай илүү сайхан болсон.\n\nЭнэ удаад зүгээр л хоёулаа сууж, юу ч яарахгүй нэг өдөр өнгөрөөе 💕'
+    },
+    sorry: {
+      mode:'sorry',
+      recipientName:'Аная',
+      senderName:'Мики',
+      theme:'coral',
+      paper:'kraft',
+      sticker:'roses',
+      sorryReason:'Чиний төрсөн өдрийг мартсан',
+      sorryLetter:'Би чамайг гомдоосон гэдгээ мэдэж байна.\nШалтаг хэлэх гэсэнгүй — зүгээр л уучлал гуйя гэсэн юм.\n\nЧиний сэтгэл надад юунаас ч илүү үнэтэй.\nНадад дахин нэг боломж өгөөч 🥺',
+      promises:[
+        'Дараагийн болзоог би бүтнээр төлөвлөнө',
+        'Кино чиний сонголтоор',
+        'Дуртай амттанг чинь авчирна'
+      ]
+    }
+  };
+
+  function demoUrl(kind){
+    var page = (kind === 'sorry') ? 'argadah.html' : 'bolzoo.html';
+    var b64 = btoa(unescape(encodeURIComponent(JSON.stringify(DEMOS[kind]))));
+    return page + '?demo=1#c=' + encodeURIComponent(b64);
+  }
+
+  document.getElementById('tryDate').href  = demoUrl('date');
+  document.getElementById('trySorry').href = demoUrl('sorry');
+})();
+</script>
 </body>
 </html>
