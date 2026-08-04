@@ -29,12 +29,15 @@ alter table public.invites enable row level security;
 -- Anon cannot insert invites directly anymore — they must go through create_invite_with_code RPC.
 drop policy if exists "anon can insert invites" on public.invites;
 
--- Anyone (anon) can SELECT config by id
+-- Anon хүснэгтийг ШУУД УНШИХГҮЙ.
+--
+-- Өмнө нь `using (true)` бодлоготой байсан нь дараах эрсдэлтэй:
+--   * ID мэдэхгүйгээр БҮХ урилгыг татаж болно (хувийн захидал, имэйл хаяг ил)
+--   * owner_token-ыг уншиж, бусдын урилгыг delete_own_invite-аар устгаж болно
+-- Одоо унших ажил get_invites() RPC-ээр явна — тэр нь owner_token буцаадаггүй,
+-- зөвхөн нэрлэсэн ID-аар хайдаг.
 drop policy if exists "anon can select invites" on public.invites;
-create policy "anon can select invites"
-  on public.invites for select
-  to anon
-  using (true);
+revoke select on public.invites from anon;
 
 -- Anon UPDATE-ыг зөвшөөрөхгүй — хариу болон нээсэн тэмдгийг save_response / mark_opened RPC дамжуулна.
 drop policy if exists "anon can update response" on public.invites;
@@ -67,12 +70,17 @@ create index if not exists access_codes_used_idx on public.access_codes (used);
 
 alter table public.access_codes enable row level security;
 
--- Anon can SELECT to validate a code before submitting (client checks used=false, code=X)
+-- Anon хүснэгтийг ШУУД УНШИХГҮЙ.
+--
+-- Өмнө нь `using (true)` бодлоготой байсан нь ноцтой: publishable key нь
+-- сайт дээр ил байдаг тул хэн ч
+--     GET /rest/v1/access_codes?select=code&used=eq.false
+-- гэж бичээд ЗАРАГДААГҮЙ БҮХ КОДЫГ татаж, үнэгүй урилга үүсгэж болно.
+-- Мөн note талбарт бичсэн худалдан авагчийн нэр/холбоо барих ил гарна.
+-- Одоо код шалгах ажил check_access_code() RPC-ээр явна — тэр нь зөвхөн
+-- "хүчинтэй эсэх" гэсэн хариу буцаадаг, кодын жагсаалт өгдөггүй.
 drop policy if exists "anon can select access codes" on public.access_codes;
-create policy "anon can select access codes"
-  on public.access_codes for select
-  to anon
-  using (true);
+revoke select on public.access_codes from anon;
 
 -- No anon insert/update/delete — those go through RPCs (admin_* + create_invite_with_code)
 
@@ -124,6 +132,63 @@ end;
 $$;
 
 /* ---------- RPCs ---------- */
+
+-- Код хүчинтэй эсэхийг шалгана. Кодын жагсаалт, note зэргийг ИЛ ГАРГАХГҮЙ —
+-- зөвхөн тухайн нэг кодын талаар "болно / болохгүй" гэсэн хариу өгнө.
+create or replace function public.check_access_code(p_code text)
+returns table (ok boolean, reason text)
+language plpgsql
+stable
+security definer
+set search_path = public
+as $$
+declare
+  c public.access_codes%rowtype;
+begin
+  if p_code is null or length(p_code) = 0 then
+    return query select false, 'empty'::text; return;
+  end if;
+  select * into c from public.access_codes where code = p_code;
+  if not found then
+    return query select false, 'not_found'::text; return;
+  end if;
+  if c.used then
+    return query select false, 'used'::text; return;
+  end if;
+  return query select true, null::text;
+end;
+$$;
+
+grant execute on function public.check_access_code(text) to anon;
+
+-- Урилгыг ID-аар нь уншина. owner_token-ыг ХЭЗЭЭ Ч буцаахгүй, мөн зөвхөн
+-- нэрлэсэн ID-уудыг өгнө — тиймээс хүснэгтийг бүхэлд нь татах боломжгүй.
+create or replace function public.get_invites(p_ids text[])
+returns table (
+  id            text,
+  config        jsonb,
+  response      jsonb,
+  opened_at     timestamptz,
+  responded_at  timestamptz,
+  created_at    timestamptz
+)
+language plpgsql
+stable
+security definer
+set search_path = public
+as $$
+begin
+  if p_ids is null or array_length(p_ids, 1) is null then return; end if;
+  if array_length(p_ids, 1) > 200 then raise exception 'Too many ids'; end if;
+  return query
+    select i.id, i.config, i.response, i.opened_at, i.responded_at, i.created_at
+      from public.invites i
+     where i.id = any(p_ids)
+     order by i.created_at desc;
+end;
+$$;
+
+grant execute on function public.get_invites(text[]) to anon;
 
 -- Redeem a code and create an invite in one atomic step.
 -- Called from create.html when the buyer submits their invite form.

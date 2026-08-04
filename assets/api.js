@@ -100,14 +100,16 @@
   }
 
   /* ------------ Access codes ------------ */
+  // Кодыг RPC-ээр шалгана. Хүснэгтийг шууд уншвал зарагдаагүй бүх кодыг
+  // татаж авах боломжтой болох тул тэр зам хаалттай (sql/schema.sql).
   async function validateCode(code){
     if(!code) return { ok:false, reason:'empty' };
     if(HAS_BACKEND){
       try{
-        var rows = await req('GET', '/access_codes?code=eq.'+encodeURIComponent(code)+'&select=code,used');
-        if(!rows || !rows.length) return { ok:false, reason:'not_found' };
-        if(rows[0].used) return { ok:false, reason:'used' };
-        return { ok:true };
+        var rows = await rpc('check_access_code', { p_code: code });
+        var r = rows && rows[0];
+        if(!r) return { ok:false, reason:'error' };
+        return r.ok ? { ok:true } : { ok:false, reason:r.reason || 'not_found' };
       }catch(e){ return { ok:false, reason:'error', error:e.message }; }
     } else {
       var c = lsCodes()[code];
@@ -195,7 +197,7 @@
   async function getInvite(id){
     if(!id) return null;
     if(HAS_BACKEND){
-      var rows = await req('GET', '/invites?id=eq.'+encodeURIComponent(id)+'&select=id,config,response,opened_at,responded_at,created_at');
+      var rows = await rpc('get_invites', { p_ids: [id] });
       return rows && rows[0] ? rows[0] : null;
     } else {
       var stored = lsGet('bolzoo:invites:'+id);
@@ -265,9 +267,7 @@
     var mine = listMine();
     if(!mine.length) return [];
     if(HAS_BACKEND){
-      var ids = mine.map(function(x){ return x.id; });
-      var q = 'id=in.('+ids.map(encodeURIComponent).join(',')+')&order=created_at.desc';
-      var rows = await req('GET', '/invites?'+q+'&select=id,config,response,opened_at,responded_at,created_at');
+      var rows = await rpc('get_invites', { p_ids: mine.map(function(x){ return x.id; }) });
       return rows || [];
     } else {
       return mine.map(function(x){

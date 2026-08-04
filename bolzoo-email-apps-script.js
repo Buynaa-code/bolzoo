@@ -44,12 +44,12 @@ function doPost(e) {
   }
 }
 
+// Хүснэгтийг anon шууд уншиж чадахгүй (schema.sql) — get_invites RPC ашиглана
 function fetchInvite(id) {
-  const url = SUPABASE_URL.replace(/\/$/, '')
-    + '/rest/v1/invites?id=eq.' + encodeURIComponent(id)
-    + '&select=config,response,responded_at';
-  const res = UrlFetchApp.fetch(url, {
-    method: 'get',
+  const res = UrlFetchApp.fetch(SUPABASE_URL.replace(/\/$/, '') + '/rest/v1/rpc/get_invites', {
+    method: 'post',
+    contentType: 'application/json',
+    payload: JSON.stringify({ p_ids: [id] }),
     muteHttpExceptions: true,
     headers: { apikey: SUPABASE_ANON_KEY, Authorization: 'Bearer ' + SUPABASE_ANON_KEY }
   });
