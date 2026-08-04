@@ -45,6 +45,17 @@
   .status{margin-top:10px; min-height:20px; font-weight:800; font-size:13px; color:var(--coral-deep);}
   .newcodes{background:#fff8ee; border:1px dashed var(--coral-soft); border-radius:12px; padding:12px; margin-top:10px; font-family:ui-monospace,Menlo,monospace; font-size:13px; white-space:pre-wrap; word-break:break-all;}
   .empty{color:var(--muted); text-align:center; padding:30px 10px; font-size:14px;}
+  .qr-box{display:flex; gap:20px; align-items:center; flex-wrap:wrap; margin-top:12px;}
+  .qr-frame{
+    padding:14px; background:#fff; border-radius:16px;
+    box-shadow:0 12px 28px -18px rgba(105,39,78,.35);
+    border:1px solid #ffe6dc;
+  }
+  .qr-frame canvas, .qr-frame img{display:block;}
+  .qr-info{flex:1 1 240px; min-width:200px;}
+  .qr-info p{margin:0 0 12px; color:var(--muted); font-size:13px; line-height:1.5; font-weight:700;}
+  .qr-url-row{display:flex; gap:8px; margin-bottom:10px;}
+  .qr-url-row input{flex:1; font-family:ui-monospace,Menlo,monospace; font-size:12px;}
   .locked{max-width:440px; margin:60px auto 0;}
   .locked h2{font-family:'Comfortaa',sans-serif; margin:0 0 8px;}
   .toolbar{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:12px;}
@@ -113,6 +124,26 @@
     </div>
 
     <div class="card">
+      <h3 style="margin:0 0 6px; font-family:'Comfortaa',sans-serif;">📱 QR код — Instagram Story-д хуваалцах</h3>
+      <p style="margin:0 0 10px; color:var(--muted); font-size:13px; font-weight:700;">Bio-д линк оруулж чадахгүй бол QR-ыг татаж авч Story-д зураг болгон тавь. Дараа Highlight-д хадгалбал үргэлж харагдана.</p>
+      <div class="qr-url-row">
+        <input id="qrUrl" type="url" placeholder="https://..." />
+        <button class="btn secondary small" id="qrUpdate">🔄</button>
+      </div>
+      <div class="qr-box">
+        <div class="qr-frame"><div id="qrHolder"></div></div>
+        <div class="qr-info">
+          <p>Хэрэглэгч утсаараа QR-ыг скан хийхэд шууд сайт руу орно. Instagram-д линк шаардахгүй.</p>
+          <div class="toolbar" style="margin:0;">
+            <button class="btn" id="qrDownload">⬇️ PNG татах</button>
+            <button class="btn secondary small" id="qrCopy">📋 URL</button>
+          </div>
+          <div class="status" id="qrStatus"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
       <h3 style="margin:0 0 12px; font-family:'Comfortaa',sans-serif;">📋 Бүх кодууд</h3>
       <div id="tableWrap"></div>
     </div>
@@ -122,6 +153,7 @@
 <script src="assets/utils.js"></script>
 <script src="assets/config.js"></script>
 <script src="assets/api.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script>
 (function(){
   var $ = BolzooUtils.$, esc = BolzooUtils.esc, fmtWhen = BolzooUtils.fmtWhen;
@@ -248,6 +280,60 @@
       if(!confirm('Энэ кодыг устгах уу? ('+c2+')')) return;
       BolzooAPI.adminDeleteCode(getPw(), c2).then(loadCodes).catch(function(err){
         alert('Устгаж чадсангүй: '+(err.message||err));
+      });
+    }
+  });
+
+  /* ---------- QR share ---------- */
+  function renderQR(url){
+    var holder = $('qrHolder');
+    holder.innerHTML = '';
+    if(typeof QRCode !== 'function'){
+      holder.innerHTML = '<div style="padding:20px; color:var(--muted); font-size:12px;">QR сан ачаалж чадсангүй</div>';
+      return;
+    }
+    new QRCode(holder, {
+      text: url,
+      width: 240,
+      height: 240,
+      colorDark: '#4b173f',
+      colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.H
+    });
+  }
+  function currentQRUrl(){
+    var v = ($('qrUrl').value || '').trim();
+    return v || window.location.origin + '/';
+  }
+  $('qrUrl').value = window.location.origin + '/';
+  renderQR(currentQRUrl());
+  $('qrUpdate').addEventListener('click', function(){
+    renderQR(currentQRUrl());
+    $('qrStatus').textContent = '✅ Шинэчлэгдлээ';
+    setTimeout(function(){ $('qrStatus').textContent = ''; }, 1500);
+  });
+  $('qrUrl').addEventListener('keydown', function(e){
+    if(e.key === 'Enter'){ e.preventDefault(); $('qrUpdate').click(); }
+  });
+  $('qrDownload').addEventListener('click', function(){
+    var holder = $('qrHolder');
+    var canvas = holder.querySelector('canvas');
+    var img = holder.querySelector('img');
+    var dataUrl = canvas ? canvas.toDataURL('image/png') : (img ? img.src : '');
+    if(!dataUrl){ $('qrStatus').textContent = '❌ QR олдсонгүй'; return; }
+    var a = document.createElement('a');
+    a.href = dataUrl;
+    a.download = 'bolzoo-qr.png';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    $('qrStatus').textContent = '⬇️ Татагдлаа';
+    setTimeout(function(){ $('qrStatus').textContent = ''; }, 1500);
+  });
+  $('qrCopy').addEventListener('click', function(){
+    var url = currentQRUrl();
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(url).then(function(){
+        $('qrStatus').textContent = '📋 Хуулагдлаа';
+        setTimeout(function(){ $('qrStatus').textContent = ''; }, 1500);
       });
     }
   });

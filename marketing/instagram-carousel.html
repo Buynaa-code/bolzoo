@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bolzoo — Instagram carousel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Comfortaa:wght@500;600;700&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    :root{
+      --ink:#4b173f;
+      --plum:#67234e;
+      --pink:#ff4d82;
+      --rose:#ff7ca4;
+      --blush:#ffe8ef;
+      --lilac:#9d63e6;
+      --cream:#fffaf7;
+      --mint:#bfeee1;
+      --gold:#ffcb6b;
+    }
+    *{box-sizing:border-box;}
+    html{background:#f5eff5;}
+    body{margin:0;color:var(--ink);font-family:'Nunito',sans-serif;background:linear-gradient(135deg,#f7edf3,#fff7f4 46%,#eee9fb);}
+    .toolbar{position:sticky;top:0;z-index:5;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:15px max(18px,calc((100% - 1080px)/2));color:#fff;background:#35112f;box-shadow:0 10px 24px rgba(53,17,47,.18);}
+    .toolbar strong{font-family:'Comfortaa',sans-serif;font-size:15px;}
+    .toolbar span{font-size:13px;font-weight:800;opacity:.8;}
+    .slides{display:grid;gap:40px;padding:42px 18px 70px;}
+    .slide{position:relative;width:min(100%,1080px);aspect-ratio:4 / 5;margin:0 auto;overflow:hidden;background:var(--cream);isolation:isolate;box-shadow:0 32px 70px -30px rgba(76,23,62,.35);}
+    .slide::before,.slide::after{position:absolute;z-index:-1;content:"";border-radius:999px;pointer-events:none;}
+    .slide::before{width:58%;aspect-ratio:1;background:rgba(255,213,225,.65);filter:blur(2px);}
+    .slide::after{width:32%;aspect-ratio:1;background:rgba(196,168,240,.22);filter:blur(2px);}
+    .slide-one::before{top:-18%;right:-12%;}
+    .slide-one::after{bottom:-8%;left:-10%;}
+    .slide-two::before{right:-14%;bottom:-10%;background:rgba(255,203,107,.23);}
+    .slide-two::after{top:-8%;left:-14%;background:rgba(196,168,240,.25);}
+    .slide-three::before{top:-19%;left:-18%;background:rgba(255,203,107,.2);}
+    .slide-three::after{right:-12%;bottom:7%;background:rgba(196,168,240,.22);}
+    .slide-four::before{right:-17%;top:25%;background:rgba(255,203,107,.28);}
+    .slide-four::after{left:-14%;bottom:-7%;background:rgba(255,166,190,.28);}
+    .slide-five::before{top:-18%;right:-10%;background:rgba(255,203,107,.22);}
+    .slide-five::after{left:-12%;bottom:-8%;background:rgba(196,168,240,.26);}
+    .slide-six::before{top:-23%;left:-8%;background:rgba(255,209,220,.8);}
+    .slide-six::after{right:-16%;bottom:-12%;background:rgba(196,168,240,.3);}
+    .brand{position:absolute;top:6.4%;left:7.4%;display:flex;align-items:center;gap:9px;color:var(--plum);font-family:'Comfortaa',sans-serif;font-size:clamp(14px,1.75vw,19px);font-weight:700;letter-spacing:.02em;}
+    .brand-mark{display:grid;place-items:center;width:1.85em;height:1.85em;border-radius:50%;color:#fff;font-size:.78em;background:linear-gradient(135deg,#ff7da5,#ff4d82 58%,#a76be7);box-shadow:0 8px 16px -8px rgba(255,77,130,.75);}
+    .slide-count{position:absolute;top:7%;right:7.4%;color:#956f89;font-size:clamp(12px,1.35vw,15px);font-weight:900;letter-spacing:.08em;}
+    .eyebrow{display:inline-flex;align-items:center;gap:.5em;margin:0 0 3.1%;padding:.75em 1em;border:1px solid rgba(255,77,130,.2);border-radius:999px;color:#ca3e6a;background:#fff7fa;font-size:clamp(11px,1.3vw,14px);font-weight:900;letter-spacing:.08em;text-transform:uppercase;}
+    h1,h2,p{margin:0;}
+    .big-title{font-family:'Comfortaa',sans-serif;font-weight:700;letter-spacing:-.045em;line-height:1.13;}
+    .big-title em{color:var(--pink);font-family:'Caveat',cursive;font-size:1.08em;font-style:normal;font-weight:700;letter-spacing:-.02em;}
+    .subcopy{color:#825f76;font-size:clamp(16px,2.1vw,23px);font-weight:800;line-height:1.45;}
+    .spark{position:absolute;display:grid;place-items:center;color:#ffb94e;font-size:clamp(18px,3.4vw,37px);transform:rotate(12deg);filter:drop-shadow(0 7px 8px rgba(241,166,51,.18));}
+    .spark::before{content:'✦';}
+    .heart{position:absolute;display:grid;place-items:center;width:clamp(34px,5vw,54px);aspect-ratio:1;border-radius:50%;color:#ff4d82;background:#fff4f7;font-size:clamp(16px,2.5vw,27px);box-shadow:0 13px 23px -16px rgba(255,77,130,.7);transform:rotate(-12deg);}
+    .heart::before{content:'♥';}
+    .tiny-note{position:absolute;right:7.3%;bottom:7%;color:#966a82;font-size:clamp(12px,1.4vw,15px);font-weight:900;letter-spacing:.04em;}
+
+    /* Slide 1 */
+    .slide-one .copy{position:absolute;z-index:1;top:17.5%;left:7.4%;width:53%;}
+    .slide-one .big-title{font-size:clamp(37px,5.15vw,56px);}
+    .slide-one .subcopy{width:89%;margin-top:5.4%;}
+    .slide-one .spark-a{right:8%;top:14%;}
+    .slide-one .heart-a{left:11%;bottom:17%;}
+    .phone{position:absolute;overflow:hidden;border:clamp(7px,1vw,11px) solid #3f1838;border-radius:clamp(35px,5vw,55px);background:#fff;box-shadow:0 32px 42px -25px rgba(68,25,54,.55);}
+    .phone::before{position:absolute;z-index:3;top:1.25%;left:50%;width:27%;height:2.3%;content:"";border-radius:999px;background:#3f1838;transform:translateX(-50%);}
+    .hero-phone{right:7%;bottom:8%;width:43%;aspect-ratio:.57;transform:rotate(7deg);}
+    .phone-screen{position:relative;height:100%;padding:12% 7% 6%;background:linear-gradient(155deg,#fff7f9,#fffaf6 63%,#ffe9f1);}
+    .phone-spark{position:absolute;color:#ffbd55;font-size:clamp(16px,2vw,24px);}
+    .phone-spark.one{top:12%;left:8%;}
+    .phone-spark.two{right:8%;bottom:18%;}
+    .cat-ring{display:grid;place-items:center;width:54%;aspect-ratio:1;margin:4% auto 8%;border:clamp(7px,1vw,11px) solid #ffe2eb;border-radius:50%;background:linear-gradient(140deg,#fff,#fff4f7);box-shadow:inset 0 0 0 7px rgba(255,255,255,.9);}
+    .cat-ring svg{width:83%;height:83%;}
+    .phone-label{display:block;width:max-content;max-width:95%;margin:0 auto 5%;padding:.6em .85em;border-radius:999px;color:#e05a82;background:#fff;border:1px solid #ffc9d8;font-size:clamp(9px,1.15vw,12px);font-weight:900;box-shadow:0 7px 15px -11px rgba(255,77,130,.75);}
+    .phone-question{color:#55223f;font-family:'Comfortaa',sans-serif;font-size:clamp(13px,1.75vw,19px);font-weight:700;line-height:1.33;text-align:center;}
+    .yes-button{display:grid;place-items:center;margin:9% auto 0;padding:.96em .8em;border-radius:999px;color:#fff;background:linear-gradient(100deg,#ff7da5,#ff4d82);font-size:clamp(10px,1.3vw,14px);font-weight:900;box-shadow:0 14px 24px -14px rgba(255,77,130,.9);}
+    .slanted-sticker{position:absolute;z-index:2;right:38%;bottom:20%;padding:.78em 1.05em;border-radius:999px;border:2px solid #ffd2df;color:#ed4f7e;background:#fff;font-family:'Comfortaa',sans-serif;font-size:clamp(11px,1.45vw,16px);font-weight:700;box-shadow:0 15px 25px -17px rgba(255,77,130,.8);transform:rotate(-7deg);}
+
+    /* Slide 2 */
+    .slide-two .copy{position:absolute;top:17%;left:7.4%;width:84%;}
+    .slide-two .big-title{width:93%;font-size:clamp(34px,4.75vw,52px);}
+    .slide-two .quote{color:#ff6090;font-family:'Caveat',cursive;font-size:1.46em;line-height:0;vertical-align:-.38em;}
+    .chat-stage{position:absolute;top:42%;left:7.4%;right:7.4%;bottom:15%;padding:7%;border:1px solid rgba(255,205,220,.9);border-radius:clamp(28px,4vw,43px);background:rgba(255,255,255,.78);box-shadow:0 25px 48px -35px rgba(91,31,70,.47);}
+    .chat-top{display:flex;align-items:center;gap:13px;margin-bottom:7%;}
+    .chat-avatar{display:grid;place-items:center;width:clamp(37px,5.2vw,56px);aspect-ratio:1;border-radius:50%;background:linear-gradient(135deg,#ffd3df,#ff8eae);font-size:clamp(17px,2.4vw,26px);}
+    .chat-top strong{font-size:clamp(15px,2.1vw,22px);}
+    .chat-top span{display:block;margin-top:3px;color:#a27691;font-size:clamp(11px,1.4vw,14px);font-weight:800;}
+    .bubble{width:max-content;max-width:82%;margin-bottom:4%;padding:1em 1.1em;border-radius:1.35em;font-size:clamp(15px,2.05vw,22px);font-weight:800;line-height:1.35;}
+    .bubble.own{margin-left:auto;border-bottom-right-radius:.35em;color:#fff;background:linear-gradient(135deg,#ff759f,#ff4d82);box-shadow:0 12px 18px -15px rgba(255,77,130,.65);}
+    .bubble.reply{border-bottom-left-radius:.35em;color:#68445d;background:#f6edf2;}
+    .typing{display:flex;align-items:center;gap:6px;width:max-content;padding:1em 1.2em;border-radius:1.35em;border-bottom-left-radius:.35em;background:#f6edf2;}
+    .typing i{width:8px;height:8px;border-radius:50%;background:#c3a8b7;}
+    .typing i:nth-child(2){opacity:.66;}.typing i:nth-child(3){opacity:.34;}
+    .reframe{position:absolute;right:11%;bottom:8%;left:11%;padding:1em 1.25em;border-radius:1.1em;color:#65364f;background:#fff9e8;border:1px solid #ffe5a0;font-size:clamp(14px,1.8vw,19px);font-weight:900;line-height:1.4;text-align:center;box-shadow:0 14px 26px -22px rgba(195,138,38,.6);}
+    .reframe b{color:#e24e7b;}
+    .slide-two .spark-b{right:7%;top:37%;}.slide-two .heart-b{left:11%;bottom:10%;}
+
+    /* Slide 3 */
+    .slide-three .copy{position:absolute;top:17%;left:7.4%;width:78%;}
+    .slide-three .big-title{font-size:clamp(37px,5vw,55px);}
+    .steps-flow{position:absolute;z-index:1;top:40%;left:7.4%;right:7.4%;display:grid;grid-template-columns:repeat(3,1fr);gap:2.5%;}
+    .flow-card{position:relative;min-height:clamp(154px,21vw,230px);padding:8% 8% 6%;border:1px solid rgba(255,211,225,.8);border-radius:clamp(21px,2.8vw,30px);background:rgba(255,255,255,.91);box-shadow:0 17px 30px -27px rgba(93,32,73,.58);}
+    .flow-number{display:grid;place-items:center;width:clamp(28px,3.6vw,39px);aspect-ratio:1;margin-bottom:11%;border-radius:50%;color:#fff;background:linear-gradient(135deg,#ff84aa,#ff4d82);font-size:clamp(12px,1.6vw,16px);font-weight:900;}
+    .flow-card h2{font-size:clamp(15px,2vw,22px);line-height:1.23;}.flow-card p{margin-top:7%;color:#916d83;font-size:clamp(11px,1.45vw,15px);font-weight:800;line-height:1.38;}
+    .template-tiny-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:9%;}
+    .template-tiny{display:grid;place-items:center;min-height:clamp(23px,3vw,34px);border-radius:7px;color:#fff;font-size:clamp(8px,1.05vw,11px);font-weight:900;}
+    .template-tiny:nth-child(1){background:linear-gradient(135deg,#ff9abb,#ff5b90);}.template-tiny:nth-child(2){background:linear-gradient(135deg,#ecc48e,#b66d58);}.template-tiny:nth-child(3){background:linear-gradient(135deg,#bda5eb,#8872ca);}.template-tiny:nth-child(4){background:linear-gradient(135deg,#ffb56c,#e56669);}
+    .note-mini{display:flex;align-items:center;justify-content:center;min-height:clamp(45px,6vw,65px);margin-top:14%;border-radius:9px;color:#735464;background:#fff3f7;font-family:'Caveat',cursive;font-size:clamp(16px,2.2vw,24px);font-weight:700;transform:rotate(-2deg);}
+    .link-mini{height:clamp(20px,2.5vw,28px);margin-top:17%;border-radius:999px;background:linear-gradient(90deg,#ff80a6,#ff4d82);}
+    .promise{position:absolute;right:7.4%;bottom:9%;left:7.4%;padding:1.05em 1.2em;border-radius:999px;color:#fff;background:linear-gradient(100deg,#ff719b,#ff4d82 54%,#a66fe1);font-family:'Comfortaa',sans-serif;font-size:clamp(15px,2.1vw,22px);font-weight:700;text-align:center;box-shadow:0 18px 32px -22px rgba(157,99,230,.94);}
+    .slide-three .spark-c{top:16%;right:9%;}.slide-three .heart-c{top:34%;left:4%;}
+
+    /* Slide 4 */
+    .slide-four .copy{position:absolute;top:17%;right:7.4%;left:7.4%;}
+    .slide-four .big-title{font-size:clamp(37px,5vw,55px);}
+    .wide-phone{position:absolute;top:38%;right:9%;left:9%;height:45%;border:clamp(7px,1vw,11px) solid #3f1838;border-radius:clamp(35px,5vw,55px);background:#fff;box-shadow:0 31px 45px -28px rgba(67,24,53,.65);}
+    .wide-phone::before{position:absolute;z-index:4;top:2.2%;left:50%;width:18%;height:3.6%;content:"";border-radius:999px;background:#3f1838;transform:translateX(-50%);}
+    .wide-screen{height:100%;padding:11% 6% 6%;border-radius:inherit;background:linear-gradient(160deg,#fff8fa,#fffdf9 61%,#feeaf1);}
+    .wide-screen-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:4%;color:#af7794;font-size:clamp(10px,1.35vw,14px);font-weight:900;}.wide-screen-top b{color:#5d2348;font-family:'Comfortaa',sans-serif;font-size:1.1em;}
+    .invite-row{display:flex;align-items:center;gap:4%;height:61%;padding:3% 4%;border-radius:clamp(18px,2.5vw,28px);background:rgba(255,255,255,.85);box-shadow:0 14px 30px -24px rgba(87,37,67,.44);}
+    .mini-orbit{position:relative;display:grid;place-items:center;width:30%;aspect-ratio:1;border:clamp(5px,.65vw,7px) solid #ffdce7;border-radius:50%;background:#fff7fa;}.mini-orbit svg{width:89%;height:89%;}.mini-orbit::after{position:absolute;right:-13%;bottom:3%;content:'💌';font-size:clamp(15px,2vw,21px);transform:rotate(-12deg);}
+    .invite-text{flex:1;}.invite-text .label{color:#ed6090;font-size:clamp(9px,1.15vw,12px);font-weight:900;letter-spacing:.08em;}.invite-text h2{margin-top:5%;font-family:'Comfortaa',sans-serif;font-size:clamp(15px,2.1vw,22px);line-height:1.27;}.invite-text p{margin-top:4%;color:#9a7389;font-size:clamp(10px,1.3vw,14px);font-weight:800;}
+    .answer-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:2%;margin-top:4%;}.answer{padding:.75em .35em;border-radius:999px;font-size:clamp(9px,1.2vw,13px);font-weight:900;text-align:center;}.answer.yes{color:#fff;background:#ff4d82;}.answer.later{color:#82576d;background:#f2e7fb;}.answer.no{color:#8c7783;background:#f4f0f2;}
+    .phone-footer{display:flex;align-items:center;justify-content:space-between;padding:5% 2% 0;color:#806276;font-size:clamp(9px,1.1vw,12px);font-weight:900;}.phone-footer span{color:#ff5790;}
+    .slide-four .spark-d{left:6%;top:42%;}.slide-four .heart-d{right:7%;bottom:8%;}
+    .respect-note{position:absolute;right:14%;bottom:7%;left:14%;color:#77566a;font-size:clamp(13px,1.7vw,18px);font-weight:900;line-height:1.35;text-align:center;}.respect-note b{color:#ec4d7b;}
+
+    /* Slide 5 */
+    .slide-five .copy{position:absolute;top:17%;left:7.4%;width:78%;}
+    .slide-five .big-title{font-size:clamp(36px,5vw,55px);}
+    .moment-panel{position:absolute;top:40%;right:7.4%;left:7.4%;bottom:13%;padding:6%;border:1px solid rgba(255,212,224,.9);border-radius:clamp(28px,4vw,43px);background:rgba(255,255,255,.84);box-shadow:0 25px 50px -36px rgba(91,31,70,.5);}
+    .sent-line{display:flex;align-items:center;gap:3%;margin-bottom:9%;color:#9c7890;font-size:clamp(12px,1.6vw,17px);font-weight:900;}.sent-line::before{content:'✓';display:grid;place-items:center;width:1.75em;aspect-ratio:1;border-radius:50%;color:#fff;background:#6dc698;font-size:.9em;}
+    .warm-message{position:relative;width:83%;padding:1.15em 1.25em;border-radius:1.3em;border-bottom-left-radius:.35em;color:#653f55;background:#fff4f7;font-size:clamp(16px,2.15vw,23px);font-weight:900;line-height:1.35;}.warm-message strong{color:#e84a7a;}
+    .warm-message::after{position:absolute;right:-7%;top:-27%;content:'🥹';font-size:clamp(27px,4vw,43px);transform:rotate(10deg);}
+    .ticket{position:absolute;right:6%;bottom:8%;left:6%;display:grid;grid-template-columns:32% 1fr;min-height:30%;overflow:hidden;border-radius:clamp(17px,2.4vw,26px);background:linear-gradient(130deg,#ff80a7,#ff4d82 60%,#b96ce7);color:#fff;box-shadow:0 19px 30px -22px rgba(255,77,130,.9);}
+    .ticket-left{position:relative;display:grid;place-items:center;border-right:2px dashed rgba(255,255,255,.6);font-size:clamp(33px,5.2vw,57px);}.ticket-left::before,.ticket-left::after{position:absolute;right:-10px;width:20px;aspect-ratio:1;content:"";border-radius:50%;background:#fff8fa;}.ticket-left::before{top:-10px;}.ticket-left::after{bottom:-10px;}
+    .ticket-copy{padding:8% 9%;}.ticket-copy span{font-size:clamp(9px,1.15vw,12px);font-weight:900;letter-spacing:.11em;}.ticket-copy h2{margin-top:5%;font-family:'Comfortaa',sans-serif;font-size:clamp(16px,2.1vw,23px);line-height:1.25;}.ticket-copy p{margin-top:6%;font-size:clamp(10px,1.35vw,14px);font-weight:800;opacity:.9;}
+    .slide-five .spark-e{right:8%;top:16%;}.slide-five .heart-e{left:7%;bottom:9%;}
+
+    /* Slide 6 */
+    .slide-six .center-copy{position:absolute;z-index:1;top:18%;right:8%;left:8%;text-align:center;}
+    .slide-six .eyebrow{margin-bottom:4.5%;}.slide-six .big-title{font-size:clamp(40px,5.55vw,60px);}.slide-six .subcopy{width:76%;margin:5.3% auto 0;}
+    .final-orbit{position:absolute;left:50%;bottom:18%;display:grid;place-items:center;width:36%;aspect-ratio:1;border:clamp(10px,1.4vw,15px) solid #ffe3ec;border-radius:50%;background:radial-gradient(circle at 38% 35%,#fff 0 22%,#fff5f8 58%,#ffe8f0 100%);box-shadow:0 26px 42px -26px rgba(255,77,130,.48);transform:translateX(-50%);}.final-orbit svg{width:83%;height:83%;}.final-orbit::before{position:absolute;right:-13%;top:10%;content:'✨';font-size:clamp(26px,4vw,43px);}.final-orbit::after{position:absolute;bottom:-12%;left:-12%;content:'💌';font-size:clamp(30px,4.5vw,50px);transform:rotate(-11deg);}
+    .final-cta{position:absolute;right:17%;bottom:7%;left:17%;display:grid;place-items:center;padding:1.08em 1.3em;border-radius:999px;color:#fff;background:linear-gradient(100deg,#ff719b,#ff4d82 54%,#a66fe1);font-family:'Comfortaa',sans-serif;font-size:clamp(14px,1.95vw,21px);font-weight:700;box-shadow:0 18px 34px -23px rgba(157,99,230,.98);text-decoration:none;}
+    .slide-six .spark-f{left:12%;top:39%;}.slide-six .heart-f{right:13%;top:43%;}
+
+    .export-tip{width:min(100%,1080px);margin:0 auto -17px;padding:0 4px;color:#87667b;font-size:13px;font-weight:800;text-align:right;}
+    @media (max-width:620px){.toolbar{padding:12px 16px;}.toolbar span{display:none;}.slides{gap:24px;padding:24px 10px 44px;}.export-tip{display:none;}.slide{box-shadow:0 20px 45px -25px rgba(76,23,62,.34);}}
+    @media print{html,body{background:#fff;}.toolbar,.export-tip{display:none;}.slides{display:block;padding:0;}.slide{width:1080px;height:1350px;aspect-ratio:auto;box-shadow:none;break-after:page;page-break-after:always;}.slide:last-child{break-after:auto;page-break-after:auto;}@page{size:1080px 1350px;margin:0;}}
+  </style>
+</head>
+<body>
+  <div class="toolbar">
+    <strong>Bolzoo · Instagram carousel</strong>
+    <span>6 слайд · 4:5 · 1080 × 1350</span>
+  </div>
+
+  <main class="slides">
+    <p class="export-tip">Слайд бүрийг 1080 × 1350 px хэмжээгээр export хийнэ.</p>
+
+    <article class="slide slide-one" aria-label="Слайд 1: Болзооны урилга">
+      <div class="brand"><span class="brand-mark">♥</span>bolzoo.</div><span class="slide-count">01 / 06</span>
+      <div class="copy">
+        <p class="eyebrow">💌 Болзооны урилга</p>
+        <h1 class="big-title">“Хамт болзоонд явах уу?” гэж асуух <em>хамгийн хөөрхөн</em> арга.</h1>
+        <p class="subcopy">Түүний нэртэй нь. Танай дуутай нь. Зөвхөн та хоёрт.</p>
+      </div>
+      <span class="spark spark-a" aria-hidden="true"></span><span class="heart heart-a" aria-hidden="true"></span>
+      <div class="phone hero-phone" aria-hidden="true"><div class="phone-screen"><span class="phone-spark one">✦</span><span class="phone-spark two">✦</span><div class="cat-ring" data-cat="love"></div><span class="phone-label">💌 ТУСГАЙ УРИЛГА</span><p class="phone-question">Надтай болзоонд явах уу?</p><div class="yes-button">Тийм, хамт явъя 💗</div></div></div>
+      <div class="slanted-sticker">нэг линк, бүтэн мэдрэмж</div>
+      <span class="tiny-note">SWIPE →</span>
+    </article>
+
+    <article class="slide slide-two" aria-label="Слайд 2: Сэтгэлээ арай өөрөөр хэл">
+      <div class="brand"><span class="brand-mark">♥</span>bolzoo.</div><span class="slide-count">02 / 06</span>
+      <div class="copy"><p class="eyebrow">Санаанд оромгүй зөөлөн</p><h1 class="big-title"><span class="quote">“</span>Хамт гарах уу?<span class="quote">”</span> гэж ганц мессеж бичихэд жаахан энгийн санагддаг уу?</h1></div>
+      <div class="chat-stage" aria-hidden="true"><div class="chat-top"><span class="chat-avatar">💗</span><div><strong>Тусгай нэг хүн</strong><span>идэвхтэй байна</span></div></div><div class="bubble own">Сайн уу… нэг юм асуух гэсэн юм 🥺</div><div class="typing"><i></i><i></i><i></i></div><div class="bubble reply">Юу болсон бэ? 👀</div></div>
+      <div class="reframe">Харин урилга бол <b>“чамд зориулж цаг гаргасан”</b> гэдгийг зөөлөн хэлдэг.</div>
+      <span class="spark spark-b" aria-hidden="true"></span><span class="heart heart-b" aria-hidden="true"></span>
+    </article>
+
+    <article class="slide slide-three" aria-label="Слайд 3: Урилга үүсгэх гурван алхам">
+      <div class="brand"><span class="brand-mark">♥</span>bolzoo.</div><span class="slide-count">03 / 06</span>
+      <div class="copy"><p class="eyebrow">3 минут л болно</p><h1 class="big-title">Таны мэдрэмж, таны өнгө, таны урилга.</h1></div>
+      <div class="steps-flow" aria-hidden="true">
+        <section class="flow-card"><span class="flow-number">1</span><h2>Загвараа сонго</h2><div class="template-tiny-grid"><span class="template-tiny">Хөөрхөн</span><span class="template-tiny">Захидал</span><span class="template-tiny">Тансаг</span><span class="template-tiny">Тасалбар</span></div></section>
+        <section class="flow-card"><span class="flow-number">2</span><h2>Өөрийнхөөрөө болго</h2><p>Нэр, дуу, жижиг захиагаа нэм.</p><div class="note-mini">чи + би = ?</div></section>
+        <section class="flow-card"><span class="flow-number">3</span><h2>Линкээ илгээ</h2><p>Чат, Messenger, Instagram — хаана ч.</p><div class="link-mini"></div></section>
+      </div>
+      <p class="promise">Зүгээр “тийм” биш, санаанд үлдэх нэг мөч үүсгэ. ✨</p>
+      <span class="spark spark-c" aria-hidden="true"></span><span class="heart heart-c" aria-hidden="true"></span>
+    </article>
+
+    <article class="slide slide-four" aria-label="Слайд 4: Хүлээн авагч юу хардаг вэ">
+      <div class="brand"><span class="brand-mark">♥</span>bolzoo.</div><span class="slide-count">04 / 06</span>
+      <div class="copy"><p class="eyebrow">Тэр линкийг нээхэд…</p><h1 class="big-title">Нэг л линк. Гэхдээ бүтэн <em>мэдрэмж.</em></h1></div>
+      <div class="wide-phone" aria-hidden="true"><div class="wide-screen"><div class="wide-screen-top"><span>9:41</span><b>bolzoo.</b><span>♥</span></div><div class="invite-row"><div class="mini-orbit" data-cat="ask"></div><div class="invite-text"><span class="label">💌 ТУСГАЙ УРИЛГА</span><h2>Надтай болзоонд явах уу?</h2><p>Чамд зориулж бэлдлээ.</p></div></div><div class="answer-row"><span class="answer yes">Тийм 💗</span><span class="answer later">Өөр өдөр</span><span class="answer no">Эелдгээр үгүй</span></div><div class="phone-footer"><span>✦ дуу + захиа + санаа</span><span>→</span></div></div></div>
+      <p class="respect-note"><b>Хариулах сонголт нь үргэлж түүнд.</b> Харин анхаарал нь таных.</p>
+      <span class="spark spark-d" aria-hidden="true"></span><span class="heart heart-d" aria-hidden="true"></span>
+    </article>
+
+    <article class="slide slide-five" aria-label="Слайд 5: Болзооны урилга санаанд үлддэг">
+      <div class="brand"><span class="brand-mark">♥</span>bolzoo.</div><span class="slide-count">05 / 06</span>
+      <div class="copy"><p class="eyebrow">Энэ бол зүгээр нэг асуулт биш</p><h1 class="big-title">Анхаарал гаргасан нь л хамгийн түрүүнд мэдрэгддэг.</h1></div>
+      <div class="moment-panel" aria-hidden="true"><p class="sent-line">Урилга нээгдлээ</p><p class="warm-message">“Энэ үнэхээр <strong>хөөрхөн</strong> байсан шүү… 🥹”</p><div class="ticket"><div class="ticket-left">☕</div><div class="ticket-copy"><span>BOLZOO DATE</span><h2>Бидний кофе болзоо</h2><p>Бямба · 19:00 · Бид хоёр</p></div></div></div>
+      <span class="spark spark-e" aria-hidden="true"></span><span class="heart heart-e" aria-hidden="true"></span>
+    </article>
+
+    <article class="slide slide-six" aria-label="Слайд 6: Болзооны урилга үүсгэх CTA">
+      <div class="brand"><span class="brand-mark">♥</span>bolzoo.</div><span class="slide-count">06 / 06</span>
+      <div class="center-copy"><p class="eyebrow">Таны дараагийн болзоо эндээс</p><h1 class="big-title">Болзоо урилгаас эхэлж болно. 💌</h1><p class="subcopy">Impress хийх гэж биш. Чин сэтгэлээ мэдрүүлэх гэж.</p></div>
+      <div class="final-orbit" data-cat="love" aria-hidden="true"></div>
+      <a class="final-cta" href="https://bolzoodate.vercel.app/create">Өөрийн урилгаа үүсгэ →</a>
+      <span class="spark spark-f" aria-hidden="true"></span><span class="heart heart-f" aria-hidden="true"></span>
+    </article>
+  </main>
+
+  <script defer src="../assets/bolzoo-cat.js"></script>
+  <script>
+    window.addEventListener('DOMContentLoaded', function(){
+      document.querySelectorAll('[data-cat]').forEach(function(node){
+        node.innerHTML = window.BolzooCat ? window.BolzooCat.render(node.dataset.cat) : '🐱';
+      });
+    });
+  </script>
+</body>
+</html>
