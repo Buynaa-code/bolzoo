@@ -91,3 +91,25 @@ node server.js
 ## Deploy
 
 Deployed as a pure static site on Vercel. Backend is Supabase (`invites` table with RLS).
+
+### Upgrading a site that is already live — order matters
+
+The frontend switched from reading tables directly to calling RPCs. Get the order wrong
+and the live site breaks, in one of two ways (both verified against a simulated backend):
+
+| Wrong order | What the customer sees |
+|---|---|
+| SQL first, deploy later | Old frontend can no longer read anything — code validation fails, invites won't load |
+| Deploy first, SQL later | New frontend calls RPCs that don't exist — buyer can't redeem a code, and **an already-sent invite silently renders the generic default letter instead of the real one** |
+
+So `sql/schema.sql` is split. Run it in three steps for zero downtime:
+
+1. Run `sql/schema.sql` **without** the "АЛХАМ 2 — ХҮСНЭГТИЙГ ТҮГЖИХ" block at the
+   bottom. This only adds the new RPCs; the old site keeps working.
+2. Merge and deploy. The new frontend now uses the RPCs.
+3. Run the "АЛХАМ 2" block. The old direct-table path closes and the security holes
+   shut with it.
+
+Between steps 1 and 3 the old permissive policies are still in place, so keep that window
+short. A brand-new project can run the whole file at once — it never creates a permissive
+SELECT policy, so a fresh install is locked from the start.

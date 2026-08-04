@@ -1,6 +1,12 @@
 -- Bolzoo Supabase schema
 -- Run this in Supabase SQL editor: https://supabase.com/dashboard/project/_/sql/new
 --
+-- ⚠️ АЛЬ ХЭДИЙН АЖИЛЛАЖ БУЙ САЙТ ДЭЭР ШИНЭЧЛЭХ БОЛ:
+--    Файлын ТӨГСГӨЛД байгаа "АЛХАМ 2 — ХҮСНЭГТИЙГ ТҮГЖИХ" хэсгийг эхэлж
+--    бүү ажиллуул. Дараалал: (1) энэ файл АЛХАМ 2-гүйгээр → (2) frontend
+--    deploy → (3) АЛХАМ 2. Тайлбарыг тэр хэсгээс уншина уу.
+--    Шинэ төсөл бол бүгдийг нэг дор ажиллуулж болно.
+--
 -- After running this file:
 --   1. Set your admin password:
 --        insert into public.admin_settings(key, value) values ('admin_password', 'YOUR-SECRET-HERE')
@@ -29,15 +35,9 @@ alter table public.invites enable row level security;
 -- Anon cannot insert invites directly anymore — they must go through create_invite_with_code RPC.
 drop policy if exists "anon can insert invites" on public.invites;
 
--- Anon хүснэгтийг ШУУД УНШИХГҮЙ.
---
--- Өмнө нь `using (true)` бодлоготой байсан нь дараах эрсдэлтэй:
---   * ID мэдэхгүйгээр БҮХ урилгыг татаж болно (хувийн захидал, имэйл хаяг ил)
---   * owner_token-ыг уншиж, бусдын урилгыг delete_own_invite-аар устгаж болно
--- Одоо унших ажил get_invites() RPC-ээр явна — тэр нь owner_token буцаадаггүй,
--- зөвхөн нэрлэсэн ID-аар хайдаг.
-drop policy if exists "anon can select invites" on public.invites;
-revoke select on public.invites from anon;
+-- Anon энэ хүснэгтийг ШУУД УНШИХ ЁСГҮЙ — гэхдээ түгжээг файлын ТӨГСГӨЛД
+-- байрлуулав ("АЛХАМ 2" хэсгийг үзнэ үү). Учир нь энэ мөрийг ажиллуулмагц
+-- хуучин frontend уншиж чадахгүй болно.
 
 -- Anon UPDATE-ыг зөвшөөрөхгүй — хариу болон нээсэн тэмдгийг save_response / mark_opened RPC дамжуулна.
 drop policy if exists "anon can update response" on public.invites;
@@ -70,17 +70,9 @@ create index if not exists access_codes_used_idx on public.access_codes (used);
 
 alter table public.access_codes enable row level security;
 
--- Anon хүснэгтийг ШУУД УНШИХГҮЙ.
---
--- Өмнө нь `using (true)` бодлоготой байсан нь ноцтой: publishable key нь
--- сайт дээр ил байдаг тул хэн ч
---     GET /rest/v1/access_codes?select=code&used=eq.false
--- гэж бичээд ЗАРАГДААГҮЙ БҮХ КОДЫГ татаж, үнэгүй урилга үүсгэж болно.
--- Мөн note талбарт бичсэн худалдан авагчийн нэр/холбоо барих ил гарна.
--- Одоо код шалгах ажил check_access_code() RPC-ээр явна — тэр нь зөвхөн
--- "хүчинтэй эсэх" гэсэн хариу буцаадаг, кодын жагсаалт өгдөггүй.
-drop policy if exists "anon can select access codes" on public.access_codes;
-revoke select on public.access_codes from anon;
+-- Anon энэ хүснэгтийг ШУУД УНШИХ ЁСГҮЙ — түгжээ файлын ТӨГСГӨЛД байна
+-- ("АЛХАМ 2"). Хуучин frontend код шалгахдаа энэ хүснэгтийг уншдаг тул
+-- түгжээг deploy хийсний ДАРАА тавина.
 
 -- No anon insert/update/delete — those go through RPCs (admin_* + create_invite_with_code)
 
@@ -392,4 +384,35 @@ $$;
 grant execute on function public.admin_delete_code(text, text) to anon;
 
 -- Force PostgREST to reload its schema cache so new tables/functions are picked up immediately.
+NOTIFY pgrst, 'reload schema';
+
+
+/* ═══════════════════════════════════════════════════════════════════════
+   АЛХАМ 2 — ХҮСНЭГТИЙГ ТҮГЖИХ
+
+   ⚠️ Доорх мөрүүдийг ЗӨВХӨН шинэ frontend deploy хийгдсЭНИЙ ДАРАА
+      ажиллуулна уу. Дараалал нь чухал:
+
+        1) Энэ файлыг АЛХАМ 2-гүйгээр ажиллуулна   (шинэ RPC-үүд үүснэ,
+           хуучин сайт хэвийн ажилласаар байна)
+        2) PR-ээ merge хийж deploy хийнэ            (шинэ сайт RPC ашиглана)
+        3) Доорх блокийг ажиллуулна                  (хуучин зам хаагдана)
+
+      Яагаад? Одоо ажиллаж буй сайт эдгээр хүснэгтийг ШУУД уншдаг. Түгжээг
+      эрт тавибал deploy дуустал сайт ажиллахгүй; оройтвол аюулгүй байдлын
+      нүх нээлттэй хэвээр байна.
+
+      Шинээр төсөл эхлүүлж байгаа бол бүх файлыг нэг дор ажиллуулж болно.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+-- Урилга: ID мэдэхгүйгээр бүгдийг татах, owner_token унших боломжийг хаана.
+-- Унших ажил get_invites() RPC-ээр явна.
+drop policy if exists "anon can select invites" on public.invites;
+revoke select on public.invites from anon;
+
+-- Кодууд: зарагдаагүй бүх кодыг татах, note доторх худалдан авагчийн
+-- мэдээллийг унших боломжийг хаана. Шалгалт check_access_code() RPC-ээр явна.
+drop policy if exists "anon can select access codes" on public.access_codes;
+revoke select on public.access_codes from anon;
+
 NOTIFY pgrst, 'reload schema';
