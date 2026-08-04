@@ -278,6 +278,25 @@
     }
   }
 
+  /**
+   * Үүсгэсэн урилгаа засна (хариу ирэхээс өмнө).
+   * owner_token нь зөвхөн үүсгэсэн төхөөрөмжид байдаг тул линкээр сэргээсэн
+   * урилгыг засах боломжгүй — зөвхөн харна.
+   */
+  async function updateInvite(id, config){
+    var token = getOwnerToken(id);
+    if(!token) throw new Error('Энэ урилгыг зөвхөн үүсгэсэн төхөөрөмжөөс засна');
+    if(HAS_BACKEND){
+      await rpc('update_own_invite', { p_invite_id:id, p_owner_token:token, p_config:config });
+    } else {
+      var s = lsGet('bolzoo:invites:'+id);
+      if(!s) throw new Error('Урилга олдсонгүй');
+      if(s.responded_at) throw new Error('Хариу ирсэн тул засах боломжгүй');
+      s.config = config;
+      lsSet('bolzoo:invites:'+id, s);
+    }
+  }
+
   async function deleteInvite(id){
     if(HAS_BACKEND){
       var token = getOwnerToken(id);
@@ -300,6 +319,7 @@
     hasEmailWebhook: !!C.emailWebhookUrl,
     listMyInvites: listMyInvites,
     trackInvite: trackInvite,
+    updateInvite: updateInvite,
     deleteInvite: deleteInvite,
     getOwnerToken: getOwnerToken,
     validateCode: validateCode,

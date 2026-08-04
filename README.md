@@ -45,6 +45,34 @@ once the webhook is configured. Do not promise buyers email notifications until 
 The Apps Script takes only an `inviteId` and looks the address up in Supabase itself, so
 the endpoint cannot be used as an open mail relay.
 
+## Table access is closed — everything goes through RPCs
+
+`anon` has **no SELECT** on `invites` or `access_codes`. Both the RLS policy and the
+grant are removed in `sql/schema.sql`. This is not optional hardening — with the old
+`using (true)` policies, anyone holding the publishable key (it ships in
+`assets/config.js`) could:
+
+- dump every unsold access code and mint free invites,
+- read every invite without knowing an ID — private letters, names, sender emails,
+- read `owner_token` and delete other people's invites.
+
+Reads now go through two `security definer` functions:
+
+- `check_access_code(p_code)` → `{ok, reason}` only. Never returns a code list or `note`.
+- `get_invites(p_ids)` → named IDs only, capped at 200, and **never returns `owner_token`**.
+
+`server.js` rejects direct table access the same way, so a mistake shows up in local
+dev instead of only after deploy. If you add a new read path, add an RPC — do not
+re-open the table.
+
+## Fixing a typo after sending
+
+One code = one invite, so a typo used to burn the code. `update_own_invite` lets the
+creator edit the config **until the recipient answers** (after that it raises, because
+they answered based on what they saw). The dashboard shows an "✏️ Засах" button when
+both conditions hold: no response yet, and the `owner_token` is on this device.
+Editing keeps the same link.
+
 ## Losing the invite list
 
 `dashboard.html` reads `bolzoo:my` from **localStorage**, so switching phones or clearing

@@ -493,6 +493,15 @@
     normalize(CONFIG);
   }
 
+  /* Болзооны урилгыг bolzoo.html үзүүлдэг. Энэ хуудсаар ирвэл буцаана —
+     bolzoo.html дээрх эсрэг шилжүүлэгтэй хосолж, аль ч линк зөв ажиллана. */
+  function redirectIfDate(cfg){
+    if(!cfg || (cfg.mode && cfg.mode !== 'date')) return false;
+    if(!cfg.mode) return false;   // горимгүй хуучин бичлэгийг хөндөхгүй
+    window.location.replace('bolzoo.html' + window.location.search + window.location.hash);
+    return true;
+  }
+
   /* ================= Агуулга буулгах ================= */
   function applyTheme(){
     var t = THEMES[CONFIG.theme];
@@ -586,6 +595,7 @@
   /* Backend-с config татах (?id=xxx) */
   if(INVITE_ID && window.BolzooAPI){
     BolzooAPI.getInvite(INVITE_ID).then(function(rec){
+      if(rec && redirectIfDate(rec.config)) return;
       if(rec && rec.config){
         mergeIntoConfig(rec.config);
         applyContent();

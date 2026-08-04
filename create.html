@@ -563,7 +563,7 @@
           <div class="code-help">
             <strong>💡 Энэ код ашиглагдана. Дараагийн урилгаа шинэ кодоор үүсгэнэ үү.</strong>
             Кодгүй бол Instagram/Messenger-ээр надтай холбогдоно уу. Гүйлгээ хийсний дараа код илгээгдэнэ.<br>
-            Нэг код = нэг урилга.
+            Нэг код = нэг урилга. <a href="unelgee.html" target="_blank" rel="noopener" style="color:var(--hot); font-weight:900;">Үнэ харах →</a>
           </div>
         </div>
         <div class="field">
@@ -679,6 +679,7 @@
 
         <div class="backend-row">
           <a href="dashboard.html" class="btn small secondary">📊 Миний урилгууд</a>
+          <a href="unelgee.html" class="btn small secondary">💰 Үнэ</a>
           <span id="backendBadge"></span>
         </div>
         <p class="footer-note">💞 Хийсэнээ! Одоо Messenger/Instagram-р паст хийгээрэй 💌</p>
@@ -731,6 +732,7 @@
   // Автомат имэйл тохируулсан эсэх (assets/config.js → emailWebhookUrl).
   // Тохируулаагүй бол "имэйлээр ирнэ" гэж амлахгүй — хариу нь dashboard дээр л харагдана.
   var AUTO_EMAIL = !!(window.BolzooAPI && BolzooAPI.hasEmailWebhook);
+  var editId = null;              // ?edit=<id> үед — шинээр үүсгэхгүй, засна
   var currentMode = 'date';       // 'date' | 'sorry'
   var currentPaper = 'cream';
   var currentSticker = 'roses';
@@ -1093,7 +1095,8 @@
   $('accessCode').addEventListener('blur', checkCode);
 
   function validate(cfg){
-    if(!codeIsValid){ setStatus('⚠️ Хүчинтэй код оруулна уу'); return false; }
+    // Засварлаж байгаа үед код дахин шаардахгүй — тэр аль хэдийн ашиглагдсан
+    if(!editId && !codeIsValid){ setStatus('⚠️ Хүчинтэй код оруулна уу'); return false; }
     if(!cfg.recipientName){
       setStatus(currentMode === 'sorry'
         ? '⚠️ Хэнд уучлал гуйхаа бөглөнө үү'
@@ -1120,14 +1123,31 @@
   $('generate').addEventListener('click', async function(){
     var cfg = collectConfig();
     if(!validate(cfg)) return;
-    var code = normalizeCode($('accessCode').value);
     $('generate').disabled = true;
+
+    if(editId){
+      setStatus('⏳ Засварыг хадгалж байна...');
+      try{
+        await BolzooAPI.updateInvite(editId, cfg);
+        showLink(buildShortUrl(editId, true), '✅ Хадгаллаа — линк хэвээрээ, агуулга нь шинэчлэгдлээ');
+      }catch(e){
+        var m = e.message || String(e);
+        setStatus(/Already answered/i.test(m)
+          ? '❌ Хариу ирсэн тул засах боломжгүй'
+          : '❌ Алдаа: ' + m);
+      }finally{
+        $('generate').disabled = false;
+      }
+      return;
+    }
+
+    var code = normalizeCode($('accessCode').value);
     setStatus('⏳ Хадгалж байна...');
     try{
       var res = await BolzooAPI.createInvite(cfg, code);
       var url = buildShortUrl(res.id, true);
       var what = currentMode === 'sorry' ? 'Захидал' : 'Урилга';
-      showLink(url, '✅ '+what+' үүслээ! Богино линк бэлэн ('+res.id+')');
+      showLink(url, '✅ '+what+' үүслээ! Алдаа гарсан бол “Миний урилгууд”-аас засаж болно.');
       setCodeUI('bad', '⚠️ Энэ код ашиглагдлаа. Дараагийн урилгад шинэ код авна уу.');
       $('accessCode').value = '';
       lastCheckedCode = '';
@@ -1200,11 +1220,69 @@
     updatePreview();
   });
 
-  // Fill defaults for demo
-  $('recipientName').value = '';
-  $('senderName').value = '';
-  $('responseEmail').value = '';
-  updatePreview();
+  /* ---------- Засварлах горим (?edit=<id>) ----------
+   * Нэг код = нэг урилга тул нэг үсгийн алдаа кодыг шатаадаг байсан.
+   * Хариу ирэхээс өмнө бол линкээ хэвээр нь үлдээж агуулгыг засаж болно.
+   */
+  function fillForm(cfg){
+    setMode(cfg.mode === 'sorry' ? 'sorry' : 'date');
+
+    $('recipientName').value = cfg.recipientName || '';
+    $('senderName').value    = cfg.senderName    || '';
+    $('responseEmail').value = cfg.responseEmail || '';
+    $('videoId').value       = cfg.videoId       || '';
+    $('customNote').value    = cfg.customNote    || '';
+    $('locationName').value  = cfg.locationName  || '';
+    $('locationUrl').value   = cfg.locationUrl   || '';
+    $('specialLetter').value = cfg.specialLetter || '';
+    $('sorryReason').value   = cfg.sorryReason   || '';
+    $('sorryLetter').value   = cfg.sorryLetter   || '';
+
+    currentTheme = cfg.theme || 'coral';
+    markSelected('themes', 'data-theme', currentTheme);
+    currentPaper = BolzooPaper.PAPERS[cfg.paper] ? cfg.paper : 'cream';
+    markSelected('papers', 'data-paper', currentPaper);
+    currentSticker = BolzooSticker.STICKERS[cfg.sticker] ? cfg.sticker : 'roses';
+    markSelected('stickers', 'data-sticker', currentSticker);
+
+    promises = Array.isArray(cfg.promises) ? cfg.promises.slice() : [];
+    renderPromiseChips();
+    renderPromiseList();
+    updateVideoPreview();
+  }
+
+  function enterEditUI(id){
+    $('codeGate').style.display = 'none';
+    $('resetForm').style.display = 'none';
+    $('generate').disabled = false;
+    $('generate').textContent = '💾 Засварыг хадгалах';
+    $('pageTitle').textContent = 'Урилга засах';
+    $('pageSubtitle').textContent = 'Хариу ирэхээс өмнө засаж болно. Илгээсэн линк чинь хэвээрээ үлдэнэ.';
+    showLink(buildShortUrl(id, true), '');
+  }
+
+  async function initEditMode(){
+    var id = new URLSearchParams(window.location.search).get('edit');
+    if(!id){ updatePreview(); return; }
+    setStatus('⏳ Урилгыг ачаалж байна…');
+    try{
+      if(!BolzooAPI.getOwnerToken(id)){
+        throw new Error('Энэ урилгыг зөвхөн үүсгэсэн төхөөрөмжөөс засна');
+      }
+      var rec = await BolzooAPI.getInvite(id);
+      if(!rec) throw new Error('Урилга олдсонгүй');
+      if(rec.responded_at) throw new Error('Хариу ирсэн тул засах боломжгүй');
+      editId = id;
+      fillForm(rec.config || {});
+      enterEditUI(id);
+      setStatus('');
+    }catch(e){
+      setStatus('❌ ' + (e.message || e));
+    }
+    updatePreview();
+  }
+
+  initEditMode();
 })();
 </script>
 </body>

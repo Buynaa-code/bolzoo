@@ -286,6 +286,41 @@ $$;
 
 grant execute on function public.delete_own_invite(text, uuid) to anon;
 
+-- Owner: үүсгэсэн урилгаа засна.
+--
+-- Нэг код = нэг урилга тул нэг үсгийн алдаа кодыг шатаадаг байсан. Одоо
+-- ХАРИУ ИРЭХЭЭС ӨМНӨ засаж болно. Хариу ирсэн бол хориглоно — хүлээн авагч
+-- харсан зүйл дээрээ үндэслэж хариулсан, түүнийг нь дараа нь өөрчлөх нь
+-- шударга бус.
+create or replace function public.update_own_invite(
+  p_invite_id   text,
+  p_owner_token uuid,
+  p_config      jsonb
+)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  inv public.invites%rowtype;
+begin
+  if p_invite_id is null or p_owner_token is null then
+    raise exception 'invite id and owner token required';
+  end if;
+  if p_config is null then raise exception 'config required'; end if;
+
+  select * into inv from public.invites where id = p_invite_id for update;
+  if not found then raise exception 'Invite not found'; end if;
+  if inv.owner_token <> p_owner_token then raise exception 'Wrong owner token'; end if;
+  if inv.responded_at is not null then raise exception 'Already answered'; end if;
+
+  update public.invites set config = p_config where id = p_invite_id;
+end;
+$$;
+
+grant execute on function public.update_own_invite(text, uuid, jsonb) to anon;
+
 -- Admin: create N new codes at once.
 create or replace function public.admin_create_codes(
   admin_pw text,

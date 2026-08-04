@@ -206,6 +206,20 @@ async function handleRPC(req, res, url) {
     return sendJSON(res, 200, null);
   }
 
+  if (name === 'update_own_invite') {
+    const invId = body.p_invite_id;
+    const token = body.p_owner_token;
+    if (!invId || !token) return sendPGError(res, 400, 'invite id and owner token required');
+    if (body.p_config == null) return sendPGError(res, 400, 'config required');
+    const inv = invites[invId];
+    if (!inv) return sendPGError(res, 404, 'Invite not found');
+    if (inv.owner_token !== token) return sendPGError(res, 403, 'Wrong owner token');
+    if (inv.responded_at) return sendPGError(res, 409, 'Already answered');
+    inv.config = body.p_config;
+    saveInvites();
+    return sendJSON(res, 200, null);
+  }
+
   if (name === 'delete_own_invite') {
     const invId = body.p_invite_id;
     const token = body.p_owner_token;

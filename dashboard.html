@@ -60,6 +60,7 @@
       </div>
       <div style="display:flex; gap:8px; flex-wrap:wrap;">
         <a class="btn secondary" href="create.html">+ Шинэ урилга</a>
+        <a class="btn secondary" href="unelgee.html">💰 Үнэ</a>
         <button class="btn secondary" id="refresh">🔄 Шинэчлэх</button>
       </div>
     </header>
@@ -116,6 +117,11 @@
   function inviteUrl(inv){
     var page = isSorry(inv) ? 'argadah.html' : 'bolzoo.html';
     return new URL(page, window.location.href).href + '?id=' + encodeURIComponent(inv.id);
+  }
+
+  // Засах эрх: хариу ирээгүй бөгөөд owner_token энэ төхөөрөмж дээр байгаа
+  function canEdit(inv){
+    return !inv.responded_at && !!BolzooAPI.getOwnerToken(inv.id);
   }
 
   function modeBadge(inv){
@@ -188,6 +194,11 @@
         + '<div class="card-actions">'
           + '<a class="btn small secondary" href="' + esc(inviteUrl(inv)) + '" target="_blank">🔗 Нээх</a>'
           + '<button class="btn small secondary" data-copy="' + esc(inviteUrl(inv)) + '">📋 Хуулах</button>'
+          // Хариу ирсний дараа засахыг зөвшөөрөхгүй, мөн owner_token байхгүй
+          // (линкээр сэргээсэн) урилгыг зөвхөн харна
+          + (canEdit(inv)
+              ? '<a class="btn small secondary" href="create.html?edit=' + encodeURIComponent(inv.id) + '">✏️ Засах</a>'
+              : '')
           + '<button class="btn small danger" data-del="' + esc(inv.id) + '">🗑️ Устгах</button>'
         + '</div>';
       main.appendChild(el);
