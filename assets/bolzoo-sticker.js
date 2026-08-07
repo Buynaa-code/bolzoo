@@ -29,10 +29,40 @@
     },
     draw: {
       label: 'Зурсан', emoji: '🐱', type: 'svg', mood: 'love'
+    },
+    clock: {
+      label: 'Хүлээж буй', emoji: '⏰', type: 'img',
+      src: 'assets/img/cat-clock.webp',
+      thumb: 'assets/img/cat-clock-thumb.webp',
+      alt: 'Цагаа заасан муур'
+    },
+    please: {
+      label: 'Гуйж буй', emoji: '🙏', type: 'img',
+      src: 'assets/img/cat-please.webp',
+      thumb: 'assets/img/cat-please-thumb.webp',
+      alt: 'Гар нийлүүлж гуйж буй муур'
+    },
+    sorry: {
+      label: 'Уучлаарай', emoji: '💔', type: 'img',
+      src: 'assets/img/cat-sorry.webp',
+      thumb: 'assets/img/cat-sorry-thumb.webp',
+      alt: 'Зүрх эмтэрч буй муур'
+    },
+    nervous: {
+      label: 'Ичсэн', emoji: '😳', type: 'img',
+      src: 'assets/img/cat-nervous.webp',
+      thumb: 'assets/img/cat-nervous-thumb.webp',
+      alt: 'Ичиж бухимдсан муур'
+    },
+    think: {
+      label: 'Бодож буй', emoji: '🤔', type: 'img',
+      src: 'assets/img/cat-think.webp',
+      thumb: 'assets/img/cat-think-thumb.webp',
+      alt: 'Бодож буй муур'
     }
   };
 
-  var ORDER = ['roses','party','draw','none'];
+  var ORDER = ['roses','party','draw','clock','please','sorry','nervous','think','none'];
 
   var LIST = ORDER.map(function(id){
     return { id: id, label: STICKERS[id].label, emoji: STICKERS[id].emoji, type: STICKERS[id].type };

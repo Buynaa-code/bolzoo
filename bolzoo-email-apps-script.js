@@ -19,8 +19,8 @@
  * хаяг руу спам илгээх relay болгон ашиглах боломжгүй.
  */
 
-const SUPABASE_URL      = 'https://YOUR-PROJECT.supabase.co';
-const SUPABASE_ANON_KEY = 'YOUR-PUBLISHABLE-KEY';
+const SUPABASE_URL      = 'https://chmxjljudmwttwhemdri.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_arrXY92vzLxUIKrb5SKenQ_fM7Y7vKR';
 
 function doPost(e) {
   try {

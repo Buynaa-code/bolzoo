@@ -338,6 +338,7 @@
     width:100%;
     background:linear-gradient(100deg,#ff4f86,#ff5f93 54%,#ff4d82);
   }
+  .btn.wide.muted{opacity:.55; box-shadow:none;}
   .form-actions{display:grid; grid-template-columns:1fr 1fr 1.6fr; gap:14px; margin-top:22px;}
   .link-box{
     margin-top:8px;
@@ -362,6 +363,31 @@
     font-weight:900;
   }
   .link-actions{display:flex; gap:10px; margin-top:10px; flex-wrap:wrap;}
+  .next-step{
+    margin-top:14px;
+    padding:16px 18px;
+    border-radius:14px;
+    background:linear-gradient(135deg,#f5eeff,#faf0ff);
+    border:1px solid #e3d2f9;
+    display:flex;
+    align-items:center;
+    gap:14px;
+    flex-wrap:wrap;
+    animation:nextStepIn .3s ease;
+  }
+  @keyframes nextStepIn{ from{opacity:0; transform:translateY(-4px);} to{opacity:1; transform:none;} }
+  .next-step-icon{
+    width:38px; height:38px; flex:0 0 38px;
+    border-radius:50%;
+    display:grid; place-items:center;
+    background:#fff;
+    border:1px solid #e3d2f9;
+    font-size:18px;
+  }
+  .next-step-text{flex:1 1 220px; min-width:0; color:#5a4270; font-size:13px; line-height:1.5; font-weight:700;}
+  .next-step-text strong{color:var(--violet); font-weight:900;}
+  .next-step .btn{flex:0 0 auto; white-space:nowrap; background:linear-gradient(100deg,#a86bf0,#9d63e6); box-shadow:0 14px 28px -18px rgba(105,39,190,.55);}
+  @media (max-width:520px){ .next-step{flex-direction:column; align-items:stretch; text-align:center;} }
   .status{margin-top:14px; min-height:20px; font-weight:900; font-size:13px; color:var(--hot); text-align:center;}
   .backend-row{margin-top:22px; padding-top:18px; border-top:1px solid rgba(248,215,226,.78); display:flex; align-items:center; justify-content:center; gap:10px; flex-wrap:wrap;}
   #backendBadge{font-size:12px; color:#8b7b8d; font-weight:800;}
@@ -578,7 +604,7 @@
         </div>
         <div class="field">
           <label><span class="label-icon">✉️</span><span class="lbl">ХАРИУ ХҮЛЭЭН АВАХ EMAIL *</span></label>
-          <input id="responseEmail" type="email" placeholder="you@gmail.com" />
+          <input id="responseEmail" type="email" placeholder="you@email.com" />
           <div class="hint" id="hintEmail">Хүлээн авагч “тийм” эсвэл “үгүй” хариу имэйлээр ирнэ</div>
         </div>
         <div class="field">
@@ -670,10 +696,16 @@
           <button class="btn small secondary" id="openLink">Нээж үзэх</button>
         </div>
 
+        <div class="next-step" id="nextStep" style="display:none;">
+          <div class="next-step-icon">👀</div>
+          <div class="next-step-text" id="nextStepText"><strong>Дараагийн алхам:</strong> Линкээ илгээгээд, хариу ирсэн эсэхийг шалгахын тулд дараа энд эргэж ороорой.</div>
+          <a href="dashboard.html" class="btn small">📊 Хариугаа энд хараарай</a>
+        </div>
+
         <div class="form-actions">
           <button class="btn secondary" id="resetForm" type="button">＋ Нэмж шинэ</button>
           <button class="btn secondary" id="shareLink" type="button">🔗 Хуваалцах</button>
-          <button class="btn wide" id="generate" disabled>Линк илгээх →</button>
+          <button class="btn wide muted" id="generate">Линк илгээх →</button>
         </div>
         <div class="status" id="status"></div>
 
@@ -741,6 +773,7 @@
   // Backend status badge
   if(AUTO_EMAIL){
     $('tipResponse').textContent = 'Хариу ирсэн даруйд таны имэйл рүү мэдэгдэх болно.';
+    $('nextStepText').innerHTML = '<strong>Дараагийн алхам:</strong> Линкээ илгээгээрэй. Хариу ирэхэд имэйл рүү чинь мэдэгдэнэ — яараад ч энд шалгаж болно.';
   }
 
   var badge = $('backendBadge');
@@ -811,6 +844,7 @@
     // Горим солигдвол линк хүчингүй — шинээр үүсгэнэ
     $('linkBox').style.display = 'none';
     $('linkActions').style.display = 'none';
+    $('nextStep').style.display = 'none';
     setStatus('');
     updatePreview();
   }
@@ -1068,7 +1102,10 @@
     if(state==='bad'){ gate.classList.add('bad'); status.classList.add('bad'); }
     status.textContent = msg || '';
     codeIsValid = (state==='ok');
-    $('generate').disabled = !codeIsValid;
+    // "disabled" биш "muted" ангилал ашиглана — товч үргэлж дарагдаж чадна,
+    // ингэснээр validate() код дутуу үед шалтгааныг харуулж чадна (харин disabled
+    // товч дээр click listener огт ажиллахгүй тул юу ч харуулж чадахгүй байсан).
+    $('generate').classList.toggle('muted', !codeIsValid);
   }
   async function checkCode(){
     var code = normalizeCode($('accessCode').value);
@@ -1104,7 +1141,7 @@
       return false;
     }
     if(!cfg.responseEmail || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(cfg.responseEmail)){
-      setStatus('⚠️ Зөв Gmail хаяг оруулна уу'); return false;
+      setStatus('⚠️ Зөв email хаяг оруулна уу'); return false;
     }
     return true;
   }
@@ -1112,6 +1149,7 @@
     $('linkBox').textContent = url;
     $('linkBox').style.display = 'block';
     $('linkActions').style.display = 'flex';
+    $('nextStep').style.display = 'flex';
     setStatus(msg || '✅ Линк бэлэн!');
   }
   function buildShortUrl(id, absolute){
@@ -1157,7 +1195,8 @@
       if(/already used/i.test(msg)) setCodeUI('bad', '❌ Энэ код нэгэнт ашиглагдсан байна');
       else if(/Invalid access code/i.test(msg)) setCodeUI('bad', '❌ Ийм код олдсонгүй');
       setStatus('❌ Алдаа: '+ msg);
-      $('generate').disabled = !codeIsValid;
+    }finally{
+      $('generate').disabled = false;
     }
   });
 
@@ -1195,8 +1234,11 @@
   });
 
   $('resetForm').addEventListener('click', function(){
-    ['accessCode','recipientName','senderName','responseEmail','videoId','customNote','locationName','locationUrl','specialLetter',
-     'sorryReason','sorryLetter','promiseInput'].forEach(function(id){
+    var resetFields = ['accessCode','recipientName','senderName','responseEmail','videoId','customNote','locationName','locationUrl','specialLetter',
+     'sorryReason','sorryLetter','promiseInput'];
+    var hasContent = promises.length > 0 || resetFields.some(function(id){ return $(id).value.trim(); });
+    if(hasContent && !confirm('Бөглөсөн бүх мэдээллийг устгаад дахин эхлэх үү?')) return;
+    resetFields.forEach(function(id){
       $(id).value = '';
     });
     currentTheme = 'coral';
@@ -1216,6 +1258,7 @@
     $('videoPreview').style.display = 'none';
     $('linkBox').style.display = 'none';
     $('linkActions').style.display = 'none';
+    $('nextStep').style.display = 'none';
     setStatus('');
     updatePreview();
   });
@@ -1255,6 +1298,7 @@
     $('codeGate').style.display = 'none';
     $('resetForm').style.display = 'none';
     $('generate').disabled = false;
+    $('generate').classList.remove('muted');
     $('generate').textContent = '💾 Засварыг хадгалах';
     $('pageTitle').textContent = 'Урилга засах';
     $('pageSubtitle').textContent = 'Хариу ирэхээс өмнө засаж болно. Илгээсэн линк чинь хэвээрээ үлдэнэ.';
