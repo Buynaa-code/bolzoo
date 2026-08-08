@@ -100,14 +100,16 @@
   }
 
   /* ------------ Access codes ------------ */
+  // Кодыг RPC-ээр шалгана. Хүснэгтийг шууд уншвал зарагдаагүй бүх кодыг
+  // татаж авах боломжтой болох тул тэр зам хаалттай (sql/schema.sql).
   async function validateCode(code){
     if(!code) return { ok:false, reason:'empty' };
     if(HAS_BACKEND){
       try{
-        var rows = await req('GET', '/access_codes?code=eq.'+encodeURIComponent(code)+'&select=code,used');
-        if(!rows || !rows.length) return { ok:false, reason:'not_found' };
-        if(rows[0].used) return { ok:false, reason:'used' };
-        return { ok:true };
+        var rows = await rpc('check_access_code', { p_code: code });
+        var r = rows && rows[0];
+        if(!r) return { ok:false, reason:'error' };
+        return r.ok ? { ok:true } : { ok:false, reason:r.reason || 'not_found' };
       }catch(e){ return { ok:false, reason:'error', error:e.message }; }
     } else {
       var c = lsCodes()[code];
@@ -195,7 +197,7 @@
   async function getInvite(id){
     if(!id) return null;
     if(HAS_BACKEND){
-      var rows = await req('GET', '/invites?id=eq.'+encodeURIComponent(id)+'&select=id,config,response,opened_at,responded_at,created_at');
+      var rows = await rpc('get_invites', { p_ids: [id] });
       return rows && rows[0] ? rows[0] : null;
     } else {
       var stored = lsGet('bolzoo:invites:'+id);
@@ -226,13 +228,46 @@
     }
   }
 
+  /**
+   * Хариу хадгалсны дараа илгээгч рүү имэйл явуулах webhook-ыг зэвүүлнэ.
+   * Тохируулаагүй бол юу ч хийхгүй. Хариу нь аль хэдийн DB-д хадгалагдсан
+   * тул имэйл амжилтгүй болсон ч мэдээлэл алдагдахгүй — тиймээс алдааг
+   * хэрэглэгчид харуулахгүй, зөвхөн console-д бичнэ.
+   */
+  function notifyResponse(id){
+    var url = C.emailWebhookUrl;
+    if(!url || !id) return Promise.resolve(false);
+    return fetch(url, {
+      method: 'POST',
+      mode: 'no-cors',                              // Apps Script CORS header буцаадаггүй
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ inviteId: id })
+    }).then(function(){ return true; })
+      .catch(function(e){ console.warn('Email webhook failed:', e); return false; });
+  }
+
+  /**
+   * Одоо байгаа урилгыг энэ browser-ийн жагсаалтад буцааж нэмнэ.
+   * (Утсаа сольсон / түүхээ цэвэрлэсэн хүн линкээрээ сэргээхэд.)
+   * Зөвхөн харах эрх — устгахад хэрэгтэй owner_token сэргэхгүй.
+   */
+  async function trackInvite(idOrUrl){
+    var raw = String(idOrUrl || '').trim();
+    if(!raw) throw new Error('Линк эсвэл ID оруулна уу');
+    // Линк дотроос ?id=xxx-г салгаж авна, эсвэл шууд ID гэж үзнэ
+    var m = raw.match(/[?&]id=([^&#\s]+)/);
+    var id = m ? decodeURIComponent(m[1]) : raw;
+    var rec = await getInvite(id);
+    if(!rec) throw new Error('Ийм урилга олдсонгүй');
+    rememberMine(id);
+    return rec;
+  }
+
   async function listMyInvites(){
     var mine = listMine();
     if(!mine.length) return [];
     if(HAS_BACKEND){
-      var ids = mine.map(function(x){ return x.id; });
-      var q = 'id=in.('+ids.map(encodeURIComponent).join(',')+')&order=created_at.desc';
-      var rows = await req('GET', '/invites?'+q+'&select=id,config,response,opened_at,responded_at,created_at');
+      var rows = await rpc('get_invites', { p_ids: mine.map(function(x){ return x.id; }) });
       return rows || [];
     } else {
       return mine.map(function(x){
@@ -240,6 +275,25 @@
         if(!s) return null;
         return { id:x.id, config:s.config, response:s.response, opened_at:s.opened_at, responded_at:s.responded_at, created_at:s.created_at };
       }).filter(Boolean);
+    }
+  }
+
+  /**
+   * Үүсгэсэн урилгаа засна (хариу ирэхээс өмнө).
+   * owner_token нь зөвхөн үүсгэсэн төхөөрөмжид байдаг тул линкээр сэргээсэн
+   * урилгыг засах боломжгүй — зөвхөн харна.
+   */
+  async function updateInvite(id, config){
+    var token = getOwnerToken(id);
+    if(!token) throw new Error('Энэ урилгыг зөвхөн үүсгэсэн төхөөрөмжөөс засна');
+    if(HAS_BACKEND){
+      await rpc('update_own_invite', { p_invite_id:id, p_owner_token:token, p_config:config });
+    } else {
+      var s = lsGet('bolzoo:invites:'+id);
+      if(!s) throw new Error('Урилга олдсонгүй');
+      if(s.responded_at) throw new Error('Хариу ирсэн тул засах боломжгүй');
+      s.config = config;
+      lsSet('bolzoo:invites:'+id, s);
     }
   }
 
@@ -261,7 +315,11 @@
     getInvite: getInvite,
     markOpened: markOpened,
     saveResponse: saveResponse,
+    notifyResponse: notifyResponse,
+    hasEmailWebhook: !!C.emailWebhookUrl,
     listMyInvites: listMyInvites,
+    trackInvite: trackInvite,
+    updateInvite: updateInvite,
     deleteInvite: deleteInvite,
     getOwnerToken: getOwnerToken,
     validateCode: validateCode,
