@@ -39,6 +39,7 @@
   }
 
   function drawTicketOn(ctx, ox, oy, d){
+    var hasLocation = !!String((d.locationName || '') + (d.locationAddress || '')).trim();
     ctx.save();
     ctx.translate(ox, oy);
     ctx.save();
@@ -97,11 +98,19 @@
         ctx.textAlign = 'left';
       }
     }
-    infoRow(252, '📅', 'Огноо', d.dateDots || d.dateText, '', d.weekday || '');
-    ctx.strokeStyle = '#ffd8e2'; ctx.beginPath(); ctx.moveTo(66, 306); ctx.lineTo(466, 306); ctx.stroke();
-    infoRow(340, '🕐', 'Цаг', d.time, '', '');
-    ctx.strokeStyle = '#ffd8e2'; ctx.beginPath(); ctx.moveTo(66, 394); ctx.lineTo(466, 394); ctx.stroke();
-    infoRow(424, '📍', 'Байршил', d.locationName || 'Уулзах газар', d.locationAddress || 'Улаанбаатар', '');
+    if(hasLocation){
+      infoRow(252, '📅', 'Огноо', d.dateDots || d.dateText, '', d.weekday || '');
+      ctx.strokeStyle = '#ffd8e2'; ctx.beginPath(); ctx.moveTo(66, 306); ctx.lineTo(466, 306); ctx.stroke();
+      infoRow(340, '🕐', 'Цаг', d.time, '', '');
+      ctx.strokeStyle = '#ffd8e2'; ctx.beginPath(); ctx.moveTo(66, 394); ctx.lineTo(466, 394); ctx.stroke();
+      infoRow(424, '📍', 'Байршил', d.locationName, d.locationAddress || '', '');
+    } else {
+      // Байршил оруулаагүй үед хиймэл default харуулахгүй; огноо, цагийг
+      // хоёр цэвэрхэн мөрөөр төвлөрүүлнэ.
+      infoRow(280, '📅', 'Огноо', d.dateDots || d.dateText, '', d.weekday || '');
+      ctx.strokeStyle = '#ffd8e2'; ctx.beginPath(); ctx.moveTo(66, 326); ctx.lineTo(466, 326); ctx.stroke();
+      infoRow(382, '🕐', 'Цаг', d.time, '', '');
+    }
 
     ctx.save();
     drawSoftShadow(ctx, 'rgba(116,45,88,.13)', 24, 12);

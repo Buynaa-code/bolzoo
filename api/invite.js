@@ -24,8 +24,24 @@ const PUBLIC_CONFIG_KEYS = [
   'locationName',
   'locationUrl',
   'specialLetter',
-  'poster'
+  'poster',
+  'experienceType',
+  'apologyIssue',
+  'apologyTone',
+  'apologyWhatHappened',
+  'apologyRegret',
+  'apologyRepair',
+  'apologyLetter',
+  'apologyPaper',
+  'apologyDateOffer',
+  'expiresAt'
 ];
+
+function isExpiredConfig(cfg) {
+  if (!cfg || cfg.experienceType !== 'apology' || !cfg.expiresAt) return false;
+  const expiry = Date.parse(String(cfg.expiresAt));
+  return Number.isFinite(expiry) && expiry <= Date.now();
+}
 
 function pickPublicConfig(cfg) {
   const out = {};
@@ -75,6 +91,7 @@ module.exports = async function handler(req, res) {
         '/invites?id=eq.' + encodeURIComponent(id) + '&select=id,config,created_at&limit=1'
       );
       if (!rows || !rows[0]) return sendJSON(res, 404, { error: 'Invite not found' });
+      if (isExpiredConfig(rows[0].config)) return sendJSON(res, 410, { error: 'Invite expired' });
       return sendJSON(res, 200, publicInvite(rows[0]));
     }
 

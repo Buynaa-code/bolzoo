@@ -51,12 +51,14 @@ module.exports = async function handler(req, res) {
     // Only ship email for a committed answer. Intermediate poster-yes/later
     // saves without a picked date shouldn't burn the once-per-invite slot —
     // the guest is still deciding. A hard "no" or a picked date counts as
-    // commitment. Later edits are safe: the unique(invite_id, kind) row
+    // commitment. An explicit apology status is also a committed answer.
+    // Later edits are safe: the unique(invite_id, kind) row
     // exists after the first send, so retries return already_sent.
     const resp    = invite.response || {};
     const hasDate = !!(resp.date || resp.dateISO);
     const isDecline = String(resp.answer || '').toLowerCase() === 'no';
-    if (!hasDate && !isDecline) {
+    const isApologyStatus = resp.type === 'apology' && !!resp.status;
+    if (!hasDate && !isDecline && !isApologyStatus) {
       return sendJSON(res, 200, { sent: false, reason: 'not_committed' });
     }
 

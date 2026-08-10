@@ -605,6 +605,41 @@
   .intro-sparkles span:nth-child(3){left:20%; bottom:24%; color:#f7b946; animation-delay:1.15s;}
   .intro-sparkles span:nth-child(4){right:20%; bottom:27%; color:#a77cf1; animation-delay:1.65s;}
   @keyframes introSpark{0%,100%{transform:translateY(0) scale(.86) rotate(-8deg); opacity:.48;} 50%{transform:translateY(-10px) scale(1.08) rotate(10deg); opacity:1;}}
+  .intro-flower-storm{position:absolute; inset:0; z-index:3; overflow:hidden; pointer-events:none;}
+  .intro-flower-petal{
+    position:absolute;
+    left:var(--x);
+    top:var(--y);
+    opacity:0;
+    font-size:var(--size);
+    line-height:1;
+    filter:drop-shadow(0 8px 12px rgba(117,65,88,.16));
+    will-change:transform,opacity;
+  }
+  .intro-overlay.opening .intro-flower-petal{
+    animation:apologyFlowerFill var(--duration) cubic-bezier(.2,.72,.22,1) var(--delay) both;
+  }
+  @keyframes apologyFlowerFill{
+    0%{opacity:0; transform:translate(var(--from-x),var(--from-y)) scale(.08) rotate(-160deg);}
+    22%{opacity:.94;}
+    68%{opacity:.88; transform:translate(0,0) scale(1) rotate(var(--spin));}
+    100%{opacity:0; transform:translate(var(--drift),-34px) scale(.72) rotate(var(--spin-end));}
+  }
+  body[data-experience="apology"] .intro-overlay{
+    background:
+      radial-gradient(circle at 50% 30%,rgba(255,255,255,.96),transparent 38%),
+      radial-gradient(circle at 12% 12%,rgba(243,198,214,.55),transparent 34%),
+      radial-gradient(circle at 86% 84%,rgba(238,205,255,.52),transparent 38%),
+      linear-gradient(155deg,#fffafc,#fff0f6 54%,#fbf1ff);
+  }
+  body[data-experience="apology"] .env-back{background:linear-gradient(145deg,#ffb4ca,#f36b99);}
+  body[data-experience="apology"] .env-body{background:linear-gradient(145deg,#ff9fbd,#ee4f86);}
+  body[data-experience="apology"] .env-flap{background:linear-gradient(160deg,#ffb0c8,#dc3975);}
+  body[data-experience="apology"] .env-seal{background:radial-gradient(circle at 30% 28%,#ff9cbd,#bc2763 74%);}
+  body[data-experience="apology"] .env-letter{border:2px solid rgba(255,141,177,.3); background:linear-gradient(90deg,rgba(255,203,217,.34) 0 1px,transparent 1px 100%),linear-gradient(#fff,#fff6fa);}
+  body[data-experience="apology"] .env-stamp{background:linear-gradient(145deg,#ffe1ec,#f8e8ff); box-shadow:0 7px 15px -10px rgba(197,45,105,.8);}
+  body[data-experience="apology"] .intro-open{background:linear-gradient(100deg,#ff4d82,#c136a0); box-shadow:0 18px 34px -20px rgba(193,54,160,.72);}
+  body[data-experience="apology"] .intro-overlay.leaving{animation-duration:.68s;}
 
   .env-wrap{position:relative; width:270px; height:218px; perspective:1100px; transform-style:preserve-3d; animation:envEnter .72s cubic-bezier(.2,.9,.25,1.05) both, envFloat 3.3s ease-in-out .8s infinite;}
   @keyframes envEnter{from{transform:translateY(34px) scale(.76) rotate(-3deg); opacity:0;} to{transform:translateY(0) scale(1) rotate(0); opacity:1;}}
@@ -654,6 +689,36 @@
   .env-body{position:absolute; left:14px; right:14px; bottom:26px; height:134px; border-radius:22px; overflow:hidden; background:linear-gradient(145deg,#ff86a3,#f04f82); box-shadow:inset 0 1px 0 rgba(255,255,255,.28); z-index:3;}
   .env-body::before{content:""; position:absolute; inset:0; background:linear-gradient(32deg, transparent 49%, rgba(255,255,255,.23) 50%, transparent 51%), linear-gradient(148deg, transparent 49%, rgba(113,31,73,.12) 50%, transparent 51%);}
   .env-body::after{content:""; position:absolute; left:0; right:0; bottom:0; height:78%; background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(116,45,88,.12)); clip-path:polygon(0 0, 50% 54%, 100% 0, 100% 100%, 0 100%);}
+  .env-face,.env-heart-pop{display:none;}
+  body[data-experience="apology"] .env-face{
+    position:absolute;
+    left:50%;
+    bottom:55px;
+    z-index:4;
+    display:block;
+    width:92px;
+    height:38px;
+    transform:translateX(-50%);
+    pointer-events:none;
+  }
+  .env-face-eye{position:absolute; top:7px; width:8px; height:11px; border-radius:50%; background:#7b214e; box-shadow:inset 2px 2px 0 rgba(255,255,255,.55);}
+  .env-face-eye.left{left:25px;}
+  .env-face-eye.right{right:25px;}
+  .env-face-mouth{position:absolute; left:50%; top:14px; width:17px; height:11px; border-bottom:3px solid #7b214e; border-radius:0 0 50% 50%; transform:translateX(-50%);}
+  .env-face-cheek{position:absolute; top:20px; width:18px; height:8px; border-radius:50%; background:rgba(255,225,237,.72); filter:blur(.2px);}
+  .env-face-cheek.left{left:3px; transform:rotate(-8deg);}
+  .env-face-cheek.right{right:3px; transform:rotate(8deg);}
+  .intro-overlay.opening .env-face{animation:envFaceBye .42s ease-out forwards;}
+  @keyframes envFaceBye{to{opacity:0; transform:translateX(-50%) translateY(8px) scale(.72);}}
+  body[data-experience="apology"] .env-heart-pop{position:absolute; inset:0; z-index:8; display:block; pointer-events:none;}
+  .env-heart-pop span{position:absolute; left:50%; bottom:112px; opacity:0; color:#fff; font-size:19px; line-height:1; filter:drop-shadow(0 7px 8px rgba(148,35,85,.2));}
+  .intro-overlay.opening .env-heart-pop span{animation:envHeartPop 1.05s cubic-bezier(.18,.82,.28,1) var(--delay) forwards;}
+  .env-heart-pop span:nth-child(1){--x:-94px;--y:-84px;--rot:-22deg;--delay:.18s;}
+  .env-heart-pop span:nth-child(2){--x:-50px;--y:-124px;--rot:18deg;--delay:.26s;}
+  .env-heart-pop span:nth-child(3){--x:0px;--y:-142px;--rot:-8deg;--delay:.2s;}
+  .env-heart-pop span:nth-child(4){--x:54px;--y:-120px;--rot:24deg;--delay:.3s;}
+  .env-heart-pop span:nth-child(5){--x:98px;--y:-78px;--rot:-15deg;--delay:.23s;}
+  @keyframes envHeartPop{0%{opacity:0; transform:translate(-50%,0) scale(.2) rotate(0);} 28%{opacity:1;} 72%{opacity:.95; transform:translate(calc(-50% + var(--x)),var(--y)) scale(1.15) rotate(var(--rot));} 100%{opacity:0; transform:translate(calc(-50% + var(--x)),calc(var(--y) - 20px)) scale(.78) rotate(var(--rot));}}
   .env-flap{position:absolute; left:14px; right:14px; bottom:109px; height:92px; transform-origin:50% 100%; border-radius:22px 22px 0 0; background:linear-gradient(160deg,#ff7197,#d9346e); clip-path:polygon(0 0, 100% 0, 50% 100%); box-shadow:inset 0 -4px 10px rgba(99,22,62,.16); z-index:5;}
   .intro-overlay.opening .env-flap{animation:flapOpen .8s cubic-bezier(.4,0,.2,1) forwards;}
   @keyframes flapOpen{0%{transform:rotateX(0deg);} 100%{transform:rotateX(-178deg);}}
@@ -1309,10 +1374,236 @@
     .info-row{grid-template-columns:48px minmax(0,1fr);}
     .day-pill{grid-column:2; justify-self:start; margin-top:6px;}
   }
+  .apology-experience[hidden],.invite-error[hidden],.progress[hidden]{display:none !important;}
+  body[data-experience="apology"]{
+    background:
+      radial-gradient(circle at 15% 8%,rgba(231,186,202,.45),transparent 34%),
+      radial-gradient(circle at 86% 88%,rgba(232,205,255,.4),transparent 38%),
+      linear-gradient(145deg,#fff8fb,#fff1f7);
+  }
+  body[data-experience="apology"] .screen,
+  body[data-experience="apology"] .progress,
+  body[data-experience="apology"] .stage > .tw,
+  body[data-experience="apology"] .poster-modal{display:none !important;}
+  .apology-experience{width:min(650px,100%); margin:0 auto;}
+  .apology-card{
+    position:relative;
+    padding:34px;
+    border:1px solid rgba(255,112,157,.24);
+    border-radius:30px;
+    background:rgba(255,255,255,.93);
+    box-shadow:0 32px 72px -48px rgba(68,68,61,.68);
+    overflow:hidden;
+  }
+  .apology-card::before{
+    content:"";
+    position:absolute;
+    inset:0 0 auto;
+    height:7px;
+    background:linear-gradient(90deg,#ff4d82,#ff9fbd,#c136a0);
+  }
+  .apology-kicker{margin:0 0 9px; color:#c9346a; font-size:11px; font-weight:950; letter-spacing:.12em; text-transform:uppercase;}
+  .apology-heading{max-width:470px; margin:0 auto; color:#49343e; font-family:'Comfortaa',sans-serif; font-size:31px; line-height:1.25; text-align:center;}
+  .apology-intro{max-width:450px; margin:10px auto 20px; color:#786a70; font-size:13px; font-weight:750; line-height:1.65; text-align:center;}
+  .apology-cat-hero{
+    position:relative;
+    width:156px;
+    height:142px;
+    margin:2px auto 18px;
+    border-radius:34px;
+    overflow:hidden;
+    background:linear-gradient(145deg,#fff3f7,#f9edff);
+    border:5px solid rgba(255,255,255,.94);
+    box-shadow:0 16px 32px -22px rgba(79,53,64,.65);
+    transform:rotate(-2deg);
+  }
+  .apology-cat-hero::before,.apology-cat-hero::after{position:absolute; z-index:3; pointer-events:none; filter:drop-shadow(0 5px 7px rgba(181,97,126,.18)); animation:twinkle 2.4s ease-in-out infinite;}
+  .apology-cat-hero::before{content:'🌸'; left:-18px; top:16px; font-size:25px;}
+  .apology-cat-hero::after{content:'✨'; right:-13px; bottom:14px; font-size:20px; animation-delay:.7s;}
+  .apology-cat-hero img{width:100%; height:100%; display:block; object-fit:cover; object-position:50% 48%; mix-blend-mode:multiply;}
+  .apology-context{display:inline-flex; align-items:center; gap:7px; margin-bottom:16px; padding:7px 11px; border-radius:999px; background:#fff0f5; color:#a43864; font-size:11px; font-weight:900;}
+  .apology-paper{
+    position:relative;
+    padding:26px 24px;
+    border:1px solid rgba(190,134,153,.18);
+    border-radius:21px;
+    background:
+      linear-gradient(rgba(255,253,249,.83),rgba(255,249,250,.83)),
+      url('assets/images/papers/8b2ddbd9d7627effe0613e92252acc6f.jpg') center/cover;
+    color:#59434c;
+    font-family:Georgia,'Times New Roman',serif;
+    font-size:15px;
+    line-height:1.85;
+    white-space:pre-wrap;
+    box-shadow:0 18px 36px -34px rgba(83,49,62,.7);
+  }
+  .apology-promise{display:grid; grid-template-columns:auto minmax(0,1fr); gap:12px; margin:18px 0 0; padding:15px; border:1px solid rgba(255,77,130,.2); border-radius:17px; background:#fff5f8;}
+  .apology-promise > span{width:42px; height:42px; display:grid; place-items:center; border-radius:13px; background:#fff; font-size:21px;}
+  .apology-promise small{display:block; margin-bottom:3px; color:#bd4773; font-size:10px; font-weight:950; letter-spacing:.07em;}
+  .apology-promise strong{display:block; color:#684452; font-size:12px; line-height:1.55;}
+  .apology-date-offer{margin:12px 0 0; padding:13px 15px; border-radius:15px; background:#fff5f7; color:#7b5664; font-size:12px; font-weight:850; line-height:1.55;}
+  .apology-response{margin-top:26px; padding-top:23px; border-top:1px solid rgba(255,77,130,.2);}
+  .apology-response h2{margin:0; color:#49343e; font-family:'Comfortaa',sans-serif; font-size:18px; line-height:1.4;}
+  .apology-response > p{margin:7px 0 15px; color:#7a6d72; font-size:12px; font-weight:750; line-height:1.55;}
+  .apology-cat-mood{
+    display:grid;
+    grid-template-columns:86px minmax(0,1fr);
+    align-items:center;
+    gap:14px;
+    margin:0 0 14px;
+    padding:10px 14px 10px 10px;
+    border:1px solid rgba(255,77,130,.2);
+    border-radius:18px;
+    background:linear-gradient(135deg,#fff9fb,#fff0f6);
+  }
+  .apology-cat-mood-frame{width:86px; height:74px; overflow:hidden; border-radius:14px; background:#fff;}
+  .apology-cat-mood img{width:100%; height:100%; display:block; object-fit:cover; object-position:50% 50%; mix-blend-mode:multiply; transition:opacity .16s ease,transform .2s ease;}
+  .apology-cat-mood img[data-mood="meet"]{object-position:50% 100%;}
+  .apology-cat-mood img[data-mood="needs_space"]{object-position:50% 48%;}
+  .apology-cat-mood-copy small{display:block; margin-bottom:3px; color:#bd4773; font-size:9px; font-weight:950; letter-spacing:.08em; text-transform:uppercase;}
+  .apology-cat-mood-copy strong{display:block; color:#5a4850; font-size:12px; font-weight:900; line-height:1.5;}
+  .apology-readiness{
+    margin:0 0 15px;
+    padding:16px;
+    border:1px solid rgba(255,77,130,.22);
+    border-radius:19px;
+    background:linear-gradient(145deg,rgba(255,255,255,.96),rgba(255,244,249,.92));
+    box-shadow:0 16px 34px -27px rgba(193,54,106,.48);
+  }
+  .apology-readiness-head{display:flex; align-items:flex-start; justify-content:space-between; gap:14px;}
+  .apology-readiness-head label{display:block; color:#51434a; font-size:12px; font-weight:950; line-height:1.45;}
+  .apology-readiness-head small{display:block; margin-top:3px; color:#8b7c82; font-size:10px; font-weight:800; line-height:1.45;}
+  .apology-readiness-output{min-width:68px; padding:7px 9px; border-radius:13px; background:#ffe6ef; color:#d23970; font-family:'Comfortaa',sans-serif; font-size:22px; font-weight:950; text-align:center; line-height:1;}
+  .apology-readiness-track{height:10px; margin:14px 0 10px; overflow:hidden; border-radius:999px; background:#eee7e9; box-shadow:inset 0 1px 3px rgba(73,52,62,.1);}
+  .apology-readiness-fill{display:block; width:0; height:100%; border-radius:inherit; background:linear-gradient(90deg,#ffb1c9,#ff6f9d 52%,#c136a0); box-shadow:0 0 12px rgba(255,77,130,.35); transition:width .22s ease;}
+  .apology-readiness input[type="range"]{width:100%; margin:0; accent-color:#ff4d82; cursor:pointer;}
+  .apology-readiness input[type="range"]:disabled{opacity:.55; cursor:not-allowed;}
+  .apology-readiness-copy{min-height:18px; margin:8px 0 0; color:#8c5970; font-size:10px; font-weight:900; line-height:1.45;}
+  .apology-statuses{display:grid; gap:9px;}
+  .apology-status-btn{
+    display:grid;
+    grid-template-columns:34px minmax(0,1fr) auto;
+    align-items:center;
+    gap:9px;
+    width:100%;
+    min-height:56px;
+    padding:10px 13px;
+    border:1.5px solid rgba(255,77,130,.22);
+    border-radius:15px;
+    background:#fff;
+    color:#684d59;
+    text-align:left;
+    font:inherit;
+    font-size:12px;
+    font-weight:900;
+    cursor:pointer;
+    transition:transform .16s ease,border-color .16s ease,background .16s ease;
+  }
+  .apology-status-btn:hover{transform:translateY(-1px); border-color:#ff76a1; background:#fff6f9;}
+  .apology-status-btn .status-icon{font-size:21px; text-align:center;}
+  .apology-status-btn .status-arrow{color:#d68ba5; font-size:18px;}
+  .apology-status-btn.on{border-color:#ff4d82; background:#fff0f5; box-shadow:0 0 0 3px rgba(255,77,130,.1);}
+  .apology-status-btn.on .status-arrow{font-size:0; color:#ff4d82;}
+  .apology-status-btn.on .status-arrow::after{content:'♥'; font-size:15px;}
+  .apology-status-btn.stop{border-color:rgba(171,102,112,.2); color:#78555d;}
+  .apology-status-btn.stop.on{border-color:#a96a76; background:#fff4f5; box-shadow:0 0 0 3px rgba(169,106,118,.1);}
+  .apology-response-status{min-height:24px; margin-top:12px; color:#a43a64; font-size:12px; font-weight:900; line-height:1.5;}
+  .apology-schedule-btn{width:100%; min-height:52px; margin-top:10px; border:0; border-radius:15px; background:linear-gradient(135deg,#ff4d82,#c136a0); color:#fff; font:inherit; font-size:13px; font-weight:950; cursor:pointer; box-shadow:0 15px 28px -20px rgba(193,54,106,.72);}
+  .apology-schedule-btn[hidden]{display:none !important;}
+  .apology-privacy{display:flex; gap:8px; margin:18px 0 0; color:#7b7778; font-size:10px; font-weight:800; line-height:1.5;}
+  .apology-stepper{display:grid; gap:9px; margin:0 0 24px;}
+  .apology-stepper-top{display:flex; align-items:center; justify-content:space-between; gap:10px; color:#a65c78; font-size:10px; font-weight:950; letter-spacing:.08em; text-transform:uppercase;}
+  .apology-step-dots{display:grid; grid-template-columns:repeat(5,1fr); gap:7px;}
+  .apology-step-dot{height:7px; overflow:hidden; border-radius:999px; background:#e9e4e5; transition:background .2s ease,transform .2s ease;}
+  .apology-step-dot.done{background:#d7a1b4;}
+  .apology-step-dot.on{background:linear-gradient(90deg,#ff4d82,#c136a0); transform:scaleY(1.35);}
+  .apology-scene[hidden]{display:none !important;}
+  .apology-scene.active{display:block; animation:apologySceneIn .44s cubic-bezier(.2,.82,.25,1) both;}
+  @keyframes apologySceneIn{from{opacity:0; transform:translateX(18px) scale(.985);}to{opacity:1; transform:none;}}
+  .apology-scene.back-in{animation-name:apologySceneBackIn;}
+  @keyframes apologySceneBackIn{from{opacity:0; transform:translateX(-18px) scale(.985);}to{opacity:1; transform:none;}}
+  .apology-scene.center{text-align:center;}
+  .apology-scene-kicker{margin:0 0 8px; color:#c9346a; font-size:10px; font-weight:950; letter-spacing:.1em; text-transform:uppercase; text-align:center;}
+  .apology-scene-title{margin:0 0 8px; color:#49343e; font-family:'Comfortaa',sans-serif; font-size:24px; line-height:1.35; text-align:center;}
+  .apology-scene-lead{max-width:480px; margin:0 auto 20px; color:#7a6d72; font-size:12px; font-weight:800; line-height:1.6; text-align:center;}
+  .apology-context.scene-context{margin-bottom:0;}
+  .sorry-heart{
+    position:relative;
+    display:inline-flex;
+    align-items:center;
+    gap:9px;
+    min-height:48px;
+    margin:16px auto 0;
+    padding:9px 16px;
+    border:1px solid rgba(181,97,126,.2);
+    border-radius:999px;
+    background:linear-gradient(135deg,#fff8fa,#fff0f6);
+    color:#765866;
+    font:inherit;
+    font-size:11px;
+    font-weight:900;
+    cursor:pointer;
+    box-shadow:0 14px 28px -23px rgba(76,46,60,.7);
+  }
+  .sorry-heart-icon{font-size:24px; line-height:1; transition:transform .32s cubic-bezier(.2,1.4,.3,1);}
+  .sorry-heart.healed .sorry-heart-icon{transform:scale(1.28) rotate(8deg);}
+  .sorry-heart-spark{position:absolute; left:50%; top:50%; z-index:4; pointer-events:none; font-size:16px; animation:sorryHeartSpark .82s ease-out forwards;}
+  @keyframes sorryHeartSpark{0%{opacity:1; transform:translate(-50%,-50%) scale(.4);}100%{opacity:0; transform:translate(calc(-50% + var(--tx)),calc(-50% + var(--ty))) scale(1.15) rotate(var(--rot));}}
+  .sorry-heart-note{min-height:18px; margin:8px 0 0; color:#8b7c82; font-size:9px; font-weight:800; text-align:center;}
+  .apology-understood{display:grid; gap:10px;}
+  .apology-understood-card{display:grid; grid-template-columns:42px minmax(0,1fr); align-items:start; gap:11px; padding:14px; border:1px solid rgba(255,77,130,.18); border-radius:17px; background:rgba(255,255,255,.84); text-align:left;}
+  .apology-understood-card > span{width:42px; height:42px; display:grid; place-items:center; border-radius:13px; background:#fff3f7; font-size:20px;}
+  .apology-understood-card small{display:block; margin-bottom:3px; color:#bd4773; font-size:9px; font-weight:950; letter-spacing:.07em; text-transform:uppercase;}
+  .apology-understood-card strong{display:block; color:#59474f; font-size:12px; font-weight:850; line-height:1.55;}
+  .apology-thinking-cat{width:104px; height:86px; display:block; margin:0 auto 15px; object-fit:cover; object-position:center; border-radius:20px; mix-blend-mode:multiply;}
+  .apology-promise-cat{width:112px; height:98px; display:block; margin:0 auto 15px; object-fit:cover; object-position:50% 48%; border-radius:24px; mix-blend-mode:multiply;}
+  .apology-scene .apology-promise{margin-top:0;}
+  .apology-scene .apology-response{margin:0; padding:0; border:0;}
+  .apology-scene .apology-response h2,.apology-scene .apology-response > p{text-align:center;}
+  .apology-scene[data-apology-scene='5'] .apology-response{
+    position:relative;
+    padding:21px;
+    border:1px solid rgba(255,77,130,.2);
+    border-radius:24px;
+    background:
+      radial-gradient(circle at 0 0,rgba(255,194,215,.34),transparent 28%),
+      radial-gradient(circle at 100% 4%,rgba(236,211,255,.34),transparent 30%),
+      linear-gradient(145deg,#fff,#fff8fb);
+    box-shadow:0 24px 48px -38px rgba(164,48,100,.55);
+  }
+  .apology-scene[data-apology-scene='5'] .apology-response::before,
+  .apology-scene[data-apology-scene='5'] .apology-response::after{position:absolute; top:10px; font-size:15px; opacity:.82; pointer-events:none;}
+  .apology-scene[data-apology-scene='5'] .apology-response::before{content:'💗'; left:12px; transform:rotate(-10deg);}
+  .apology-scene[data-apology-scene='5'] .apology-response::after{content:'🌸'; right:12px; transform:rotate(10deg);}
+  .apology-scene-nav{display:grid; grid-template-columns:auto minmax(0,1fr); gap:9px; margin-top:24px; padding-top:18px; border-top:1px solid rgba(255,77,130,.16);}
+  .apology-scene-nav.first-only,
+  .apology-scene-nav.response-only{grid-template-columns:1fr;}
+  .apology-nav-back,.apology-nav-next,.apology-nav-skip{min-height:49px; border:0; border-radius:15px; font:inherit; font-size:12px; font-weight:950; cursor:pointer;}
+  .apology-nav-back{min-width:92px; padding:10px 14px; background:#f2eded; color:#745e68;}
+  .apology-nav-next{padding:10px 18px; background:linear-gradient(135deg,#ff4d82,#c136a0); color:#fff; box-shadow:0 16px 28px -21px rgba(193,54,106,.72);}
+  .apology-nav-skip{grid-column:1/-1; min-height:32px; padding:4px; background:transparent; color:#8b7c82; font-size:10px; text-decoration:underline; text-underline-offset:3px;}
+  .apology-nav-back[hidden],.apology-nav-next[hidden],.apology-nav-skip[hidden]{display:none !important;}
+  .invite-error{position:relative; z-index:20; width:min(560px,calc(100% - 28px)); margin:14vh auto 0; padding:28px; border-radius:24px; background:#fff; color:#5d4850; text-align:center; box-shadow:0 28px 70px -42px rgba(75,23,63,.65);}
+  .invite-error span{display:block; margin-bottom:10px; font-size:38px;}
+  .invite-error h1{margin:0 0 8px;}
+  .invite-error p{margin:0; color:#806f76; font-weight:750; line-height:1.6;}
+  @media (max-width:620px){
+    .apology-card{padding:27px 17px 22px; border-radius:23px;}
+    .apology-heading{max-width:none; font-size:25px;}
+    .apology-intro{max-width:none;}
+    .apology-cat-hero{width:134px; height:122px; border-width:4px;}
+    .apology-paper{padding:22px 17px; font-size:14px; line-height:1.8;}
+    .apology-cat-mood{grid-template-columns:72px minmax(0,1fr); gap:11px; padding:9px;}
+    .apology-cat-mood-frame{width:72px; height:68px;}
+    .apology-scene[data-apology-scene='5'] .apology-response{padding:17px 13px;}
+    .apology-scene-title{font-size:21px;}
+    .apology-scene-nav{grid-template-columns:86px minmax(0,1fr);}
+  }
 </style>
 </head>
 <body>
   <div class="intro-overlay" id="introOverlay">
+    <div class="intro-flower-storm" id="introFlowerStorm" aria-hidden="true"></div>
     <div class="intro-sparkles" aria-hidden="true">
       <span>💗</span><span>✨</span><span>◆</span><span>✦</span>
     </div>
@@ -1322,25 +1613,36 @@
         <div class="env-letter">
           <span class="env-stamp">💌</span>
           <div class="env-letter-title" id="introRecipient">Танд урилга</div>
-          <div class="env-letter-sub">болзооны санал</div>
+          <div class="env-letter-sub" id="introLetterSub">болзооны санал</div>
         </div>
         <div class="env-back"></div>
         <div class="env-body"></div>
+        <div class="env-face">
+          <span class="env-face-eye left"></span><span class="env-face-eye right"></span>
+          <span class="env-face-mouth"></span>
+          <span class="env-face-cheek left"></span><span class="env-face-cheek right"></span>
+        </div>
         <div class="env-flap"></div>
         <div class="env-seal">💗</div>
         <div class="env-flower">✨</div>
+        <div class="env-heart-pop"><span>♥</span><span>♡</span><span>♥</span><span>♡</span><span>♥</span></div>
       </div>
       <img class="intro-rose" src="assets/gif/Take This Rose GIF.gif" alt="rose" aria-hidden="true">
       <div class="intro-copy">
-        <p class="intro-kicker">Нууц урилга ирлээ</p>
-        <strong>Танд урилга иржээ</strong>
-        <span>Дугтуйг нээгээд хариугаа өгөөрэй.</span>
+        <p class="intro-kicker" id="introKicker">Нууц урилга ирлээ</p>
+        <strong id="introTitle">Танд урилга иржээ</strong>
+        <span id="introDescription">Дугтуйг нээгээд хариугаа өгөөрэй.</span>
       </div>
       <button type="button" class="intro-open" id="introOpen">
         <span>💌</span> Нээх
       </button>
     </div>
   </div>
+  <section class="invite-error" id="inviteError" hidden>
+    <span aria-hidden="true">🕊️</span>
+    <h1 id="inviteErrorTitle">Энэ линк нээгдэхгүй байна</h1>
+    <p id="inviteErrorText">Линк буруу эсвэл хугацаа нь дууссан байж болзошгүй.</p>
+  </section>
   <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
   <div class="bg" id="bg"></div>
   <div id="ytHost" class="yt-hidden" aria-hidden="true"></div>
@@ -1351,6 +1653,90 @@
     <i class="tw" style="top:22px; right:-8px; animation-delay:1.1s">💛</i>
     <i class="tw" style="bottom:34px; left:-10px; animation-delay:.7s">💗</i>
     <i class="tw" style="bottom:-8px; right:16px; animation-delay:1.7s">✨</i>
+
+    <section class="apology-experience" id="apologyExperience" hidden aria-labelledby="apologyHeading">
+      <div class="apology-card">
+        <div class="apology-stepper" aria-label="Уучлалтын 5 алхам">
+          <div class="apology-stepper-top"><span id="apologyStepLabel">Алхам 1 / 5</span><span id="apologyStepName">Уучлаарай</span></div>
+          <div class="apology-step-dots" id="apologyStepDots" aria-hidden="true">
+            <i class="apology-step-dot on"></i><i class="apology-step-dot"></i><i class="apology-step-dot"></i><i class="apology-step-dot"></i><i class="apology-step-dot"></i>
+          </div>
+        </div>
+
+        <div class="apology-scenes">
+          <section class="apology-scene center active" data-apology-scene="1">
+            <div class="apology-cat-hero" aria-hidden="true"><img src="assets/images/2025402606958221c3332ecff3e70008.jpg" alt="" /></div>
+            <p class="apology-kicker">Bolzoo · Эвлэрье</p>
+            <h1 class="apology-heading" id="apologyHeading" tabindex="-1">Чамд чин сэтгэлээсээ хэлэх зүйл байна</h1>
+            <p class="apology-intro">Энэ захиа чамайг яаруулахгүй. Зүгээр л миний ойлгосон зүйл, хийх өөрчлөлтийг тайван уншаарай.</p>
+            <div class="apology-context scene-context" id="apologyContext">🫶 Чин сэтгэлийн захиа</div>
+            <div><button class="sorry-heart" id="sorryHeart" type="button" aria-pressed="false"><span class="sorry-heart-icon" id="sorryHeartIcon" aria-hidden="true">💔</span><span id="sorryHeartText">Энд зөөлөн дарж болно</span></button></div>
+            <p class="sorry-heart-note" id="sorryHeartNote">Энэ нь уучилсан гэсэн үг биш — зүгээр л жижигхэн хөөрхөн animation.</p>
+          </section>
+
+          <section class="apology-scene" data-apology-scene="2" hidden>
+            <img class="apology-thinking-cat" src="assets/images/4af0455e6c7d59ca6a0280a66bbfd1c2.jpg" alt="" aria-hidden="true" />
+            <p class="apology-scene-kicker">Өөрийгөө зөвтгөхгүйгээр</p>
+            <h2 class="apology-scene-title" tabindex="-1">Би алдаагаа ингэж ойлгосон</h2>
+            <p class="apology-scene-lead" id="apologySceneIssue">Чамайг гомдоосон зүйлээ нэрлэж, хариуцлагаа хүлээн зөвшөөрч байна.</p>
+            <div class="apology-understood">
+              <div class="apology-understood-card"><span aria-hidden="true">🧩</span><div><small>Яг юу болсон</small><strong id="apologySceneHappened"></strong></div></div>
+              <div class="apology-understood-card"><span aria-hidden="true">💭</span><div><small>Юунд харамсаж байгаа</small><strong id="apologySceneRegret"></strong></div></div>
+            </div>
+          </section>
+
+          <section class="apology-scene" data-apology-scene="3" hidden>
+            <p class="apology-scene-kicker">Зөвхөн чамд</p>
+            <h2 class="apology-scene-title" tabindex="-1">Чамд бичсэн захиа 💌</h2>
+            <p class="apology-scene-lead">Яаралгүй уншаарай. Шууд хариулах эсвэл уучлах албагүй.</p>
+            <div class="apology-paper" id="apologyLetterBody"></div>
+          </section>
+
+          <section class="apology-scene" data-apology-scene="4" hidden>
+            <img class="apology-promise-cat" src="assets/images/a28033f417048f918f94cb1838324133.jpg" alt="" aria-hidden="true" />
+            <p class="apology-scene-kicker">Амлалт биш, бодит алхам</p>
+            <h2 class="apology-scene-title" tabindex="-1">Үгээр биш, үйлдлээр 🌱</h2>
+            <p class="apology-scene-lead">Уучлал нэг захиагаар дуусахгүй. Дараагийн үйлдэл нь хамгийн чухал.</p>
+            <div class="apology-promise">
+              <span aria-hidden="true">🌱</span>
+              <div><small>БОДИТОЙ ХИЙХ ЗҮЙЛ</small><strong id="apologyPromiseText"></strong></div>
+            </div>
+            <p class="apology-date-offer" id="apologyDateOfferText" hidden>☕ Та бэлэн болсон үедээ тайван уулзаж ярилцах санал нээлттэй байна.</p>
+          </section>
+
+          <section class="apology-scene" data-apology-scene="5" hidden>
+            <section class="apology-response" aria-labelledby="apologyResponseTitle">
+              <p class="apology-scene-kicker">Чиний хариу, чиний хурдаар</p>
+              <h2 class="apology-scene-title" id="apologyResponseTitle" tabindex="-1">Одоо танд юу хамгийн зөв санагдаж байна?</h2>
+              <p>Эхлээд өөрийн мэдрэмжийн хувийг тохируулаад, нэг хариу сонгоно. Илгээгчид зөвхөн таны өөрөө сонгосон хувь ба төлөв харагдана.</p>
+              <div class="apology-cat-mood" id="apologyCatMood" aria-live="polite">
+                <div class="apology-cat-mood-frame"><img id="apologyCatMoodImage" src="assets/images/4af0455e6c7d59ca6a0280a66bbfd1c2.jpg" data-mood="default" alt="Бодож буй муур" /></div>
+                <div class="apology-cat-mood-copy"><small>Таны хэмнэлээр</small><strong id="apologyCatMoodText">Яарах хэрэггүй. Өөрт хамгийн зөв санагдсан хариугаа сонгоорой.</strong></div>
+              </div>
+              <div class="apology-readiness">
+                <div class="apology-readiness-head">
+                  <div><label for="apologyReadiness">Одоогоор хэдэн хувь уучлахад ойртсон бэ?</label><small>Энэ бол AI-ийн таамаг биш. Зөвхөн таны өөрийн сонгосон мэдрэмж.</small></div>
+                  <output class="apology-readiness-output" id="apologyReadinessOutput" for="apologyReadiness">0%</output>
+                </div>
+                <div class="apology-readiness-track" aria-hidden="true"><i class="apology-readiness-fill" id="apologyReadinessFill"></i></div>
+                <input id="apologyReadiness" type="range" min="0" max="100" step="10" value="0" aria-describedby="apologyReadinessCopy" />
+                <p class="apology-readiness-copy" id="apologyReadinessCopy">Одоохондоо уучлахад бэлэн биш байж болно.</p>
+              </div>
+              <div class="apology-statuses" id="apologyStatuses"></div>
+              <div class="apology-response-status" id="apologyResponseStatus" role="status" aria-live="polite"></div>
+              <button class="apology-schedule-btn" id="apologyScheduleDate" type="button" hidden>📅 Уулзах өдөр, цагаа санал болгох</button>
+            </section>
+            <p class="apology-privacy"><span aria-hidden="true">🔒</span><span>Энэ бол нууц линк. Таны хариуг зөвхөн линк үүсгэсэн хүн dashboard-оосоо харна.</span></p>
+          </section>
+        </div>
+
+        <nav class="apology-scene-nav" id="apologySceneNav" aria-label="Уучлалтын алхмууд">
+          <button class="apology-nav-back" id="apologyStepBack" type="button" hidden>← Буцах</button>
+          <button class="apology-nav-next" id="apologyStepNext" type="button">Алдаагаа ойлгосныг харах →</button>
+          <button class="apology-nav-skip" id="apologySkipToResponse" type="button">Хариу өгөх хэсэг рүү шууд очих</button>
+        </nav>
+      </div>
+    </section>
 
     <section class="screen active" data-screen="ask">
       <div class="card ask-card">
@@ -1464,15 +1850,15 @@
               <strong id="timeValue">18:00</strong>
             </div>
           </div>
-          <div class="info-row location-row" id="locationBox">
+          <div class="info-row location-row" id="locationBox" hidden>
             <div class="info-icon info-icon-place">📍</div>
             <div class="info-copy">
               <span>Байршил</span>
-              <strong id="locationName">Tom N Toms Coffee</strong>
-              <small id="locationAddress">Сүхбаатар дүүрэг, Улаанбаатар</small>
+              <strong id="locationName"></strong>
+              <small id="locationAddress" hidden></small>
             </div>
           </div>
-          <a class="location-open" id="locationOpen" href="#" target="_blank" rel="noopener">
+          <a class="location-open" id="locationOpen" href="#" target="_blank" rel="noopener" hidden>
             <span class="map-mark">🗺</span>
             <span>Google Maps дээр нээх</span>
             <span class="chev">›</span>
@@ -1518,7 +1904,7 @@
         <button class="btn letter-btn" id="letterBtn">💌 Захидал унших</button>
 
         <div class="quick-actions">
-          <a class="action-tile" id="mapTile" href="#" target="_blank" rel="noopener">
+          <a class="action-tile" id="mapTile" href="#" target="_blank" rel="noopener" hidden>
             <span>📍</span>
             <strong>Maps</strong>
           </a>
@@ -1766,6 +2152,7 @@
   <script src="assets/config.js"></script>
   <script src="assets/posters.js"></script>
   <script src="assets/api.js"></script>
+  <script src="assets/apology-templates.js"></script>
   <script src="assets/bolzoo-cat.js"></script>
   <script src="assets/bolzoo-audio.js"></script>
   <script src="assets/bolzoo-ticket.js"></script>
@@ -1819,6 +2206,7 @@
     if(IS_PREVIEW){ document.body.classList.add('preview-mode'); }
     var CONFIG = (function(){
       var defaults = {
+        experienceType: 'date',
         recipientName: '',
         senderName: '',
         videoId: 'qsPzEsxyzB8',
@@ -1830,7 +2218,16 @@
         doneNote: '',
         poster: '',
         askTemplate: 'classic',
-        choices: []
+        choices: [],
+        apologyIssue: '',
+        apologyTone: '',
+        apologyWhatHappened: '',
+        apologyRegret: '',
+        apologyRepair: '',
+        apologyLetter: '',
+        apologyPaper: 'soft',
+        apologyDateOffer: false,
+        expiresAt: ''
       };
       try{
         var hash = window.location.hash.slice(1);
@@ -1882,8 +2279,265 @@
 
       return name + '<span>Надад нэг хөөрхөн санал байна</span>';
     }
+    function isApologyExperience(){
+      return CONFIG.experienceType === 'apology';
+    }
+    var apologySceneStep = 1;
+    var apologySceneInitialized = false;
+    var APOLOGY_SCENE_NAMES = ['Уучлаарай','Алдаагаа ойлгосон','Чамд бичсэн захиа','Бодит өөрчлөлт','Чиний хариу'];
+    var APOLOGY_SCENE_NEXT = [
+      'Алдаагаа ойлгосныг харах →',
+      'Захиаг нь унших →',
+      'Бодит алхмыг харах →',
+      'Хариугаа сонгох →'
+    ];
+    function showApologyScene(step, backwards, shouldFocus){
+      step = Math.max(1, Math.min(5, Number(step) || 1));
+      apologySceneStep = step;
+      apologySceneInitialized = true;
+      document.querySelectorAll('[data-apology-scene]').forEach(function(scene){
+        var on = Number(scene.getAttribute('data-apology-scene')) === step;
+        scene.hidden = !on;
+        scene.classList.toggle('active', on);
+        scene.classList.toggle('back-in', on && !!backwards);
+      });
+      document.querySelectorAll('.apology-step-dot').forEach(function(dot, index){
+        dot.classList.toggle('on', index + 1 === step);
+        dot.classList.toggle('done', index + 1 < step);
+      });
+      var label = document.getElementById('apologyStepLabel');
+      var name = document.getElementById('apologyStepName');
+      var back = document.getElementById('apologyStepBack');
+      var next = document.getElementById('apologyStepNext');
+      var skip = document.getElementById('apologySkipToResponse');
+      var nav = document.getElementById('apologySceneNav');
+      if(label) label.textContent = 'Алхам ' + step + ' / 5';
+      if(name) name.textContent = APOLOGY_SCENE_NAMES[step - 1];
+      if(back) back.hidden = step === 1;
+      if(next){
+        next.hidden = step === 5;
+        next.textContent = APOLOGY_SCENE_NEXT[step - 1] || '';
+      }
+      if(skip) skip.hidden = step === 5;
+      if(nav){
+        nav.classList.toggle('first-only', step === 1);
+        nav.classList.toggle('response-only', step === 5);
+      }
+      if(shouldFocus){
+        var active = document.querySelector('[data-apology-scene="' + step + '"]');
+        var heading = active && active.querySelector('h1,h2');
+        if(heading){ try{ heading.focus({preventScroll:true}); }catch(_){ heading.focus(); } }
+        var card = document.querySelector('.apology-card');
+        if(card) card.scrollIntoView({behavior:'smooth',block:'start'});
+      }
+    }
+    (function bindApologyScenes(){
+      var back = document.getElementById('apologyStepBack');
+      var next = document.getElementById('apologyStepNext');
+      var skip = document.getElementById('apologySkipToResponse');
+      if(back) back.addEventListener('click', function(){ showApologyScene(apologySceneStep - 1, true, true); });
+      if(next) next.addEventListener('click', function(){ showApologyScene(apologySceneStep + 1, false, true); });
+      if(skip) skip.addEventListener('click', function(){ showApologyScene(5, false, true); });
+
+      var heart = document.getElementById('sorryHeart');
+      if(heart) heart.addEventListener('click', function(){
+        if(heart.classList.contains('healed')) return;
+        heart.classList.add('healed');
+        heart.setAttribute('aria-pressed','true');
+        document.getElementById('sorryHeartIcon').textContent = '❤️‍🩹';
+        document.getElementById('sorryHeartText').textContent = 'Зөөлөн хүрсэнд баярлалаа';
+        document.getElementById('sorryHeartNote').textContent = 'Уучлал бол таны сонголт. Энэ жижиг зүрх зөвхөн инээмсэглэл нэмэх гэж байгаа юм.';
+        var bits = ['💗','✨','🌸','💛','✨','🌷','💗','✨'];
+        bits.forEach(function(bit, index){
+          var spark = document.createElement('i');
+          var angle = (Math.PI * 2 * index) / bits.length;
+          spark.className = 'sorry-heart-spark';
+          spark.textContent = bit;
+          spark.style.setProperty('--tx', Math.round(Math.cos(angle) * (45 + (index % 2) * 13)) + 'px');
+          spark.style.setProperty('--ty', Math.round(Math.sin(angle) * (38 + (index % 3) * 8)) + 'px');
+          spark.style.setProperty('--rot', (index * 55) + 'deg');
+          heart.appendChild(spark);
+          setTimeout(function(){ spark.remove(); }, 900);
+        });
+      });
+    })();
+    var APOLOGY_CAT_MOODS = {
+      default: {
+        src: 'assets/images/4af0455e6c7d59ca6a0280a66bbfd1c2.jpg',
+        alt: 'Бодож буй муур',
+        text: 'Яарах хэрэггүй. Өөрт хамгийн зөв санагдсан хариугаа сонгоорой.'
+      },
+      needs_space: {
+        src: 'assets/images/0fcc03cfdb519e20f69e9699e2f8cdd0.jpg',
+        alt: 'Цаг хугацаа хэрэгтэйг илэрхийлж буй муур',
+        text: 'Танд хэрэгтэй хугацааг хүндэтгэх ёстой. Хэзээ бэлэн болохоо зөвхөн та шийднэ.'
+      },
+      read: {
+        src: 'assets/images/4af0455e6c7d59ca6a0280a66bbfd1c2.jpg',
+        alt: 'Бодож буй муур',
+        text: 'Захиаг уншсан гэдгээ л мэдэгдэнэ. Ямар нэг шийдвэр амлах шаардлагагүй.'
+      },
+      message: {
+        src: 'assets/images/a4a659b56608cd2c3f9df48bb8300625.jpg',
+        alt: 'Бага зэрэг санаа зовсон муур',
+        text: 'Та зөвхөн мессежээр, өөрийн тав тухтай хэмнэлээр ярилцаж болно.'
+      },
+      meet: {
+        src: 'assets/images/download%20(2).png',
+        alt: 'Цэцэг барьсан муур',
+        text: 'Уулзахад бэлэн гэдгээ хүргэнэ. Өдөр, цагаа та өөрөө санал болгож болно.'
+      },
+      stop: {
+        src: 'assets/images/2025402606958221c3332ecff3e70008.jpg',
+        alt: 'Салах ёс хийж буй муур',
+        text: 'Таны хил хязгаар хамгийн түрүүнд. Энэ хүсэлтийг тодорхой хүргэж, сонголтыг түгжинэ.'
+      }
+    };
+    function setApologyCatMood(id){
+      var mood = APOLOGY_CAT_MOODS[id] || APOLOGY_CAT_MOODS.default;
+      var image = document.getElementById('apologyCatMoodImage');
+      var text = document.getElementById('apologyCatMoodText');
+      if(image){
+        image.src = mood.src;
+        image.alt = mood.alt;
+        image.setAttribute('data-mood', APOLOGY_CAT_MOODS[id] ? id : 'default');
+      }
+      if(text) text.textContent = mood.text;
+    }
+    function normalizeReadiness(value){
+      var parsed = Math.round((Number(value) || 0) / 10) * 10;
+      return Math.max(0, Math.min(100, parsed));
+    }
+    function readinessCopy(value){
+      if(value === 0) return 'Одоохондоо уучлахад бэлэн биш байж болно.';
+      if(value <= 30) return 'Надад зай, хугацаа хэрэгтэй хэвээр байна.';
+      if(value <= 60) return 'Тайван ярилцаж үзэхэд аажмаар ойртож байна.';
+      if(value < 100) return 'Итгэл бага багаар сэргэж байна, гэхдээ хугацаа хэрэгтэй.';
+      return 'Би эвлэрэхэд бэлэн байна.';
+    }
+    function setApologyReadiness(value){
+      var normalized = normalizeReadiness(value);
+      var input = document.getElementById('apologyReadiness');
+      var output = document.getElementById('apologyReadinessOutput');
+      var fill = document.getElementById('apologyReadinessFill');
+      var copy = document.getElementById('apologyReadinessCopy');
+      if(input) input.value = String(normalized);
+      if(output) output.textContent = normalized + '%';
+      if(fill) fill.style.width = normalized + '%';
+      if(copy) copy.textContent = readinessCopy(normalized);
+      return normalized;
+    }
+    function getApologyReadiness(){
+      var input = document.getElementById('apologyReadiness');
+      return normalizeReadiness(input ? input.value : 0);
+    }
+    (function bindApologyReadiness(){
+      var input = document.getElementById('apologyReadiness');
+      if(!input) return;
+      input.addEventListener('input', function(){ setApologyReadiness(input.value); });
+      setApologyReadiness(input.value);
+    })();
+    function renderApologyStatuses(){
+      var host = document.getElementById('apologyStatuses');
+      if(!host || !window.BolzooApology) return;
+      host.innerHTML = Object.keys(BolzooApology.statuses).map(function(id){
+        var item = BolzooApology.statuses[id];
+        var stopClass = id === 'stop' ? ' stop' : '';
+        return '<button class="apology-status-btn' + stopClass + '" type="button" data-apology-status="' + id + '" aria-pressed="false">'
+          + '<span class="status-icon" aria-hidden="true">' + item.icon + '</span>'
+          + '<span>' + esc(item.label) + '</span><span class="status-arrow" aria-hidden="true">›</span></button>';
+      }).join('');
+    }
+    function applyApologyContent(){
+      var section = document.getElementById('apologyExperience');
+      if(!section) return;
+      document.body.setAttribute('data-experience','apology');
+      section.hidden = false;
+      document.querySelectorAll('.screen').forEach(function(screen){ screen.classList.remove('active'); });
+      var progressEl = document.getElementById('progress');
+      if(progressEl) progressEl.hidden = true;
+      var recip = String(CONFIG.recipientName || '').trim();
+      var issueInfo = window.BolzooApology ? BolzooApology.issue(CONFIG.apologyIssue) : null;
+      document.getElementById('apologyHeading').textContent = recip
+        ? recip + ' минь, уучлаарай...'
+        : 'Чамдаа үнэхээр уучлаарай...';
+      document.getElementById('apologyContext').textContent = issueInfo
+        ? issueInfo.icon + ' ' + issueInfo.label
+        : '🫶 Чин сэтгэлийн захиа';
+      document.getElementById('apologySceneIssue').textContent = issueInfo
+        ? issueInfo.label + '. ' + issueInfo.impact
+        : 'Чамайг гомдоосон зүйлээ нэрлэж, хариуцлагаа хүлээн зөвшөөрч байна.';
+      document.getElementById('apologySceneHappened').textContent = CONFIG.apologyWhatHappened
+        || (issueInfo && issueInfo.fallback)
+        || 'Чамайг гомдоосон үйлдэл гаргасан.';
+      document.getElementById('apologySceneRegret').textContent = CONFIG.apologyRegret
+        || 'Чамд хүнд туссаныг хөнгөнөөр авч үзсэнгүй, үүндээ үнэхээр харамсаж байна.';
+      document.getElementById('apologyLetterBody').textContent = CONFIG.apologyLetter
+        || (window.BolzooApology ? BolzooApology.buildLetter(CONFIG) : 'Чамд чин сэтгэлээсээ уучлалт гуйхыг хүсэж байна.');
+      var paperInfo = window.BolzooApology ? BolzooApology.paper(CONFIG.apologyPaper) : null;
+      if(paperInfo){
+        document.getElementById('apologyLetterBody').style.backgroundImage = 'linear-gradient(rgba(255,253,249,.83),rgba(255,249,250,.83)),url("' + paperInfo.image + '")';
+        document.getElementById('apologyLetterBody').style.backgroundSize = 'auto,cover';
+        document.getElementById('apologyLetterBody').style.backgroundPosition = 'center';
+      }
+      document.getElementById('apologyPromiseText').textContent = CONFIG.apologyRepair
+        || 'Үгээр зогсохгүй, бодит үйлдлээр өөрчлөлтөө харуулна.';
+      document.getElementById('apologyDateOfferText').hidden = !CONFIG.apologyDateOffer;
+      var introRecipient = document.getElementById('introRecipient');
+      if(introRecipient) introRecipient.textContent = recip ? recip + ' минь' : 'Танд захиа';
+      document.getElementById('introLetterSub').textContent = 'чин сэтгэлийн захиа';
+      document.getElementById('introKicker').textContent = 'Нууц захиа ирлээ';
+      document.getElementById('introTitle').textContent = 'Танд хэлэх зүйл байна';
+      document.getElementById('introDescription').textContent = 'Яаралгүй, өөрийн хурдаар нээгээд уншаарай.';
+      renderApologyStatuses();
+      setApologyCatMood('default');
+      setApologyReadiness(0);
+      document.getElementById('apologyReadiness').disabled = false;
+      if(!apologySceneInitialized) showApologyScene(1, false, false);
+      if(!IS_PREVIEW && INVITE_ID){
+        var savedStatus = '';
+        var savedReadiness = 0;
+        try{
+          savedStatus = localStorage.getItem('bolzoo:apology-response:' + INVITE_ID) || '';
+          savedReadiness = localStorage.getItem('bolzoo:apology-readiness:' + INVITE_ID) || 0;
+        }catch(_){ }
+        setApologyReadiness(savedReadiness);
+        var savedInfo = window.BolzooApology && BolzooApology.status(savedStatus);
+        if(savedInfo){
+          showApologyScene(5, false, false);
+          setApologyCatMood(savedStatus);
+          document.getElementById('apologyReadiness').disabled = savedStatus === 'stop';
+          document.querySelectorAll('[data-apology-status]').forEach(function(btn){
+            var on = btn.getAttribute('data-apology-status') === savedStatus;
+            btn.classList.toggle('on', on);
+            btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+            btn.disabled = savedStatus === 'stop' && !on;
+          });
+          document.getElementById('apologyResponseStatus').textContent = savedStatus === 'stop'
+            ? 'Таны “холбоо барихгүй байх” хүсэлтийг хүргэсэн. Энэ сонголт түгжигдсэн.'
+            : 'Таны өмнөх хариу: “' + savedInfo.label + '”.';
+          if(savedStatus === 'meet' && CONFIG.apologyDateOffer){
+            document.getElementById('apologyScheduleDate').hidden = false;
+          }
+        }
+      }
+      document.title = (CONFIG.senderName ? CONFIG.senderName + ' → ' : '') + (recip || 'чамд') + ' · Эвлэрье';
+    }
     function applyContent(){
       applyTheme();
+      if(isApologyExperience()){
+        applyApologyContent();
+        return;
+      }
+      document.body.setAttribute('data-experience','date');
+      var apologySection = document.getElementById('apologyExperience');
+      if(apologySection) apologySection.hidden = true;
+      var progressEl = document.getElementById('progress');
+      if(progressEl) progressEl.hidden = false;
+      document.getElementById('introLetterSub').textContent = 'болзооны санал';
+      document.getElementById('introKicker').textContent = 'Нууц урилга ирлээ';
+      document.getElementById('introTitle').textContent = 'Танд урилга иржээ';
+      document.getElementById('introDescription').textContent = 'Дугтуйг нээгээд хариугаа өгөөрэй.';
       var recip = CONFIG.recipientName ? esc(CONFIG.recipientName) : '';
       var sender = CONFIG.senderName ? esc(CONFIG.senderName) : '';
       var askH1 = document.querySelector('[data-screen="ask"] h1');
@@ -1958,6 +2612,7 @@
     var envelopeOpen = IS_PREVIEW;   // preview дээр аль хэдийн "нээгдсэн"-д тооцно
     var posterShown = false;
     function maybeShowPoster(){
+      if(isApologyExperience()) return;
       if(posterShown) return;
       if(!envelopeOpen) return;
       var pid = CONFIG.poster;
@@ -2000,18 +2655,48 @@
       var openBtn = document.getElementById('introOpen');
       var opening = false;
 
+      function prepareApologyFlowers(){
+        var host = document.getElementById('introFlowerStorm');
+        if(!host || !isApologyExperience()) return;
+        host.innerHTML = '';
+        var flowers = ['🌸','🌷','🌹','🪻','🌼','🌺','🍃','✨'];
+        var count = window.matchMedia && window.matchMedia('(max-width:520px)').matches ? 28 : 42;
+        for(var i=0;i<count;i++){
+          var petal = document.createElement('span');
+          var x = 4 + Math.random() * 92;
+          var y = 3 + Math.random() * 91;
+          var spin = Math.round(180 + Math.random() * 420);
+          petal.className = 'intro-flower-petal';
+          petal.textContent = flowers[i % flowers.length];
+          petal.style.setProperty('--x', x.toFixed(1) + '%');
+          petal.style.setProperty('--y', y.toFixed(1) + '%');
+          petal.style.setProperty('--from-x', (50 - x).toFixed(1) + 'vw');
+          petal.style.setProperty('--from-y', (45 - y).toFixed(1) + 'vh');
+          petal.style.setProperty('--size', (17 + Math.random() * 23).toFixed(0) + 'px');
+          petal.style.setProperty('--duration', (1.45 + Math.random() * .55).toFixed(2) + 's');
+          petal.style.setProperty('--delay', (Math.random() * .32).toFixed(2) + 's');
+          petal.style.setProperty('--spin', spin + 'deg');
+          petal.style.setProperty('--spin-end', (spin + 100) + 'deg');
+          petal.style.setProperty('--drift', (-28 + Math.random() * 56).toFixed(0) + 'px');
+          host.appendChild(petal);
+        }
+      }
+
       function openInvite(){
         if(opening) return;
         opening = true;
+        prepareApologyFlowers();
         overlay.classList.add('opening');
+        var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        var isSoftApologyOpen = isApologyExperience() && !reduceMotion;
         setTimeout(function(){
           overlay.classList.add('leaving');
           setTimeout(function(){
             overlay.style.display = 'none';
             envelopeOpen = true;
             maybeShowPoster();
-          }, 480);
-        }, 980);
+          }, isSoftApologyOpen ? 680 : 480);
+        }, isSoftApologyOpen ? 2050 : 980);
       }
 
       if(openBtn) openBtn.addEventListener('click', openInvite);
@@ -2028,7 +2713,11 @@
     if(IS_PREVIEW){
       // Live preview үед хоосон утга илгээвэл цэвэрлэдэг байлгах — үгүй бол
       // хэрэглэгч poster-ыг арилгасан ч previous state үлдэнэ.
-      var LIVE_CLEARABLE = ['askTemplate','poster','videoId','customNote','choices','locationName','locationUrl','specialLetter','senderName','recipientName'];
+      var LIVE_CLEARABLE = [
+        'experienceType','askTemplate','poster','videoId','customNote','choices','locationName','locationUrl',
+        'specialLetter','senderName','recipientName','apologyIssue','apologyTone','apologyWhatHappened',
+        'apologyRegret','apologyRepair','apologyLetter','apologyPaper','apologyDateOffer'
+      ];
       window.addEventListener('message', function(ev){
         var data = ev && ev.data;
         if(!data || data.type !== 'bolzoo:config' || !data.config) return;
@@ -2078,7 +2767,23 @@
           maybeShowPoster();
         }
         BolzooAPI.markOpened(INVITE_ID);
-      }).catch(function(e){ console.warn('Config fetch failed:', e); });
+      }).catch(function(e){
+        console.warn('Config fetch failed:', e);
+        var overlay = document.getElementById('introOverlay');
+        var errorBox = document.getElementById('inviteError');
+        if(overlay) overlay.style.display = 'none';
+        document.querySelector('main.stage').style.display = 'none';
+        if(errorBox){
+          errorBox.hidden = false;
+          var expired = /expired|хугацаа/i.test((e && e.message) || '');
+          document.getElementById('inviteErrorTitle').textContent = expired
+            ? 'Энэ нууц линкний хугацаа дууссан байна'
+            : 'Энэ линк нээгдэхгүй байна';
+          document.getElementById('inviteErrorText').textContent = expired
+            ? 'Эвлэрлийн линк 30 хоног хүчинтэй. Илгээгчтэй өөр сувгаар тайван холбогдоорой.'
+            : 'Линк буруу эсвэл устгагдсан байж болзошгүй. Илгээгчээс линкээ дахин шалгахыг хүсээрэй.';
+        }
+      });
     }
     /* ================= /CONFIG ================= */
 
@@ -2170,21 +2875,28 @@
     }
     function locationParts(){
       var raw = String(CONFIG.locationName || '').trim();
-      if(!raw){
-        return { name:'Уулзах газар', address:'Улаанбаатар' };
-      }
+      var url = String(CONFIG.locationUrl || '').trim();
+      if(!raw && !url) return null;
+      if(!raw) return { name:'Google Maps дахь байршил', address:'' };
       var bits = raw.split(',');
       var name = bits.shift().trim() || raw;
-      var address = bits.join(',').trim() || 'Улаанбаатар';
+      var address = bits.join(',').trim();
       return { name:name, address:address };
     }
     function locationUrl(){
-      if(CONFIG.locationUrl){ return CONFIG.locationUrl; }
+      var direct = String(CONFIG.locationUrl || '').trim();
+      if(direct) return direct;
       var loc = locationParts();
-      var q = CONFIG.locationName || loc.name || 'Улаанбаатар';
+      if(!loc) return '';
+      var q = String(CONFIG.locationName || loc.name || '').trim();
+      if(!q) return '';
       return 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(q);
     }
     function defaultLetter(){
+      if(isApologyExperience()){
+        return CONFIG.apologyLetter
+          || (window.BolzooApology ? BolzooApology.buildLetter(CONFIG) : 'Чамд чин сэтгэлээсээ уучлалт гуйж байна.');
+      }
       var recip = CONFIG.recipientName ? CONFIG.recipientName + ' минь' : 'хайр минь';
       return [
         'Сайн уу ' + recip + ' 💕',
@@ -2311,6 +3023,79 @@
         }).catch(function(){});
       }catch(e){}
     }
+
+    /* ---------- Bolzoo · Эвлэрье: recipient-controlled response ---------- */
+    (function bindApologyResponses(){
+      var host = document.getElementById('apologyStatuses');
+      var statusText = document.getElementById('apologyResponseStatus');
+      var scheduleBtn = document.getElementById('apologyScheduleDate');
+      if(!host || !statusText) return;
+      var saving = false;
+
+      function markSelected(id, lock){
+        host.querySelectorAll('[data-apology-status]').forEach(function(btn){
+          var on = btn.getAttribute('data-apology-status') === id;
+          btn.classList.toggle('on', on);
+          btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+          btn.disabled = !!lock && !on;
+        });
+      }
+
+      host.addEventListener('click', function(e){
+        var btn = e.target.closest('[data-apology-status]');
+        if(!btn || saving || !isApologyExperience() || !window.BolzooApology) return;
+        var id = btn.getAttribute('data-apology-status');
+        var selected = BolzooApology.status(id);
+        if(!selected) return;
+        var readiness = id === 'stop' ? setApologyReadiness(0) : getApologyReadiness();
+        if(scheduleBtn) scheduleBtn.hidden = true;
+        markSelected(id, false);
+        setApologyCatMood(id);
+        statusText.textContent = IS_PREVIEW ? 'Preview: ' + selected.label : '⏳ Хариуг хүргэж байна…';
+        if(IS_PREVIEW) return;
+        if(!INVITE_ID || !window.BolzooAPI){
+          statusText.textContent = '⚠️ Хариуг хадгалах боломжгүй байна. Линкээ дахин шалгана уу.';
+          return;
+        }
+        saving = true;
+        host.querySelectorAll('button').forEach(function(button){ button.disabled = true; });
+        var payload = {
+          type: 'apology',
+          status: id,
+          statusLabel: selected.label,
+          readinessPercent: readiness,
+          sentAt: new Date().toISOString()
+        };
+        if(id === 'stop') payload.final = true;
+        BolzooAPI.saveResponse(INVITE_ID, payload).then(function(){
+          try{
+            localStorage.setItem('bolzoo:apology-response:' + INVITE_ID, id);
+            localStorage.setItem('bolzoo:apology-readiness:' + INVITE_ID, String(readiness));
+          }catch(_){ }
+          markSelected(id, id === 'stop');
+          document.getElementById('apologyReadiness').disabled = id === 'stop';
+          statusText.textContent = id === 'stop'
+            ? 'Таны “холбоо барихгүй байх” хүсэлтийг хүргэлээ. Энэ сонголт түгжигдсэн.'
+            : '✅ “' + selected.label + '” гэсэн хариуг хүргэлээ. Та хүсвэл дараа нь эндээс төлвөө өөрчилж болно.';
+          if(scheduleBtn && id === 'meet' && CONFIG.apologyDateOffer){
+            scheduleBtn.hidden = false;
+          }
+          notifyOwner(INVITE_ID);
+        }).catch(function(err){
+          host.querySelectorAll('button').forEach(function(button){ button.disabled = false; });
+          statusText.textContent = '⚠️ Хариуг хүргэж чадсангүй. Интернэтээ шалгаад дахин оролдоно уу.';
+          console.warn('Apology response save failed:', err);
+        }).finally(function(){ saving = false; });
+      });
+      if(scheduleBtn){
+        scheduleBtn.addEventListener('click', function(){
+          document.body.setAttribute('data-experience','apology-date');
+          document.getElementById('apologyExperience').hidden = true;
+          goTo('date');
+          renderCalendar();
+        });
+      }
+    })();
 
     /* ---------- kawaii cat avatars (assets/bolzoo-cat.js) ---------- */
     BolzooCat.mountAll();
@@ -2843,12 +3628,29 @@
       $('dateValue').textContent = fmtDateDots(d.y, d.m, d.d);
       $('weekdayPill').textContent = fmtWeekday(d.y, d.m, d.d);
       $('timeValue').textContent = state.time;
-      $('locationName').textContent = loc.name;
-      $('locationAddress').textContent = loc.address;
-      $('locationOpen').href = mapsUrl;
+      var locationBox = $('locationBox');
+      var locationOpen = $('locationOpen');
+      var locationAddress = $('locationAddress');
+      locationBox.hidden = !loc;
+      locationOpen.hidden = !mapsUrl;
+      if(loc){
+        $('locationName').textContent = loc.name;
+        locationAddress.textContent = loc.address;
+        locationAddress.hidden = !loc.address;
+      }
+      if(mapsUrl) locationOpen.href = mapsUrl;
 
       var mapTile = document.getElementById('mapTile');
-      if(mapTile){ mapTile.href = mapsUrl; }
+      if(mapTile){
+        mapTile.hidden = !mapsUrl;
+        if(mapsUrl) mapTile.href = mapsUrl;
+      }
+      var reminder = document.querySelector('#screenshotReminder small');
+      if(reminder){
+        reminder.textContent = loc
+          ? 'Огноо, цаг, байршил, ticket no багтсан тул энэ хэсэг хангалттай.'
+          : 'Огноо, цаг, ticket no багтсан тул энэ хэсэг хангалттай.';
+      }
 
       $('ticketDetails').innerHTML = [
         '<div class="ticket-detail ticket-seat">',
@@ -3007,6 +3809,14 @@
         payload.choice = state.selectedChoice;
         payload.choiceIndex = state.selectedChoiceIndex;
       }
+      if(isApologyExperience()){
+        payload.type = 'apology';
+        payload.status = 'meet';
+        payload.readinessPercent = getApologyReadiness();
+        payload.statusLabel = window.BolzooApology
+          ? BolzooApology.status('meet').label
+          : 'Уулзаж ярилцахад бэлэн';
+      }
 
       return payload;
     }
@@ -3157,8 +3967,8 @@
         subtitle: CONFIG.senderName
           ? CONFIG.senderName + '-тай хамт'
           : 'Чиний тусгай хэн нэгэнтэй хамт',
-        locationName: loc.name,
-        locationAddress: loc.address
+        locationName: loc ? loc.name : '',
+        locationAddress: loc ? loc.address : ''
       });
       pop('G5');
     }
@@ -3183,6 +3993,15 @@
       renderKinds();
       updateCountdownPreview();
       updateNextEnabled();
+      if(isApologyExperience()){
+        document.body.setAttribute('data-experience','apology');
+        document.getElementById('apologyExperience').hidden = false;
+        document.querySelectorAll('.screen').forEach(function(screen){ screen.classList.remove('active'); });
+        var progressEl = document.getElementById('progress');
+        if(progressEl) progressEl.hidden = true;
+        window.scrollTo(0,0);
+        return;
+      }
       goTo('ask');
     });
 

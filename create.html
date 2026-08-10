@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Болзооны урилга үүсгэх 💌</title>
-<meta name="description" content="Crush-даа зориулсан болзооны урилгаа үүсгээд Messenger, Instagram-аар илгээгээрэй 💌" />
+<title>Bolzoo — Болзооны урилга, эвлэрлийн захиа 💌</title>
+<meta name="description" content="Хайртай хүндээ болзооны урилга эсвэл чин сэтгэлийн эвлэрлийн захиа бэлдэж, нууц линкээр илгээгээрэй." />
 <link rel="canonical" href="https://bolzoodate.vercel.app/create" />
 <meta property="og:type" content="website" />
 <meta property="og:locale" content="mn_MN" />
@@ -71,9 +71,7 @@
   .main-col{min-width:0;}
   .preview-wrap,
   .form-card,
-  .preview-card,
-  .side-card,
-  .music-card{max-width:100%; min-width:0;}
+  .preview-card{max-width:100%; min-width:0;}
   .steps{
     display:flex;
     align-items:center;
@@ -146,6 +144,38 @@
     font-size:12px;
     font-weight:900;
     line-height:1.35;
+  }
+  .template-step-intro{
+    margin:0 0 18px;
+    padding:16px;
+    border-radius:16px;
+    background:linear-gradient(135deg,#fff4f8,#f8f1ff);
+    border:1px solid rgba(255,145,176,.38);
+  }
+  .template-step-kicker{
+    display:inline-flex;
+    margin:0 0 7px;
+    padding:4px 9px;
+    border-radius:999px;
+    background:#ff4d82;
+    color:#fff;
+    font-size:10px;
+    font-weight:900;
+    letter-spacing:.05em;
+  }
+  .template-step-intro h2{
+    margin:0 0 6px;
+    color:#4b173f;
+    font-family:'Comfortaa',sans-serif;
+    font-size:18px;
+    line-height:1.35;
+  }
+  .template-step-intro p{
+    margin:0;
+    color:#806d80;
+    font-size:13px;
+    font-weight:800;
+    line-height:1.5;
   }
   .price-splash{
     position:relative;
@@ -298,6 +328,389 @@
     gap:16px;
     margin:22px 0 28px;
   }
+  .title-block[hidden]{display:none;}
+  .owner-response-entry{
+    position:relative;
+    display:grid;
+    grid-template-columns:auto minmax(0,1fr) auto;
+    align-items:center;
+    gap:14px;
+    margin:22px 0 0;
+    padding:16px 18px;
+    border:1px solid rgba(141,103,216,.28);
+    border-radius:18px;
+    background:
+      radial-gradient(circle at 100% 0%,rgba(255,183,212,.32),transparent 38%),
+      linear-gradient(135deg,#fff 0%,#fff7fc 52%,#f8f2ff 100%);
+    box-shadow:0 20px 42px -31px rgba(91,43,112,.55);
+    color:#4b274d;
+    text-decoration:none;
+    overflow:hidden;
+    transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease;
+  }
+  .owner-response-entry:hover{
+    transform:translateY(-2px);
+    border-color:rgba(255,77,130,.5);
+    box-shadow:0 24px 46px -30px rgba(91,43,112,.62);
+  }
+  .owner-response-entry:focus-visible{
+    outline:3px solid rgba(255,77,130,.24);
+    outline-offset:3px;
+  }
+  .owner-response-entry.has-response{
+    border-color:rgba(58,138,74,.32);
+    background:
+      radial-gradient(circle at 100% 0%,rgba(173,239,188,.32),transparent 40%),
+      linear-gradient(135deg,#fff 0%,#f7fff9 52%,#fff6fb 100%);
+  }
+  .owner-response-entry.accepted{
+    border-color:rgba(255,77,130,.4);
+    background:
+      radial-gradient(circle at 12% -8%,rgba(255,221,98,.48),transparent 34%),
+      radial-gradient(circle at 100% 0%,rgba(255,166,205,.42),transparent 42%),
+      linear-gradient(135deg,#fffef8 0%,#fff5fa 54%,#f8f2ff 100%);
+    box-shadow:0 24px 52px -30px rgba(255,77,130,.62);
+    animation:ownerResponseGlow 2.8s ease-in-out infinite;
+  }
+  .owner-response-entry.accepted::after{
+    content:"✦";
+    position:absolute;
+    right:12px;
+    top:4px;
+    color:#ff8aaf;
+    font-size:15px;
+    animation:ownerResponseTwinkle 1.8s ease-in-out infinite;
+  }
+  .owner-response-icon{
+    width:52px;
+    height:52px;
+    display:grid;
+    place-items:center;
+    border-radius:16px;
+    background:linear-gradient(145deg,#ffe8f1,#f2e9ff);
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.78);
+    font-size:25px;
+  }
+  .owner-response-copy{display:flex; flex-direction:column; gap:4px;}
+  .owner-response-copy strong{
+    font-family:'Comfortaa',sans-serif;
+    color:#4b173f;
+    font-size:15px;
+    line-height:1.35;
+  }
+  .owner-response-copy small{
+    color:#806d83;
+    font-size:12px;
+    font-weight:800;
+    line-height:1.45;
+  }
+  .owner-response-side{display:flex; align-items:center; gap:10px;}
+  .owner-response-badge{
+    display:inline-flex;
+    align-items:center;
+    min-height:28px;
+    padding:5px 10px;
+    border-radius:999px;
+    background:#f2e9ff;
+    color:#704ca8;
+    font-size:11px;
+    font-weight:900;
+    white-space:nowrap;
+  }
+  .has-response .owner-response-badge{background:#dcffde; color:#2e7a3e;}
+  .accepted .owner-response-badge{
+    background:linear-gradient(135deg,#ff4d82,#c136a0);
+    color:#fff;
+    box-shadow:0 8px 18px -11px rgba(193,54,160,.8);
+  }
+  .owner-response-arrow{
+    width:32px;
+    height:32px;
+    display:grid;
+    place-items:center;
+    border-radius:50%;
+    background:#fff;
+    color:var(--hot);
+    font-size:20px;
+    font-weight:900;
+    box-shadow:0 10px 20px -15px rgba(75,23,63,.65);
+  }
+  .owner-response-entry + .title-block{margin-top:18px;}
+  .response-guide{
+    margin:12px 0 0;
+    border:1px solid rgba(255,156,187,.34);
+    border-radius:18px;
+    background:rgba(255,255,255,.76);
+    box-shadow:0 18px 38px -34px rgba(91,43,112,.55);
+    overflow:hidden;
+  }
+  .response-guide-trigger{
+    display:grid;
+    grid-template-columns:auto minmax(0,1fr) auto auto;
+    align-items:center;
+    gap:11px;
+    padding:14px 16px;
+    cursor:pointer;
+    list-style:none;
+    background:
+      radial-gradient(circle at 100% 0%,rgba(255,191,217,.48),transparent 42%),
+      linear-gradient(135deg,#fff 0%,#fff4fa 58%,#f7f0ff 100%);
+    transition:background .18s ease,box-shadow .18s ease;
+  }
+  .response-guide-trigger::-webkit-details-marker{display:none;}
+  .response-guide-trigger:hover{background:linear-gradient(135deg,#fff 0%,#ffeaf4 58%,#f3e9ff 100%);}
+  .response-guide-trigger:focus-visible{outline:3px solid rgba(255,77,130,.24); outline-offset:-3px;}
+  .response-guide-trigger-icon{
+    width:44px;
+    height:44px;
+    display:grid;
+    place-items:center;
+    border-radius:14px;
+    background:linear-gradient(145deg,#ffebf2,#efe6ff);
+    font-size:22px;
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.8);
+  }
+  .response-guide-trigger-copy{display:flex; flex-direction:column; gap:2px;}
+  .response-guide-trigger-copy strong{
+    color:#5b294c;
+    font-family:'Comfortaa',sans-serif;
+    font-size:14px;
+    line-height:1.35;
+  }
+  .response-guide-trigger-copy small{color:#8d7287; font-size:11px; font-weight:800;}
+  .response-guide-trigger-badge{
+    padding:5px 9px;
+    border-radius:999px;
+    background:#ff4d82;
+    color:#fff;
+    font-size:9px;
+    font-weight:900;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    box-shadow:0 8px 18px -12px rgba(255,77,130,.8);
+  }
+  .response-guide-chevron{
+    width:28px;
+    height:28px;
+    display:grid;
+    place-items:center;
+    border-radius:50%;
+    background:#fff;
+    color:#c9346a;
+    font-size:17px;
+    font-weight:900;
+    transition:transform .2s ease;
+  }
+  .response-guide[open] .response-guide-chevron{transform:rotate(180deg);}
+  .response-guide-body{padding:14px 16px 16px; border-top:1px solid rgba(255,156,187,.22);}
+  .response-guide-steps{
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:8px;
+    margin:0;
+    padding:0;
+    list-style:none;
+  }
+  .response-guide-steps li{
+    position:relative;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    padding:9px;
+    border-radius:13px;
+    background:linear-gradient(145deg,#fff8fb,#fff);
+    color:#72566d;
+    text-align:center;
+  }
+  .response-guide-steps li:not(:last-child)::after{
+    content:"›";
+    position:absolute;
+    z-index:2;
+    right:-8px;
+    top:43px;
+    width:16px;
+    height:16px;
+    display:grid;
+    place-items:center;
+    border-radius:50%;
+    background:#ff83aa;
+    color:#fff;
+    font-size:16px;
+    font-weight:900;
+    line-height:1;
+  }
+  .response-guide-art{
+    position:relative;
+    height:76px;
+    display:grid;
+    place-items:center;
+    border-radius:11px;
+    background:
+      radial-gradient(circle at 15% 15%,rgba(255,255,255,.9),transparent 28%),
+      linear-gradient(145deg,#ffe9f1,#f3eaff);
+    overflow:hidden;
+  }
+  .guide-number{
+    position:absolute;
+    left:7px;
+    top:7px;
+    width:21px;
+    height:21px;
+    display:grid;
+    place-items:center;
+    border-radius:50%;
+    background:#fff;
+    color:#d83f72;
+    font-family:'Comfortaa',sans-serif;
+    font-size:9px;
+    font-weight:900;
+    box-shadow:0 5px 14px -8px rgba(75,23,63,.6);
+  }
+  .guide-phone{
+    width:38px;
+    height:56px;
+    display:grid;
+    place-items:center;
+    border:3px solid #663552;
+    border-radius:10px;
+    background:#fff;
+    font-size:22px;
+    box-shadow:0 10px 18px -14px rgba(75,23,63,.7);
+  }
+  .guide-send-arrow{
+    position:absolute;
+    right:25px;
+    top:17px;
+    color:#f44f82;
+    font-size:23px;
+    font-weight:900;
+    transform:rotate(-18deg);
+  }
+  .guide-answer{
+    position:relative;
+    padding:9px 13px;
+    border-radius:13px 13px 13px 4px;
+    background:#fff;
+    color:#c9346a;
+    font-family:'Comfortaa',sans-serif;
+    font-size:12px;
+    font-weight:900;
+    box-shadow:0 10px 20px -15px rgba(75,23,63,.7);
+  }
+  .guide-answer::after{
+    content:"✓";
+    position:absolute;
+    right:-9px;
+    top:-9px;
+    width:22px;
+    height:22px;
+    display:grid;
+    place-items:center;
+    border-radius:50%;
+    background:#54b86b;
+    color:#fff;
+    font-size:12px;
+  }
+  .guide-dashboard{
+    position:relative;
+    width:60px;
+    height:45px;
+    padding:8px;
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:5px;
+    border:3px solid #663552;
+    border-radius:9px;
+    background:#fff;
+    box-shadow:0 10px 20px -15px rgba(75,23,63,.7);
+  }
+  .guide-dashboard i{border-radius:4px; background:#ffd5e3;}
+  .guide-dashboard i:last-child{background:#d9f7de;}
+  .guide-notice{
+    position:absolute;
+    right:18px;
+    top:10px;
+    width:21px;
+    height:21px;
+    display:grid;
+    place-items:center;
+    border:2px solid #fff;
+    border-radius:50%;
+    background:#ff4d82;
+    color:#fff;
+    font-size:10px;
+    font-weight:900;
+  }
+  .response-guide-steps strong{
+    display:block;
+    color:#5f304f;
+    font-family:'Comfortaa',sans-serif;
+    font-size:11px;
+    line-height:1.3;
+  }
+  .response-guide-steps small{
+    display:block;
+    margin-top:2px;
+    color:#97798d;
+    font-size:10px;
+    font-weight:800;
+    line-height:1.3;
+  }
+  .response-guide-note{
+    display:flex;
+    align-items:flex-start;
+    gap:7px;
+    margin:10px 0 0;
+    color:#765e72;
+    font-size:11px;
+    font-weight:800;
+    line-height:1.45;
+  }
+  .response-recovery-help{
+    display:grid;
+    grid-template-columns:auto minmax(0,1fr) auto;
+    align-items:center;
+    gap:11px;
+    margin-top:12px;
+    padding:12px;
+    border:1px solid rgba(100,174,111,.3);
+    border-radius:14px;
+    background:linear-gradient(135deg,#f4fff5,#fffaf4);
+  }
+  .response-recovery-icon{
+    width:38px;
+    height:38px;
+    display:grid;
+    place-items:center;
+    border-radius:12px;
+    background:#dcffde;
+    font-size:19px;
+  }
+  .response-recovery-copy strong{display:block; color:#265f35; font-family:'Comfortaa',sans-serif; font-size:11px; line-height:1.35;}
+  .response-recovery-copy p{margin:3px 0 0; color:#55745d; font-size:10px; font-weight:800; line-height:1.4;}
+  .response-recovery-cta{
+    display:inline-flex;
+    align-items:center;
+    min-height:34px;
+    padding:7px 11px;
+    border-radius:999px;
+    background:#fff;
+    border:1px solid rgba(58,138,74,.28);
+    color:#2f7840;
+    font-size:10px;
+    font-weight:900;
+    text-decoration:none;
+    white-space:nowrap;
+  }
+  .response-recovery-cta:hover{color:#215a34; border-color:rgba(58,138,74,.5);}
+  @keyframes ownerResponseGlow{
+    0%,100%{transform:translateY(0);}
+    50%{transform:translateY(-2px);}
+  }
+  @keyframes ownerResponseTwinkle{
+    0%,100%{opacity:.35; transform:scale(.8) rotate(0);}
+    50%{opacity:1; transform:scale(1.15) rotate(20deg);}
+  }
   .title-icon{
     width:48px;
     height:48px;
@@ -319,8 +732,7 @@
   }
   .card,
   .form-card,
-  .preview-card,
-  .side-card{
+  .preview-card{
     border-radius:18px;
     border:1px solid rgba(248,215,226,.78);
     background:var(--panel);
@@ -428,6 +840,7 @@
   .ask-template:hover{transform:translateY(-2px);}
   .ask-template.on{
     border-color:var(--hot);
+    background:linear-gradient(180deg,#fff,#fff5f9);
     box-shadow:0 18px 36px -26px rgba(255,77,130,.7), inset 0 0 0 2px rgba(255,77,130,.12);
   }
   .ask-template.on::after{
@@ -493,6 +906,27 @@
     font-size:13px;
     font-weight:900;
   }
+  .ask-template small{
+    min-height:30px;
+    color:#897587;
+    font-size:11px;
+    font-weight:800;
+    line-height:1.35;
+  }
+  .ask-template-state{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    min-height:23px;
+    padding:4px 8px;
+    border-radius:999px;
+    background:#ff4d82;
+    color:#fff;
+    font-size:10px;
+    font-weight:900;
+    visibility:hidden;
+  }
+  .ask-template.on .ask-template-state{visibility:visible;}
   .posters{
     display:grid;
     grid-template-columns:repeat(auto-fill,minmax(120px,1fr));
@@ -712,6 +1146,72 @@
     font-size:11px;
     font-weight:900;
   }
+  .final-checkout{
+    display:grid;
+    grid-template-columns:auto minmax(0,1fr);
+    gap:14px;
+    align-items:center;
+    margin:0 0 16px;
+    padding:18px;
+    border:1px solid rgba(255,77,130,.28);
+    border-radius:16px;
+    background:linear-gradient(135deg,#fff8fb,#fff0f6 58%,#f6efff);
+    box-shadow:0 18px 38px -30px rgba(105,39,78,.56);
+  }
+  .final-checkout-icon{
+    width:48px;
+    height:48px;
+    display:grid;
+    place-items:center;
+    border-radius:15px;
+    background:#fff;
+    border:1px solid rgba(255,203,217,.84);
+    box-shadow:0 12px 24px -18px rgba(105,39,78,.5);
+    font-size:23px;
+  }
+  .final-checkout strong{display:block; color:#4b173f; font-size:16px; font-weight:900;}
+  .final-checkout p{margin:3px 0 0; color:#806d80; font-size:13px; line-height:1.45; font-weight:800;}
+  .final-flow{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:8px;
+    margin:0 0 16px;
+    padding:0;
+    list-style:none;
+  }
+  .final-flow li{
+    padding:10px;
+    border:1px solid rgba(255,203,217,.68);
+    border-radius:12px;
+    background:#fff;
+    color:#72546d;
+    font-size:12px;
+    line-height:1.35;
+    font-weight:900;
+    text-align:center;
+  }
+  .manual-code-option{
+    margin:0 0 18px;
+    border:1px dashed rgba(157,99,230,.35);
+    border-radius:14px;
+    background:rgba(255,255,255,.78);
+    overflow:hidden;
+  }
+  .manual-code-option > summary{
+    padding:13px 15px;
+    color:#694d77;
+    font-size:13px;
+    font-weight:900;
+    cursor:pointer;
+    list-style:none;
+  }
+  .manual-code-option > summary::-webkit-details-marker{display:none;}
+  .manual-code-option > summary::after{content:'＋'; float:right; color:#9d63e6;}
+  .manual-code-option[open] > summary::after{content:'−';}
+  .manual-code-body{padding:0 15px 15px;}
+  .manual-code-body .code-gate{margin:0;}
+  .manual-code-note{margin:0 0 10px; color:#806d80; font-size:12px; line-height:1.45; font-weight:800;}
+  .final-actions{grid-template-columns:minmax(0,1.7fr) minmax(150px,.7fr);}
   #videoPreview.video-preview{
     margin-top:14px !important;
     padding:12px !important;
@@ -898,34 +1398,6 @@
   .phone-dots{display:flex; justify-content:center; gap:10px; margin-top:10px;}
   .phone-dots i{width:11px; height:11px; border-radius:50%; background:#e9dfe5;}
   .phone-dots i:first-child{background:#ff5d93;}
-  .side-card{padding:26px; margin-top:34px;}
-  .side-card h2{
-    margin:0 0 18px;
-    color:#4b173f;
-    font-family:'Nunito',sans-serif;
-    font-size:19px;
-    line-height:1.2;
-    font-weight:900;
-  }
-  .tip-row{display:grid; grid-template-columns:34px minmax(0,1fr); gap:14px; align-items:center; color:#7d687d; font-size:13px; line-height:1.45; font-weight:700; margin-top:18px;}
-  .tip-row span:first-child{width:28px; height:28px; display:grid; place-items:center; border-radius:50%; background:#fff1d9; color:#c88318;}
-  .tip-row:nth-child(3) span:first-child{background:#f5dcff; color:#9d63e6;}
-  .tip-row:nth-child(4) span:first-child{background:#ffe1dc; color:#ff6f61;}
-  .music-card{
-    display:grid;
-    grid-template-columns:minmax(0,1fr) 58px;
-    gap:16px;
-    align-items:center;
-    padding:26px;
-    margin-top:28px;
-    background:linear-gradient(135deg,#fff,#fbf3ff);
-  }
-  .music-card h2{margin:0 0 8px; color:#7a4dcf; font-size:19px; font-weight:900;}
-  .music-card p{margin:0 0 16px; color:#7d687d; font-size:13px; line-height:1.45; font-weight:700;}
-  .music-heart{width:58px; height:58px; border-radius:50%; display:grid; place-items:center; background:#ffe1ef; font-size:24px;}
-  .wave{height:34px; display:flex; align-items:center; gap:4px;}
-  .wave i{width:4px; border-radius:999px; background:linear-gradient(180deg,#9d63e6,#ff8fb0); opacity:.7;}
-  .wave i:nth-child(1){height:10px}.wave i:nth-child(2){height:18px}.wave i:nth-child(3){height:25px}.wave i:nth-child(4){height:13px}.wave i:nth-child(5){height:30px}.wave i:nth-child(6){height:16px}.wave i:nth-child(7){height:22px}.wave i:nth-child(8){height:12px}.wave i:nth-child(9){height:26px}.wave i:nth-child(10){height:15px}.wave i:nth-child(11){height:20px}.wave i:nth-child(12){height:11px}
   .footer-note{margin:20px 0 0; color:#9a6b84; text-align:center; font-size:13px; font-weight:800;}
 
   .form-dock{
@@ -1127,6 +1599,130 @@
   @keyframes successPopIn{0%{opacity:0; transform:scale(.9) translateY(10px);} 100%{opacity:1; transform:none;}}
   @keyframes successFloat{0%,100%{transform:translateY(0) scale(1);} 50%{transform:translateY(-6px) scale(1.05);}}
 
+  .purpose-gate{
+    margin:22px 0 20px;
+    padding:22px;
+    border:1px solid rgba(133,106,157,.2);
+    border-radius:24px;
+    background:
+      radial-gradient(circle at 0 0,rgba(255,196,217,.42),transparent 38%),
+      radial-gradient(circle at 100% 100%,rgba(187,223,208,.38),transparent 40%),
+      rgba(255,255,255,.9);
+    box-shadow:0 24px 58px -42px rgba(75,23,63,.58);
+  }
+  .purpose-gate h2{margin:0; color:#4b173f; font-family:'Comfortaa',sans-serif; font-size:22px; line-height:1.35;}
+  .purpose-gate > p{margin:7px 0 18px; color:#7f6c7d; font-size:13px; font-weight:800; line-height:1.55;}
+  .purpose-options{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px;}
+  .purpose-card{
+    position:relative;
+    display:grid;
+    grid-template-columns:auto minmax(0,1fr);
+    align-items:center;
+    gap:13px;
+    min-height:112px;
+    padding:17px;
+    border:2px solid rgba(255,142,177,.28);
+    border-radius:20px;
+    background:#fff;
+    color:#4b274d;
+    text-align:left;
+    cursor:pointer;
+    box-shadow:0 16px 32px -30px rgba(75,23,63,.5);
+    transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease;
+  }
+  .purpose-card:hover{transform:translateY(-2px); border-color:rgba(255,77,130,.58); box-shadow:0 22px 38px -28px rgba(75,23,63,.58);}
+  .purpose-card[aria-pressed="true"]{border-color:#ff4d82; background:linear-gradient(145deg,#fff,#fff4f8); box-shadow:0 0 0 4px rgba(255,77,130,.1);}
+  .purpose-card.apology[aria-pressed="true"]{border-color:#ff4d82; background:linear-gradient(145deg,#fff,#fff4f8); box-shadow:0 0 0 4px rgba(255,77,130,.1);}
+  .purpose-icon{width:54px; height:54px; display:grid; place-items:center; border-radius:17px; background:linear-gradient(145deg,#ffe8f1,#f2e9ff); font-size:27px;}
+  .purpose-card.apology .purpose-icon{background:linear-gradient(145deg,#ffe8f1,#fff0f7);}
+  .purpose-icon.cat-icon{overflow:hidden; width:64px; height:64px; padding:0; background:#fff8fb; box-shadow:inset 0 0 0 1px rgba(255,145,176,.24);}
+  .purpose-card.apology .purpose-icon.cat-icon{background:#fff8fb; box-shadow:inset 0 0 0 1px rgba(255,145,176,.24);}
+  .purpose-cat{width:100%; height:100%; display:block; object-fit:cover; mix-blend-mode:multiply;}
+  .purpose-cat.date-cat{object-position:50% 100%; transform:translateY(-18%);}
+  .purpose-cat.apology-cat{object-position:50% 48%;}
+  .purpose-copy{display:flex; flex-direction:column; gap:5px;}
+  .purpose-copy strong{font-family:'Comfortaa',sans-serif; font-size:15px; line-height:1.35;}
+  .purpose-copy small{color:#806d80; font-size:11px; font-weight:800; line-height:1.45;}
+  .form-card[hidden],.form-dock[hidden],.purpose-gate[hidden],#posterField[hidden],#inviteTeaser[hidden],[data-mode-panel][hidden],.apology-builder[hidden]{display:none !important;}
+  body[data-experience="apology"]{--hot:#ff4d82; --hot2:#c136a0;}
+  body[data-experience=""] .topbar,
+  body[data-experience=""] .owner-response-entry,
+  body[data-experience=""] .response-guide{display:none;}
+  body[data-experience="apology"] .template-step-kicker{background:#ff4d82;}
+  body[data-experience="apology"] .preview-kicker{color:#c9346a;}
+  .issue-grid{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px;}
+  .issue-card,.tone-card{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    min-height:70px;
+    padding:13px;
+    border:1.5px solid rgba(255,77,130,.25);
+    border-radius:16px;
+    background:#fff;
+    color:#4b3b48;
+    text-align:left;
+    font:inherit;
+    font-weight:900;
+    line-height:1.35;
+    cursor:pointer;
+  }
+  .issue-card span,.tone-card span{font-size:22px; flex:0 0 auto;}
+  .issue-card.on,.tone-card.on{border-color:#ff4d82; background:#fff3f7; box-shadow:0 0 0 3px rgba(255,77,130,.1);}
+  .tone-grid{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:9px;}
+  .tone-card{flex-direction:column; justify-content:center; min-height:94px; text-align:center; font-size:11px;}
+  .apology-note{
+    margin:14px 0 0;
+    padding:12px 13px;
+    border-radius:14px;
+    background:#fff5f8;
+    color:#7a4062;
+    font-size:11px;
+    font-weight:800;
+    line-height:1.5;
+  }
+  .apology-letter-preview{
+    min-height:190px;
+    margin-top:10px;
+    padding:20px;
+    border:1px solid rgba(181,97,126,.2);
+    border-radius:18px;
+    background:linear-gradient(145deg,#fffdf9,#fff7f9);
+    color:#5b3b49;
+    font-family:Georgia,'Times New Roman',serif;
+    font-size:14px;
+    line-height:1.75;
+    white-space:pre-wrap;
+  }
+  .pressure-warning{display:none; margin-top:10px; padding:12px 13px; border-radius:13px; background:#fff5e9; color:#885b26; font-size:11px; font-weight:850; line-height:1.5;}
+  .pressure-warning.show{display:block;}
+  .consent-preview{display:grid; gap:7px; margin-top:10px;}
+  .consent-preview span{display:block; padding:9px 11px; border:1px solid rgba(255,77,130,.18); border-radius:12px; background:#fff; color:#72566d; font-size:11px; font-weight:850;}
+  .switch-row{display:flex; align-items:flex-start; gap:10px; padding:14px; border:1px solid rgba(255,77,130,.22); border-radius:15px; background:#fff7fa; cursor:pointer;}
+  .switch-row input{width:20px; height:20px; margin:1px 0 0; accent-color:#ff4d82;}
+  .switch-row span{color:#72566d; font-size:12px; font-weight:850; line-height:1.5;}
+  .paper-grid{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px;}
+  .paper-choice{
+    position:relative;
+    min-height:116px;
+    padding:0;
+    overflow:hidden;
+    border:2px solid rgba(255,77,130,.2);
+    border-radius:16px;
+    background:#fff;
+    color:#59434c;
+    font:inherit;
+    cursor:pointer;
+    box-shadow:0 14px 26px -24px rgba(75,23,63,.6);
+    transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease;
+  }
+  .paper-choice:hover{transform:translateY(-2px); border-color:rgba(255,77,130,.58);}
+  .paper-choice.on{border-color:#ff4d82; box-shadow:0 0 0 3px rgba(255,77,130,.12);}
+  .paper-choice::after{content:'✓'; position:absolute; top:8px; right:8px; width:22px; height:22px; display:grid; place-items:center; border-radius:50%; background:#ff4d82; color:#fff; font-size:11px; font-weight:950; opacity:0; transform:scale(.7); transition:.16s ease;}
+  .paper-choice.on::after{opacity:1; transform:scale(1);}
+  .paper-thumb{display:block; width:100%; height:82px; background-position:center; background-size:cover; border-bottom:1px solid rgba(255,77,130,.15);}
+  .paper-choice strong{display:block; padding:8px 7px 9px; font-size:10px; font-weight:950; line-height:1.3;}
+
   @media (max-width:1120px){
     .wrap{grid-template-columns:1fr; max-width:860px;}
     .preview-wrap{position:relative; top:auto;}
@@ -1141,12 +1737,42 @@
     .step{justify-content:center; gap:4px; margin:0; padding:0; border-right:0; font-size:10px; line-height:1.15; text-align:center; white-space:normal;}
     .step-num{width:22px; height:22px; flex:0 0 22px; font-size:11px;}
     .title-block{margin-top:16px;}
+    .owner-response-entry{grid-template-columns:auto minmax(0,1fr); padding:14px; margin-top:16px;}
+    .owner-response-icon{width:46px; height:46px; border-radius:14px; font-size:22px;}
+    .owner-response-side{grid-column:2; justify-content:space-between;}
+    .owner-response-arrow{width:28px; height:28px;}
+    .response-guide-trigger{grid-template-columns:auto minmax(0,1fr) auto; padding:13px;}
+    .response-guide-trigger-badge{display:none;}
+    .response-guide-trigger-icon{width:40px; height:40px; border-radius:12px; font-size:20px;}
+    .response-guide-trigger-copy strong{font-size:12px;}
+    .purpose-gate{padding:17px; border-radius:20px;}
+    .purpose-options{grid-template-columns:1fr;}
+    .purpose-card{min-height:94px;}
+    .tone-grid{grid-template-columns:1fr;}
+    .tone-card{flex-direction:row; justify-content:flex-start; min-height:62px; text-align:left;}
+    .paper-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+    .response-guide-body{padding:12px;}
+    .response-guide-steps{grid-template-columns:1fr;}
+    .response-guide-steps li{display:grid; grid-template-columns:92px minmax(0,1fr); align-items:center; text-align:left;}
+    .response-guide-art{height:66px;}
+    .response-guide-steps li:not(:last-child)::after{display:none;}
+    .response-recovery-help{grid-template-columns:auto minmax(0,1fr);}
+    .response-recovery-cta{grid-column:2; width:max-content;}
     h1{font-size:24px;}
-    .form-card,.preview-card,.side-card,.music-card{padding:20px 16px; border-radius:16px;}
+    .form-card,.preview-card{padding:20px 16px; border-radius:16px;}
     .code-help-top{grid-template-columns:32px minmax(0,1fr);}
     .code-help-icon{width:32px; height:32px;}
-    .qpay-choice,.template-grid{grid-template-columns:1fr; gap:12px;}
+    .qpay-choice{grid-template-columns:1fr; gap:12px;}
     .qpay-cta{width:100%;}
+    .final-checkout{grid-template-columns:auto minmax(0,1fr); padding:15px;}
+    .final-flow{grid-template-columns:1fr;}
+    .template-step-intro{padding:14px;}
+    .template-step-intro h2{font-size:16px;}
+    .template-grid{grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px;}
+    .ask-template{padding:8px; gap:7px; min-height:178px;}
+    .ask-mini{min-height:82px; padding:9px 6px;}
+    .ask-template strong{font-size:12px;}
+    .ask-template small{font-size:10px;}
     .song-search-row{grid-template-columns:1fr;}
     .song-result{grid-template-columns:86px minmax(0,1fr);}
     .song-result img{width:86px;}
@@ -1156,7 +1782,6 @@
     .form-actions{grid-template-columns:1fr;}
     .preview-wrap{order:3;}
     .phone-shell{width:min(330px,100%);}
-    .side-card{margin-top:18px;}
     .form-dock{padding-inline:10px;}
     .form-dock-inner{grid-template-columns:1fr 1.05fr; gap:8px;}
     .dock-btn{min-height:52px; border-radius:12px; font-size:14px; padding-inline:10px;}
@@ -1165,56 +1790,109 @@
     .preview-modal-foot{gap:8px;}
     .modal-ghost,.modal-pay{min-height:46px; font-size:13px;}
   }
+  @media (prefers-reduced-motion:reduce){
+    .owner-response-entry.accepted,
+    .owner-response-entry.accepted::after{animation:none;}
+  }
 </style>
 </head>
-<body>
+<body data-experience="">
   <div class="wrap">
     <header class="topbar">
       <div class="steps">
-        <span class="step on" data-step="1"><span class="step-num">1</span>Template</span>
-        <span class="step" data-step="2"><span class="step-num">2</span>Эрх + Хэн</span>
-        <span class="step" data-step="3"><span class="step-num">3</span>Дуу + Тема</span>
-        <span class="step" data-step="4"><span class="step-num">4</span>Дэлгэрэнгүй</span>
-        <span class="step" data-step="5"><span class="step-num">5</span>Preview + Илгээх</span>
+        <span class="step on" data-step="1"><span class="step-num">1</span><span class="step-label">Template</span></span>
+        <span class="step" data-step="2"><span class="step-num">2</span><span class="step-label">Хэн</span></span>
+        <span class="step" data-step="3"><span class="step-num">3</span><span class="step-label">Дуу + Тема</span></span>
+        <span class="step" data-step="4"><span class="step-num">4</span><span class="step-label">Дэлгэрэнгүй</span></span>
+        <span class="step" data-step="5"><span class="step-num">5</span><span class="step-label">Төлөх + Линк</span></span>
       </div>
       <div class="preview-kicker">✨ Preview</div>
     </header>
 
     <main class="main-col">
-      <div class="title-block">
+      <a class="owner-response-entry" id="ownerResponseEntry" href="dashboard.html" aria-labelledby="ownerResponseTitle" aria-describedby="ownerResponseDetail" aria-busy="true">
+        <span class="owner-response-icon" id="ownerResponseIcon" aria-hidden="true">💌</span>
+        <span class="owner-response-copy">
+          <strong id="ownerResponseTitle">Миний урилгууд · Хариу харах</strong>
+          <small id="ownerResponseDetail" aria-live="polite">Илгээсэн урилгын хариу, сонгосон өдөр цагаа нэг дороос шалгана.</small>
+        </span>
+        <span class="owner-response-side">
+          <span class="owner-response-badge" id="ownerResponseBadge">Шалгаж байна…</span>
+          <span class="owner-response-arrow" aria-hidden="true">→</span>
+        </span>
+      </a>
+      <details class="response-guide" id="responseGuide">
+        <summary class="response-guide-trigger">
+          <span class="response-guide-trigger-icon" aria-hidden="true">💌</span>
+          <span class="response-guide-trigger-copy">
+            <strong>Урилгын хариугаа хэрхэн харах вэ?</strong>
+            <small>Хариу шалгах болон кодоор сэргээх заавар</small>
+          </span>
+          <span class="response-guide-trigger-badge">Заавар</span>
+          <span class="response-guide-chevron" aria-hidden="true">⌄</span>
+        </summary>
+        <div class="response-guide-body">
+          <ol class="response-guide-steps">
+            <li>
+              <div class="response-guide-art" aria-hidden="true"><span class="guide-number">1</span><span class="guide-phone">💌</span><span class="guide-send-arrow">↗</span></div>
+              <span><strong>Линкээ илгээ</strong><small>Crush-даа явуулна</small></span>
+            </li>
+            <li>
+              <div class="response-guide-art" aria-hidden="true"><span class="guide-number">2</span><span class="guide-answer">ТИЙМ 💗</span></div>
+              <span><strong>Тэр хариулна</strong><small>Өдөр, цагаа сонгоно</small></span>
+            </li>
+            <li>
+              <div class="response-guide-art" aria-hidden="true"><span class="guide-number">3</span><span class="guide-dashboard"><i></i><i></i></span><span class="guide-notice">1</span></div>
+              <span><strong>Хариугаа хар</strong><small>“Миний урилгууд” хэсгээс</small></span>
+            </li>
+          </ol>
+          <p class="response-guide-note"><span aria-hidden="true">🔒</span><span>Хариу зөвхөн танд харагдана.</span></p>
+          <div class="response-recovery-help">
+            <span class="response-recovery-icon" aria-hidden="true">🔑</span>
+            <div class="response-recovery-copy">
+              <strong>Өөр утас эсвэл browser-оос харах уу?</strong>
+              <p>“Миний урилгууд” → “Урилгаа сэргээх” → төлбөрөөр авсан <b>LOV-XXXXXX</b> кодоо оруулна. Урилгын ID биш шүү.</p>
+            </div>
+            <a class="response-recovery-cta" href="dashboard.html?recover=1">Кодоор сэргээх →</a>
+          </div>
+        </div>
+      </details>
+      <div class="title-block" id="createIntro">
         <div class="title-icon">💌</div>
         <div>
-          <h1>Болзооны урилга үүсгэх</h1>
-          <p class="subtitle">Preview-гээ хараад, QPay-ээр эрхээ идэвхжүүл. Код гармагц урилгын линкээ үүсгэнэ.</p>
+          <h1 id="createTitle">Bolzoo урилга үүсгэх</h1>
+          <p class="subtitle" id="createSubtitle">Эхлээд юу хийхээ сонгоод, линкээ дуустал нь үнэгүй бэлдээрэй.</p>
         </div>
       </div>
       <div class="payment-toast" id="paymentToast" role="status" aria-live="polite">
-        💚 <b>Төлбөр амжилттай.</b> Кодоо бөглөсөн байна — одоо урилгаа үүсгээрэй.
+        💚 <b>Төлбөр амжилттай.</b> Урилгын линкийг бэлдэж байна…
       </div>
 
-      <section class="form-card">
+      <section class="purpose-gate" id="purposeGate" aria-labelledby="purposeTitle">
+        <h2 id="purposeTitle">Та юу хийхийг хүсэж байна?</h2>
+        <p>Сонголтоос хамаараад дараагийн алхмууд танд тохирч өөрчлөгдөнө.</p>
+        <div class="purpose-options">
+          <button class="purpose-card" type="button" data-experience-choice="date" aria-pressed="false">
+            <span class="purpose-icon cat-icon" aria-hidden="true"><img class="purpose-cat date-cat" src="assets/images/download%20(2).png" alt="" /></span>
+            <span class="purpose-copy"><strong>Болзоонд урих</strong><small>Онцгой урилга бэлдэж, өдөр цагаа хамт сонгох</small></span>
+          </button>
+          <button class="purpose-card apology" type="button" data-experience-choice="apology" aria-pressed="false">
+            <span class="purpose-icon cat-icon" aria-hidden="true"><img class="purpose-cat apology-cat" src="assets/images/a28033f417048f918f94cb1838324133.jpg" alt="" /></span>
+            <span class="purpose-copy"><strong>Уучлалт гуйж, эвлэрэх</strong><small>Чин сэтгэлийн захиа бичиж, дарамтгүйгээр хүргэх</small></span>
+          </button>
+        </div>
+      </section>
+
+      <section class="form-card" id="createFormCard" hidden>
         <div class="wizard-step active" data-step="1">
-        <div class="price-splash" aria-label="1 урилга үүсгэх эрхийн үнэ">
-          <div class="price-splash-header">
-            <span class="price-splash-tag">🔥 Нээлтийн хямдрал</span>
-            <span class="price-splash-limit">Хугацаагаар хязгаартай</span>
-          </div>
-          <div class="price-splash-body">
-            <div class="price-splash-old-block">
-              <span class="price-splash-old-label">Ердийн үнэ</span>
-              <span class="price-splash-old">14,900₮</span>
-            </div>
-            <span class="price-splash-arrow" aria-hidden="true">→</span>
-            <div class="price-splash-new-block">
-              <span class="price-splash-new-label">Одоогийн үнэ</span>
-              <strong class="price-splash-new">9,900₮</strong>
-            </div>
-            <span class="price-splash-badge">-33%</span>
-          </div>
-          <p class="price-splash-note">💌 1 урилга үүсгэх эрх · нэг удаагийн код · Preview дуустал шалгаад дараа нь төлж болно.</p>
+        <div id="dateTemplateFlow" data-mode-panel="date">
+        <div class="template-step-intro">
+          <span class="template-step-kicker">АЛХАМ 1 / 5</span>
+          <h2>Crush-д эхэлж харагдах загвараа сонго</h2>
+          <p>Доорх 4 загвараас нэгийг дарна. Сонгосон загвар ягаан хүрээтэй болж тэмдэглэгдэнэ.</p>
         </div>
         <div class="field">
-          <label><span class="label-icon">🎨</span>Урилгын эхний загвар</label>
+          <label><span class="label-icon">🎨</span>НЭГ ЗАГВАР СОНГОНО УУ *</label>
           <div class="template-grid" id="askTemplates">
             <button class="ask-template" type="button" data-ask-template="classic" aria-label="Хөөрхөн загвар">
               <div class="ask-mini ask-mini-classic">
@@ -1222,6 +1900,8 @@
                 <span class="ask-mini-btn">Тийм</span>
               </div>
               <strong>Хөөрхөн</strong>
+              <small>Тийм / Үгүй асуулт</small>
+              <span class="ask-template-state">✓ Сонгосон</span>
             </button>
             <button class="ask-template" type="button" data-ask-template="letter" aria-label="Хайрын захидал">
               <div class="ask-mini ask-mini-letter">
@@ -1229,6 +1909,8 @@
                 <span class="ask-mini-btn">Уншая</span>
               </div>
               <strong>Захидал</strong>
+              <small>Захидал нээж уншина</small>
+              <span class="ask-template-state">✓ Сонгосон</span>
             </button>
             <button class="ask-template" type="button" data-ask-template="dreamy" aria-label="Тансаг">
               <div class="ask-mini ask-mini-dreamy">
@@ -1236,6 +1918,8 @@
                 <span class="ask-mini-btn">Тийм</span>
               </div>
               <strong>Тансаг</strong>
+              <small>Зөөлөн романтик эхлэл</small>
+              <span class="ask-template-state">✓ Сонгосон</span>
             </button>
             <button class="ask-template" type="button" data-ask-template="ticket" aria-label="Тасалбар">
               <div class="ask-mini ask-mini-ticket">
@@ -1243,57 +1927,50 @@
                 <span class="ask-mini-btn">Оруул</span>
               </div>
               <strong>Тасалбар</strong>
+              <small>Кино тасалбарын хэлбэр</small>
+              <span class="ask-template-state">✓ Сонгосон</span>
             </button>
           </div>
-          <p class="template-preview-hint">👉 Дархад preview дээр шууд харагдана.</p>
+          <p class="template-preview-hint">👆 Загвараа сонгоод доорх “Preview” товчоор бүтнээр нь хараарай.</p>
           <div class="code-status" id="templateStatus" aria-live="polite"></div>
+        </div>
+        </div>
+        <div id="apologyTemplateFlow" data-mode-panel="apology" hidden>
+          <div class="template-step-intro">
+            <span class="template-step-kicker">АЛХАМ 1 / 5</span>
+            <h2>Юунаас болж гомдоосон бэ?</h2>
+            <p>Нөхцөлөө сонговол түүнд тохирсон, өөрийгөө зөвтгөөгүй захианы суурь бэлдэнэ.</p>
+          </div>
+          <div class="field">
+            <label><span class="label-icon">🫶</span>НЭГ НӨХЦӨЛ СОНГОНО УУ *</label>
+            <div class="issue-grid" id="apologyIssues"></div>
+          </div>
+          <div class="field">
+            <label><span class="label-icon">🌿</span>ЗАХИАНЫ ӨНГӨ АЯС *</label>
+            <div class="tone-grid" id="apologyTones"></div>
+          </div>
+          <p class="apology-note">🛡️ Хүчирхийлэл, сүрдүүлэг, мөрдөлт эсвэл албадлагатай нөхцөлийг энэ хөөрхөн урсгалаар “засах” боломжгүй. Нөгөө хүний аюулгүй байдал, хил хязгаар үргэлж түрүүнд байна.</p>
+          <div class="code-status" id="apologyTemplateStatus" aria-live="polite"></div>
         </div>
         </div>
 
         <div class="wizard-step" data-step="2">
         <button class="step-back" type="button" data-step-back>← Өмнөх алхам</button>
-        <div class="code-gate" id="codeGate">
-          <label><span class="label-icon">🔑</span>УРИЛГЫН ЭРХИЙН КОД *</label>
-          <input id="accessCode" class="code-input" type="text" placeholder="LOV-A7K2M9" maxlength="24" autocomplete="off" aria-describedby="codeStatus codeExample" />
-          <div class="code-example" id="codeExample">Жишээ формат: <code>LOV-A7K2M9</code> · Том/жижиг үсэг чухал биш</div>
-          <div class="code-status" id="codeStatus" aria-live="polite"></div>
-          <div class="code-help">
-            <div class="code-help-top">
-              <span class="code-help-icon">💡</span>
-              <div>
-                <strong>QPay төлбөр баталгаажмагц код гарна.</strong>
-                <p>1 код = 1 урилга. Кодтой бол оруулаад үргэлжлүүлээрэй.</p>
-              </div>
-            </div>
-            <div class="qpay-choice">
-              <div>
-                <strong>Кодгүй юу?</strong>
-                <span>QPay төлөөд кодоо шууд аваарай.</span>
-              </div>
-              <a class="qpay-cta" href="pay.html" aria-label="QPay-ээр урилга үүсгэх эрх авах">9,900₮-өөр эрх авах <span>→</span></a>
-            </div>
-            <div class="qpay-steps" aria-label="QPay эрх авах алхам">
-              <span>1. Төлөх</span>
-              <span>2. Код авах</span>
-              <span>3. Үүсгэх</span>
-            </div>
-          </div>
-        </div>
         <div class="field">
-          <label><span class="label-icon">♙</span>УРИЛГА ХҮЛЭЭН АВАГЧИЙН НЭР *</label>
+          <label id="recipientLabel"><span class="label-icon">♙</span>УРИЛГА ХҮЛЭЭН АВАГЧИЙН НЭР *</label>
           <input id="recipientName" type="text" placeholder="жишээ: Аная" maxlength="30" />
-          <div class="hint">Хэн рүү урилгаа илгээх вэ? Энэ нэр урилгын эхлэл болон мэндчилгээнд харагдана.</div>
+          <div class="hint" id="recipientHint">Хэн рүү урилгаа илгээх вэ? Энэ нэр урилгын эхлэл болон мэндчилгээнд харагдана.</div>
         </div>
         <div class="field">
-          <label><span class="label-icon">💗</span>ИЛГЭЭГЧИЙН НЭР</label>
+          <label id="senderLabel"><span class="label-icon">💗</span>ИЛГЭЭГЧИЙН НЭР</label>
           <input id="senderName" type="text" placeholder="жишээ: Мики" maxlength="30" />
-          <div class="hint">Урилга хэнээс очиж байгааг харуулна. Хоосон үлдээвэл “тусгай хэн нэгэн” гэж харагдана.</div>
+          <div class="hint" id="senderHint">Урилга хэнээс очиж байгааг харуулна. Хоосон үлдээвэл “тусгай хэн нэгэн” гэж харагдана.</div>
         </div>
         </div>
 
         <div class="wizard-step" data-step="3">
         <button class="step-back" type="button" data-step-back>← Өмнөх алхам</button>
-        <div class="field">
+        <div class="field" id="musicField">
           <label><span class="label-icon">🎵</span>YOUTUBE ДУУ ХАЙХ</label>
           <div class="song-search-row">
             <input id="songSearch" type="search" placeholder="Дууны нэр бичих" autocomplete="off" />
@@ -1332,7 +2009,12 @@
             <div class="theme" data-theme="aurora" title="Aurora ✨"></div>
           </div>
         </div>
-        <div class="field">
+        <div class="field" id="apologyPaperField" hidden>
+          <label><span class="label-icon">📜</span>ЗАХИАНЫ ЦААС *</label>
+          <div class="paper-grid" id="apologyPapers"></div>
+          <div class="hint">Сонгосон цаас захианы preview болон хүлээн авагчийн нууц линк дээр адилхан харагдана.</div>
+        </div>
+        <div class="field" id="posterField">
           <label><span class="label-icon">🎬</span>ОНЦГОЙ ПОСТЕР (ЗААВАЛ БИШ)</label>
           <div class="posters" id="posters">
             <button type="button" class="poster poster-none on" data-poster="" aria-label="Постергүй">
@@ -1355,6 +2037,7 @@
 
         <div class="wizard-step" data-step="4">
         <button class="step-back" type="button" data-step-back>← Өмнөх алхам</button>
+        <div id="dateDetailFlow" data-mode-panel="date">
         <div class="field">
           <label><span class="label-icon">🖊</span>НЭМЭЛТ ЗУРВАС (ЗААВАЛ БИШ)</label>
           <textarea id="customNote" placeholder="жишээ: чиний хариу л надад бүх зүйл" maxlength="120"></textarea>
@@ -1376,21 +2059,110 @@
           <div class="hint">Таны хайртад зориулсан захидал энэ хэсэгт харагдана ❤️</div>
         </div>
         </div>
+        <div id="apologyDetailFlow" class="apology-builder" data-mode-panel="apology" hidden>
+          <div class="template-step-intro">
+            <span class="template-step-kicker">АЛХАМ 4 / 5</span>
+            <h2>Захиагаа өөрийн болго</h2>
+            <p>Бэлэн загвар таны бичсэн бодит мэдээллийг эмхэлнэ. Доорх гурван хэсгийг өөрийн үгээр бичээрэй.</p>
+          </div>
+          <p class="apology-note">🎬 Хүлээн авагч үүнийг 5 жижиг хэсгээр үзнэ: <b>Уучлаарай → Алдаагаа ойлгосон → Захиа → Бодит өөрчлөлт → Хариу.</b></p>
+          <div class="field">
+            <label><span class="label-icon">🧩</span>ЯГ ЮУ БОЛСОН БЭ? *</label>
+            <textarea id="apologyWhatHappened" placeholder="жишээ: Уурласан үедээ чамайг сонсолгүй хатуу үг хэлсэн" maxlength="220"></textarea>
+            <div class="hint">Тайлбарлах биш, хийсэн үйлдлээ товч бөгөөд тодорхой бичнэ.</div>
+          </div>
+          <div class="field">
+            <label><span class="label-icon">💭</span>ЮУНД ХАМГИЙН ИХ ХАРАМСАЖ БАЙНА? *</label>
+            <textarea id="apologyRegret" placeholder="жишээ: Чамд хамгийн хэрэгтэй үед чинь би сонсоогүйдээ харамсаж байна" maxlength="220"></textarea>
+          </div>
+          <div class="field">
+            <label><span class="label-icon">🌱</span>ЯАЖ ЗАСАХ ВЭ? *</label>
+            <textarea id="apologyRepair" placeholder="жишээ: Дахин уурласан үедээ шууд хариулахгүй, тайвшраад ярилцана" maxlength="220"></textarea>
+            <div class="hint">“Дахиж тэгэхгүй” гэхээс илүү бодитоор хийж болох нэг үйлдэл бичээрэй.</div>
+          </div>
+          <label class="switch-row" for="apologyDateOffer">
+            <input id="apologyDateOffer" type="checkbox" />
+            <span><b>☕ Тайван уулзаж ярилцах санал нэмэх</b><br>Хүлээн авагч бэлэн болсон үедээ л уулзах сонголт харагдана.</span>
+          </label>
+          <div class="pressure-warning" id="pressureWarning" role="status"></div>
+          <div class="field">
+            <label><span class="label-icon">💌</span>ЗАХИАНЫ PREVIEW</label>
+            <div class="apology-letter-preview" id="apologyLetterPreview">Дээрх мэдээллээ бичихэд захиа энд автоматаар бүрдэнэ.</div>
+          </div>
+          <div class="field">
+            <label><span class="label-icon">🕊️</span>ХҮЛЭЭН АВАГЧИЙН ХАРИУЛТ</label>
+            <div class="consent-preview">
+              <span>🕊️ Надад хугацаа хэрэгтэй</span>
+              <span>💌 Захиаг чинь уншлаа</span>
+              <span>💬 Мессежээр ярилцаж болно</span>
+              <span>☕ Уулзаж ярилцахад бэлэн</span>
+              <span>🛑 Дахиж холбоо барихгүй байхыг хүсэж байна</span>
+            </div>
+            <div class="hint">Эдгээр сонголтыг илгээгч өөрчилж, нууж эсвэл шахсан үгээр солих боломжгүй.</div>
+          </div>
+        </div>
+        </div>
 
         <div class="wizard-step" data-step="5">
         <button class="step-back" type="button" data-step-back>← Өмнөх алхам</button>
-        <p class="subtitle" style="margin-bottom:18px;">Preview дээрээ шалгаад, доорх товчоор урилгын линкээ үүсгэ 💌</p>
+        <p class="subtitle" id="finalStepIntro" style="margin-bottom:18px;">Бүх зүйл бэлэн! Preview-гээ сүүлчийн удаа шалгаад, төлбөрөө төлөн линкээ аваарай 💌</p>
+
+        <div class="price-splash" aria-label="1 урилга үүсгэх эрхийн үнэ">
+          <div class="price-splash-header">
+            <span class="price-splash-tag">🔥 Нээлтийн хямдрал</span>
+            <span class="price-splash-limit">Хугацаагаар хязгаартай</span>
+          </div>
+          <div class="price-splash-body">
+            <div class="price-splash-old-block">
+              <span class="price-splash-old-label">Ердийн үнэ</span>
+              <span class="price-splash-old">14,900₮</span>
+            </div>
+            <span class="price-splash-arrow" aria-hidden="true">→</span>
+            <div class="price-splash-new-block">
+              <span class="price-splash-new-label">Одоогийн үнэ</span>
+              <strong class="price-splash-new">9,900₮</strong>
+            </div>
+            <span class="price-splash-badge">-33%</span>
+          </div>
+          <p class="price-splash-note" id="priceSplashNote">💌 1 урилга үүсгэх эрх · нэг удаагийн код</p>
+        </div>
+
+        <div class="final-checkout">
+          <span class="final-checkout-icon" aria-hidden="true">✨</span>
+          <div>
+            <strong>Төлөөд линкээ шууд аваарай</strong>
+            <p id="finalCheckoutCopy">Төлбөр баталгаажмагц энэ хуудас руу автоматаар буцаж, хайртай хүн рүүгээ илгээх линк гарна.</p>
+          </div>
+        </div>
+        <ol class="final-flow" aria-label="Линк авах дараалал">
+          <li>1 · QPay-ээр төлнө</li>
+          <li>2 · Линк автоматаар гарна</li>
+          <li id="finalFlowSend">3 · Хуулаад хайртай хүндээ илгээнэ</li>
+        </ol>
+
+        <details class="manual-code-option" id="manualCodeOption">
+          <summary>🔑 Өмнө авсан эсвэл гараар өгсөн кодтой юу?</summary>
+          <div class="manual-code-body">
+            <p class="manual-code-note">Та өмнө нь төлсөн, эсвэл манайхаас <b>LOV-XXXXXX</b> код авсан бол энд оруулаад төлбөргүй үргэлжлүүлнэ.</p>
+            <div class="code-gate" id="codeGate">
+              <label><span class="label-icon">🔑</span>УРИЛГЫН ЭРХИЙН КОД</label>
+              <input id="accessCode" class="code-input" type="text" placeholder="LOV-A7K2M9" maxlength="24" autocomplete="off" aria-describedby="codeStatus codeExample" />
+              <div class="code-example" id="codeExample">Жишээ: <code>LOV-A7K2M9</code> · 1 код = 1 урилга</div>
+              <div class="code-status" id="codeStatus" aria-live="polite"></div>
+            </div>
+          </div>
+        </details>
 
         <div class="link-box" id="linkBox" style="display:none;"></div>
         <div class="link-actions" id="linkActions" style="display:none;">
           <button class="btn small secondary" id="copyLink">🔗 Хуулах</button>
           <button class="btn small secondary" id="openLink">Нээж үзэх</button>
+          <button class="btn small secondary" id="shareLink" type="button">📤 Хуваалцах</button>
         </div>
 
-        <div class="form-actions">
-          <button class="btn secondary" id="resetForm" type="button">＋ Нэмж шинэ</button>
-          <button class="btn secondary" id="shareLink" type="button">🔗 Хуваалцах</button>
-          <button class="btn wide" id="generate" disabled>💌 Урилгын линк үүсгэх</button>
+        <div class="form-actions final-actions">
+          <button class="btn wide" id="generate">9,900₮ төлөөд линкээ авах →</button>
+          <button class="btn secondary" id="resetForm" type="button">↺ Шинээр эхлэх</button>
         </div>
         <div class="status" id="status" aria-live="assertive"></div>
 
@@ -1398,7 +2170,7 @@
           <a href="dashboard.html" class="btn small secondary" title="Зөвхөн энэ browser дээрээс харагдана">🔒 Хувийн хариунуудын самбар</a>
           <span id="backendBadge"></span>
         </div>
-        <p class="footer-note">💞 Хийсэнээ! Одоо Messenger/Instagram-р паст хийгээрэй 💌</p>
+        <p class="footer-note">🔒 Ноорог энэ browser дээр автоматаар хадгалагдана. Дундаас гарсан ч буцаад үргэлжлүүлж болно.</p>
         </div>
       </section>
     </main>
@@ -1406,7 +2178,7 @@
     <aside class="preview-wrap">
       <div class="refresh"><button class="btn small secondary" id="refreshPreview">🔄 Preview шинэчлэх</button></div>
       <section class="preview-card">
-        <p class="preview-title">Урилгын харагдац (preview)</p>
+        <p class="preview-title" id="previewTitle">Урилгын харагдац (preview)</p>
         <div class="phone-shell">
           <div class="phone-screen">
             <div class="phone-camera"></div>
@@ -1416,27 +2188,10 @@
         </div>
         <div class="phone-dots" aria-hidden="true"><i></i><i></i><i></i></div>
       </section>
-
-      <section class="side-card">
-        <h2>💡 Туслах зөвлөгөө</h2>
-        <div class="tip-row"><span>🔑</span><p>Эрхийн код нэг урилгад нэг удаа ашиглагдана.</p></div>
-        <div class="tip-row"><span>🎟</span><p>Preview хийж хараад линкээ илгээнэ үү.</p></div>
-        <div class="tip-row"><span>💌</span><p>Хариу ирсэн даруйд таны хувийн хариунуудын самбар дээр харагдана.</p></div>
-        <div class="tip-row"><span>🔒</span><p>Хариунууд зөвхөн танд харагдана. Урилгын линкийг харсан хүн таны бусад урилгыг харах боломжгүй.</p></div>
-      </section>
-
-      <section class="side-card music-card">
-        <div>
-          <h2>🎵 Дуу танилцуулга</h2>
-          <p>Сайн дуу нь урилгыг илүү дурсамжтай болгодог.</p>
-          <div class="wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
-        </div>
-        <div class="music-heart">💗</div>
-      </section>
     </aside>
   </div>
 
-  <nav class="form-dock" aria-label="Preview болон дараагийн хэсэг">
+  <nav class="form-dock" id="formDock" aria-label="Preview болон дараагийн хэсэг" hidden>
     <div class="form-dock-inner">
       <button class="dock-btn dock-preview" id="openPreview" type="button">
         <span aria-hidden="true">👁</span>
@@ -1514,12 +2269,201 @@
 <script src="assets/config.js"></script>
 <script src="assets/posters.js"></script>
 <script src="assets/api.js"></script>
+<script src="assets/apology-templates.js"></script>
 <script>
 (function(){
   var $ = BolzooUtils.$;
   var currentTheme = 'coral';
   var currentPoster = '';
   var currentAskTemplate = '';
+  var currentExperience = '';
+  var currentApologyIssue = '';
+  var currentApologyTone = '';
+  var currentApologyPaper = 'soft';
+  var currentExpiresAt = '';
+
+  function renderApologyOptions(){
+    if(!window.BolzooApology) return;
+    var issues = $('apologyIssues');
+    var tones = $('apologyTones');
+    var papers = $('apologyPapers');
+    issues.innerHTML = Object.keys(BolzooApology.issues).map(function(id){
+      var item = BolzooApology.issues[id];
+      return '<button class="issue-card" type="button" data-apology-issue="' + id + '" aria-pressed="false">'
+        + '<span aria-hidden="true">' + item.icon + '</span>' + BolzooUtils.esc(item.label) + '</button>';
+    }).join('');
+    tones.innerHTML = Object.keys(BolzooApology.tones).map(function(id){
+      var item = BolzooApology.tones[id];
+      return '<button class="tone-card" type="button" data-apology-tone="' + id + '" aria-pressed="false">'
+        + '<span aria-hidden="true">' + item.icon + '</span>' + BolzooUtils.esc(item.label) + '</button>';
+    }).join('');
+    papers.innerHTML = Object.keys(BolzooApology.papers).map(function(id){
+      var item = BolzooApology.papers[id];
+      var selected = id === currentApologyPaper;
+      return '<button class="paper-choice' + (selected ? ' on' : '') + '" type="button" data-apology-paper="' + id + '" aria-pressed="' + (selected ? 'true' : 'false') + '">'
+        + '<span class="paper-thumb" style="background-image:url(&quot;' + BolzooUtils.esc(item.image) + '&quot;)" aria-hidden="true"></span>'
+        + '<strong>' + BolzooUtils.esc(item.label) + '</strong></button>';
+    }).join('');
+  }
+  renderApologyOptions();
+
+  function markApologyChoice(selector, attr, selected){
+    document.querySelectorAll(selector).forEach(function(btn){
+      var on = btn.getAttribute(attr) === selected;
+      btn.classList.toggle('on', on);
+      btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+  }
+
+  function apologyDraftConfig(){
+    return {
+      experienceType: 'apology',
+      recipientName: $('recipientName').value.trim(),
+      senderName: $('senderName').value.trim(),
+      apologyIssue: currentApologyIssue,
+      apologyTone: currentApologyTone,
+      apologyWhatHappened: $('apologyWhatHappened').value.trim(),
+      apologyRegret: $('apologyRegret').value.trim(),
+      apologyRepair: $('apologyRepair').value.trim(),
+      apologyPaper: currentApologyPaper,
+      apologyDateOffer: $('apologyDateOffer').checked
+    };
+  }
+
+  function applyApologyPaperPreview(){
+    var preview = $('apologyLetterPreview');
+    if(!preview || !window.BolzooApology) return;
+    var selected = BolzooApology.paper(currentApologyPaper);
+    preview.style.backgroundImage = 'linear-gradient(rgba(255,253,249,.84),rgba(255,249,250,.84)),url("' + selected.image + '")';
+    preview.style.backgroundSize = 'auto,cover';
+    preview.style.backgroundPosition = 'center';
+  }
+
+  function updateApologyLetter(){
+    if(!window.BolzooApology) return;
+    applyApologyPaperPreview();
+    var cfg = apologyDraftConfig();
+    var ready = cfg.apologyIssue && cfg.apologyTone
+      && cfg.apologyWhatHappened && cfg.apologyRegret && cfg.apologyRepair;
+    $('apologyLetterPreview').textContent = ready
+      ? BolzooApology.buildLetter(cfg)
+      : 'Нөхцөлөө сонгоод, болсон зүйл, харамсаж буй зүйл, засах бодит үйлдлээ бичихэд захиа энд автоматаар бүрдэнэ.';
+    var warnings = BolzooApology.findPressurePhrases([
+      cfg.apologyWhatHappened,
+      cfg.apologyRegret,
+      cfg.apologyRepair
+    ].join(' '));
+    var warning = $('pressureWarning');
+    warning.classList.toggle('show', warnings.length > 0);
+    warning.textContent = warnings.length ? '⚠️ ' + warnings.join(' ') : '';
+  }
+
+  function setExperience(mode, options){
+    options = options || {};
+    if(mode !== 'date' && mode !== 'apology') return;
+    var previousExperience = currentExperience;
+    currentExperience = mode;
+    document.body.setAttribute('data-experience', mode);
+    $('createFormCard').hidden = false;
+    $('formDock').hidden = false;
+    document.querySelectorAll('[data-experience-choice]').forEach(function(btn){
+      var on = btn.getAttribute('data-experience-choice') === mode;
+      btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+    document.querySelectorAll('[data-mode-panel]').forEach(function(panel){
+      panel.hidden = panel.getAttribute('data-mode-panel') !== mode;
+    });
+    $('posterField').hidden = mode === 'apology';
+    $('apologyPaperField').hidden = mode !== 'apology';
+    $('inviteTeaser').hidden = mode === 'apology';
+    $('responseGuide').hidden = mode === 'apology' || (typeof currentStep === 'number' && currentStep !== 1);
+    if(mode === 'apology'){
+      if(previousExperience !== 'apology' && currentTheme === 'coral'){
+        currentTheme = 'mint';
+        Array.prototype.forEach.call($('themes').children, function(theme){
+          theme.classList.toggle('on', theme.getAttribute('data-theme') === currentTheme);
+        });
+      }
+      currentPoster = '';
+      markPoster('');
+      markAskTemplate('letter');
+      $('createTitle').textContent = 'Bolzoo · Эвлэрье';
+      $('createSubtitle').textContent = 'Чин сэтгэлийн захиагаа үнэгүй бэлдээд, 9,900₮-өөр нууц линкээ аваарай.';
+      $('recipientLabel').innerHTML = '<span class="label-icon">🫶</span>ЗАХИА ХҮЛЭЭН АВАХ ХҮНИЙ НЭР *';
+      $('recipientHint').textContent = 'Найз залуу, найз охин, эхнэр, нөхөр гээд хайртай хэн бүхэнд зориулж болно.';
+      $('senderHint').textContent = 'Захианы төгсгөлд таны нэрээр гарын үсэг зурна.';
+      $('previewTitle').textContent = 'Эвлэрлийн захианы харагдац (preview)';
+      $('finalStepIntro').textContent = 'Захиа бэлэн! Preview-гээ шалгаад, 9,900₮-өөр 30 хоногийн нууц линкээ аваарай 🫶';
+      $('priceSplashNote').textContent = '🫶 1 эвлэрлийн нууц линк · нэг удаагийн код';
+      $('finalCheckoutCopy').textContent = 'Төлбөр баталгаажмагц энэ хуудас руу автоматаар буцаж, 30 хоног хүчинтэй нууц линк гарна.';
+      $('finalFlowSend').textContent = '3 · Хуулаад хайртай хүндээ нэг удаа илгээнэ';
+    } else {
+      $('createTitle').textContent = 'Болзооны урилга үүсгэх';
+      $('createSubtitle').textContent = 'Урилгаа дуустал нь үнэгүй бэлд. Хамгийн сүүлд төлөөд хайртай хүн рүүгээ явуулах линкээ аваарай.';
+      $('recipientLabel').innerHTML = '<span class="label-icon">♙</span>УРИЛГА ХҮЛЭЭН АВАГЧИЙН НЭР *';
+      $('recipientHint').textContent = 'Хэн рүү урилгаа илгээх вэ? Энэ нэр урилгын эхлэл болон мэндчилгээнд харагдана.';
+      $('senderHint').textContent = 'Урилга хэнээс очиж байгааг харуулна. Хоосон үлдээвэл “тусгай хэн нэгэн” гэж харагдана.';
+      $('previewTitle').textContent = 'Урилгын харагдац (preview)';
+      $('finalStepIntro').textContent = 'Бүх зүйл бэлэн! Preview-гээ сүүлчийн удаа шалгаад, төлбөрөө төлөн линкээ аваарай 💌';
+      $('priceSplashNote').textContent = '💌 1 урилга үүсгэх эрх · нэг удаагийн код';
+      $('finalCheckoutCopy').textContent = 'Төлбөр баталгаажмагц энэ хуудас руу автоматаар буцаж, хайртай хүн рүүгээ илгээх линк гарна.';
+      $('finalFlowSend').textContent = '3 · Хуулаад хайртай хүндээ илгээнэ';
+    }
+    var labels = mode === 'apology'
+      ? ['Нөхцөл','Хэн','Дуу + Цаас','Захиа','Төлөх + Линк']
+      : ['Template','Хэн','Дуу + Тема','Дэлгэрэнгүй','Төлөх + Линк'];
+    document.querySelectorAll('.steps .step-label').forEach(function(label, i){ label.textContent = labels[i]; });
+    updateApologyLetter();
+    if(typeof updateDockNext === 'function') updateDockNext();
+    if(typeof schedulePreview === 'function') schedulePreview(true);
+    if(options.persist !== false && typeof saveDraft === 'function') saveDraft();
+    if(options.scroll){
+      setTimeout(function(){ $('createFormCard').scrollIntoView({behavior:'smooth', block:'start'}); }, 80);
+    }
+  }
+
+  $('purposeGate').addEventListener('click', function(e){
+    var btn = e.target.closest('[data-experience-choice]');
+    if(!btn) return;
+    setExperience(btn.getAttribute('data-experience-choice'), {scroll:true});
+  });
+  $('apologyIssues').addEventListener('click', function(e){
+    var btn = e.target.closest('[data-apology-issue]');
+    if(!btn) return;
+    currentApologyIssue = btn.getAttribute('data-apology-issue');
+    markApologyChoice('[data-apology-issue]', 'data-apology-issue', currentApologyIssue);
+    $('apologyTemplateStatus').textContent = currentApologyTone ? '✅ Нөхцөл, өнгө аяс сонгогдлоо' : 'Одоо захианы өнгө аясаа сонгоно уу.';
+    updateApologyLetter();
+    updateDockNext();
+    schedulePreview(true);
+    saveDraft();
+  });
+  $('apologyTones').addEventListener('click', function(e){
+    var btn = e.target.closest('[data-apology-tone]');
+    if(!btn) return;
+    currentApologyTone = btn.getAttribute('data-apology-tone');
+    markApologyChoice('[data-apology-tone]', 'data-apology-tone', currentApologyTone);
+    $('apologyTemplateStatus').textContent = currentApologyIssue ? '✅ Нөхцөл, өнгө аяс сонгогдлоо' : 'Одоо гомдоосон нөхцөлөө сонгоно уу.';
+    updateApologyLetter();
+    updateDockNext();
+    schedulePreview(true);
+    saveDraft();
+  });
+  $('apologyPapers').addEventListener('click', function(e){
+    var btn = e.target.closest('[data-apology-paper]');
+    if(!btn || !window.BolzooApology) return;
+    var nextPaper = btn.getAttribute('data-apology-paper');
+    if(!BolzooApology.papers[nextPaper]) return;
+    currentApologyPaper = nextPaper;
+    markApologyChoice('[data-apology-paper]', 'data-apology-paper', currentApologyPaper);
+    applyApologyPaperPreview();
+    schedulePreview(true);
+    saveDraft();
+  });
+  ['apologyWhatHappened','apologyRegret','apologyRepair'].forEach(function(id){
+    $(id).addEventListener('input', function(){ updateApologyLetter(); updateDockNext(); schedulePreview(true); saveDraft(); });
+  });
+  $('apologyDateOffer').addEventListener('change', function(){ updateApologyLetter(); schedulePreview(true); saveDraft(); });
 
   /* ---------- Posters picker (assets/posters.js registry) ---------- */
   function renderPosters(){
@@ -1555,7 +2499,10 @@
   var STORAGE_DRAFT_KEY = 'bolzoo:pending_draft';
   var YOUTUBE_CACHE_KEY = 'bolzoo:youtube_search_cache:v1';
   var YOUTUBE_CACHE_TTL = 24 * 60 * 60 * 1000;
-  var DRAFT_FIELDS = ['recipientName','senderName','videoId','customNote','locationName','locationUrl','specialLetter'];
+  var DRAFT_FIELDS = [
+    'recipientName','senderName','videoId','customNote','locationName','locationUrl','specialLetter',
+    'apologyWhatHappened','apologyRegret','apologyRepair'
+  ];
 
   function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
   function lsSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
@@ -1563,6 +2510,12 @@
   function urlGetCode(){
     try{ return new URLSearchParams(window.location.search).get('code'); }
     catch(e){ return null; }
+  }
+  function urlGetMode(){
+    try{
+      var mode = new URLSearchParams(window.location.search).get('mode');
+      return mode === 'apology' || mode === 'date' ? mode : '';
+    }catch(e){ return ''; }
   }
   function urlSetCode(code){
     try{
@@ -1572,17 +2525,49 @@
       history.replaceState(null,'', u.pathname + u.search + u.hash);
     }catch(e){}
   }
+  function urlHasPublishIntent(){
+    try{ return new URLSearchParams(window.location.search).get('publish') === '1'; }
+    catch(e){ return false; }
+  }
+  function urlClearPaymentReturn(){
+    try{
+      var u = new URL(window.location.href);
+      u.searchParams.delete('code');
+      u.searchParams.delete('publish');
+      u.searchParams.delete('from');
+      history.replaceState(null,'', u.pathname + u.search + u.hash);
+    }catch(e){}
+  }
   function saveDraft(){
-    var d = { theme: currentTheme, poster: currentPoster, askTemplate: currentAskTemplate };
+    var d = {
+      theme: currentTheme,
+      poster: currentPoster,
+      askTemplate: currentAskTemplate,
+      experienceType: currentExperience,
+      apologyIssue: currentApologyIssue,
+      apologyTone: currentApologyTone,
+      apologyPaper: currentApologyPaper,
+      apologyDateOffer: $('apologyDateOffer').checked,
+      expiresAt: currentExpiresAt,
+      step: (typeof currentStep === 'number' ? currentStep : 1)
+    };
     DRAFT_FIELDS.forEach(function(id){ d[id] = $(id).value; });
     lsSet(STORAGE_DRAFT_KEY, JSON.stringify(d));
   }
   function restoreDraft(){
     var raw = lsGet(STORAGE_DRAFT_KEY);
-    if(!raw) return;
+    if(!raw) return 1;
     try{
       var d = JSON.parse(raw);
       DRAFT_FIELDS.forEach(function(id){ if(d[id] != null) $(id).value = d[id]; });
+      currentApologyIssue = d.apologyIssue || '';
+      currentApologyTone = d.apologyTone || '';
+      currentApologyPaper = window.BolzooApology && BolzooApology.papers[d.apologyPaper] ? d.apologyPaper : 'soft';
+      currentExpiresAt = d.expiresAt || '';
+      $('apologyDateOffer').checked = !!d.apologyDateOffer;
+      markApologyChoice('[data-apology-issue]', 'data-apology-issue', currentApologyIssue);
+      markApologyChoice('[data-apology-tone]', 'data-apology-tone', currentApologyTone);
+      markApologyChoice('[data-apology-paper]', 'data-apology-paper', currentApologyPaper);
       if(d.theme){
         currentTheme = d.theme;
         var kids = $('themes').children;
@@ -1597,12 +2582,15 @@
       if(d.askTemplate){
         markAskTemplate(d.askTemplate);
       }
-    }catch(e){}
+      setExperience(d.experienceType === 'apology' ? 'apology' : 'date', {persist:false});
+      updateApologyLetter();
+      return Math.max(1, Math.min(5, parseInt(d.step, 10) || 1));
+    }catch(e){ return 1; }
   }
   function clearPersistence(){
     lsRemove(STORAGE_CODE_KEY);
     lsRemove(STORAGE_DRAFT_KEY);
-    urlSetCode(null);
+    urlClearPaymentReturn();
   }
 
   // Backend status badge
@@ -1611,6 +2599,67 @@
   var lbl = BolzooUtils.backendLabel(kind);
   badge.textContent = lbl.text;
   badge.style.color = (lbl.tone === 'ok') ? '#4fa15b' : '';
+
+  function refreshOwnerResponseEntry(){
+    var entry = $('ownerResponseEntry');
+    var title = $('ownerResponseTitle');
+    var detail = $('ownerResponseDetail');
+    var countBadge = $('ownerResponseBadge');
+    var icon = $('ownerResponseIcon');
+    if(!entry || !window.BolzooAPI || !BolzooAPI.listMyInvites) return;
+    entry.setAttribute('aria-busy','true');
+    BolzooAPI.listMyInvites().then(function(invites){
+      invites = Array.isArray(invites) ? invites : [];
+      var total = invites.length;
+      var responded = invites.filter(function(inv){ return !!inv.responded_at; }).length;
+      var opened = invites.filter(function(inv){ return !!inv.opened_at; }).length;
+      var acceptedInvites = invites.filter(function(inv){
+        var response = inv && inv.response;
+        return !!response && (response.answer === 'yes' || (response.answer !== 'no' && !!response.date));
+      });
+      var accepted = acceptedInvites.length;
+      entry.classList.toggle('has-response', responded > 0);
+      entry.classList.toggle('accepted', accepted > 0);
+      if(accepted > 0){
+        var latestAccepted = acceptedInvites.slice().sort(function(a,b){
+          return String(b.responded_at || '').localeCompare(String(a.responded_at || ''));
+        })[0];
+        var acceptedName = latestAccepted && latestAccepted.config && latestAccepted.config.recipientName;
+        icon.textContent = '🎉';
+        title.textContent = accepted === 1
+          ? (acceptedName
+            ? acceptedName + ' таны урилгыг зөвшөөрлөө!'
+            : 'Тийм ээ! Таны урилгыг зөвшөөрлөө!')
+          : 'Тийм ээ! Таны ' + accepted + ' урилгыг зөвшөөрлөө!';
+        countBadge.textContent = accepted + ' зөвшөөрсөн';
+        detail.textContent = 'Таны болзоонд амжилт хүсье 💕 Өдөр, цагийн дэлгэрэнгүйг харах';
+      } else if(responded > 0){
+        icon.textContent = '💌';
+        title.textContent = 'Шинэ хариу ирлээ';
+        countBadge.textContent = responded + ' хариу';
+        detail.textContent = 'Нийт ' + total + ' урилгаас ' + responded + ' хариутай · дэлгэрэнгүй харах';
+      } else if(total > 0){
+        icon.textContent = opened > 0 ? '👀' : '💌';
+        title.textContent = 'Миний урилгууд · Хариу харах';
+        countBadge.textContent = 'Хариу хүлээж байна';
+        detail.textContent = opened > 0
+          ? opened + ' урилга нээгдсэн · шинэ хариу байгаа эсэхийг шалгах'
+          : 'Нийт ' + total + ' урилга · хариу ирсэн эсэхийг шалгах';
+      } else {
+        icon.textContent = '🔑';
+        title.textContent = 'Миний урилгууд · Хариу харах';
+        countBadge.textContent = 'Урилга сэргээх';
+        detail.textContent = 'Өмнөх урилгаа эрхийн кодоор сэргээж, хариуг нь харах боломжтой.';
+      }
+    }).catch(function(){
+      title.textContent = 'Миний урилгууд · Хариу харах';
+      countBadge.textContent = 'Хариу шалгах';
+      detail.textContent = 'Хариуны хуудсыг нээгээд урилгуудаа шалгана уу.';
+    }).finally(function(){
+      entry.setAttribute('aria-busy','false');
+    });
+  }
+  refreshOwnerResponseEntry();
   $('themes').addEventListener('click', function(e){
     var t = e.target.closest('.theme'); if(!t) return;
     currentTheme = t.getAttribute('data-theme');
@@ -1627,7 +2676,9 @@
     if(!host) return;
     var kids = host.children;
     for(var i=0;i<kids.length;i++){
-      kids[i].classList.toggle('on', kids[i].getAttribute('data-ask-template') === currentAskTemplate);
+      var selected = kids[i].getAttribute('data-ask-template') === currentAskTemplate;
+      kids[i].classList.toggle('on', selected);
+      kids[i].setAttribute('aria-pressed', selected ? 'true' : 'false');
     }
     var status = $('templateStatus');
     if(status){
@@ -1658,7 +2709,19 @@
   var PRIVATE_CONFIG_KEYS = [];
 
   function collectConfig(){
+    if(currentExperience === 'apology'){
+      var apologyCfg = apologyDraftConfig();
+      apologyCfg.videoId = $('videoId').value.trim();
+      apologyCfg.theme = currentTheme;
+      apologyCfg.askTemplate = 'letter';
+      apologyCfg.apologyLetter = window.BolzooApology
+        ? BolzooApology.buildLetter(apologyCfg)
+        : $('apologyLetterPreview').textContent;
+      if(currentExpiresAt) apologyCfg.expiresAt = currentExpiresAt;
+      return apologyCfg;
+    }
     var cfg = {
+      experienceType: 'date',
       recipientName: $('recipientName').value.trim(),
       senderName:    $('senderName').value.trim(),
       videoId:       $('videoId').value.trim(),
@@ -1724,7 +2787,11 @@
     cfg = cfg || collectConfig();
     // Бүх public түлхүүрийг илгээнэ — хоосон утга ч гэсэн явна (bolzoo.html
     // талд poster/choices зэргийг цэвэрлэхэд ашиглана).
-    var LIVE_KEYS = ['recipientName','senderName','videoId','theme','customNote','locationName','locationUrl','specialLetter','askTemplate','poster'];
+    var LIVE_KEYS = [
+      'experienceType','recipientName','senderName','videoId','theme','customNote','locationName','locationUrl',
+      'specialLetter','askTemplate','poster','apologyIssue','apologyTone','apologyWhatHappened',
+      'apologyRegret','apologyRepair','apologyLetter','apologyPaper','apologyDateOffer'
+    ];
     var payload = {};
     LIVE_KEYS.forEach(function(k){
       if(PRIVATE_CONFIG_KEYS.indexOf(k) >= 0) return;
@@ -1841,12 +2908,18 @@
     var btn = $('previewPrimaryCta');
     if(!btn) return;
     if(codeIsValid){
-      btn.textContent = '💌 Урилгын линк үүсгэх';
+      btn.textContent = '💌 Линкээ авах';
       btn.dataset.mode = 'publish';
     } else {
-      btn.textContent = '9,900₮-өөр идэвхжүүлэх';
+      btn.textContent = '9,900₮ төлөөд линкээ авах';
       btn.dataset.mode = 'pay';
     }
+  }
+  function startPayment(){
+    var cfg = collectConfig();
+    if(!validateDraft(cfg)) return;
+    saveDraft();
+    window.location.href = 'pay.html?from=create';
   }
   function openFullscreenPreview(){
     if(previewTimer){
@@ -1882,10 +2955,9 @@
   $('closePreview').addEventListener('click', closeFullscreenPreview);
   $('editPreview').addEventListener('click', closeFullscreenPreview);
   $('previewPrimaryCta').addEventListener('click', function(){
-    // In "publish" mode, close the modal and trigger the same publish path
-    // as the regular Publish button. In "pay" mode, fall through to pay.html.
+    // The preview uses the same final payment/publish path as step 5.
     var mode = this.dataset.mode || 'pay';
-    if(mode === 'publish' && !$('generate').disabled){
+    if(mode === 'publish'){
       closeFullscreenPreview();
       // Wait for the modal transition so scroll + focus land on the CTA.
       setTimeout(function(){
@@ -1894,7 +2966,8 @@
       }, 220);
       return;
     }
-    window.location.href = this.dataset.payHref || 'pay.html';
+    closeFullscreenPreview();
+    startPayment();
   });
   $('continueStep').addEventListener('click', handleDockNext);
   document.addEventListener('keydown', function(e){
@@ -2038,9 +3111,19 @@
   /* ---------- 5-step wizard ---------- */
   var TOTAL_STEPS = 5;
   var currentStep = 1;
+  var isPublishing = false;
   function goStep(n){
     n = Math.max(1, Math.min(TOTAL_STEPS, n));
     currentStep = n;
+    var createIntro = $('createIntro');
+    if(createIntro) createIntro.hidden = n !== 1;
+    var purposeGate = $('purposeGate');
+    if(purposeGate) purposeGate.hidden = n !== 1;
+    var responseGuide = $('responseGuide');
+    if(responseGuide){
+      responseGuide.hidden = n !== 1 || currentExperience === 'apology';
+      if(n !== 1) responseGuide.open = false;
+    }
     document.querySelectorAll('.wizard-step').forEach(function(s){
       s.classList.toggle('active', parseInt(s.getAttribute('data-step'),10) === n);
     });
@@ -2052,26 +3135,51 @@
     updateDockNext();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
-  function codeStepValid(){
-    return codeIsValid
-      && $('recipientName').value.trim().length > 0;
+  function draftReady(){
+    if(currentExperience === 'apology'){
+      return !!currentApologyIssue
+        && !!currentApologyTone
+        && $('recipientName').value.trim().length > 0
+        && $('apologyWhatHappened').value.trim().length > 0
+        && $('apologyRegret').value.trim().length > 0
+        && $('apologyRepair').value.trim().length > 0;
+    }
+    return currentExperience === 'date' && !!currentAskTemplate && $('recipientName').value.trim().length > 0;
   }
   function canAdvance(){
-    if(currentStep === 1) return !!currentAskTemplate;
-    if(currentStep === 2) return codeStepValid();
+    if(currentStep === 1){
+      return currentExperience === 'apology'
+        ? !!currentApologyIssue && !!currentApologyTone
+        : currentExperience === 'date' && !!currentAskTemplate;
+    }
+    if(currentStep === 2) return $('recipientName').value.trim().length > 0;
+    if(currentStep === 4 && currentExperience === 'apology'){
+      return $('apologyWhatHappened').value.trim().length > 0
+        && $('apologyRegret').value.trim().length > 0
+        && $('apologyRepair').value.trim().length > 0;
+    }
     return true;
   }
   function updateDockNext(){
     var next = $('continueStep');
     if(!next) return;
     if(currentStep === TOTAL_STEPS){
-      next.textContent = '💌 Линк үүсгэх';
-      next.disabled = !codeIsValid;
+      next.textContent = codeIsValid ? '💌 Линкээ авах' : '9,900₮ төлөөд линкээ авах →';
+      next.disabled = isPublishing || !draftReady();
     } else {
-      next.textContent = currentStep === 1 && !currentAskTemplate
-        ? 'Template сонгоно уу'
-        : 'Үргэлжлүүлэх →';
+      next.textContent = currentStep === 1 && !canAdvance()
+        ? (currentExperience === 'apology' ? 'Нөхцөл, өнгө аясаа сонгоно уу' : 'Template сонгоно уу')
+        : (currentStep === 4 && currentExperience === 'apology' && !canAdvance()
+          ? 'Захианы 3 хэсгийг бөглөнө үү'
+          : 'Үргэлжлүүлэх →');
       next.disabled = !canAdvance();
+    }
+    var generate = $('generate');
+    if(generate){
+      generate.textContent = isPublishing
+        ? '⏳ Линк үүсгэж байна…'
+        : (codeIsValid ? '💌 Линкээ авах' : '9,900₮ төлөөд линкээ авах →');
+      generate.disabled = isPublishing || !draftReady();
     }
   }
   function handleDockNext(){
@@ -2081,23 +3189,27 @@
     }
     if(!canAdvance()){
       if(currentStep === 1){
-        var ts = $('templateStatus');
+        var ts = currentExperience === 'apology' ? $('apologyTemplateStatus') : $('templateStatus');
         if(ts){
-          ts.textContent = '⚠️ 4 template-ээс нэгийг сонгоод үргэлжлүүлнэ үү';
+          ts.textContent = currentExperience === 'apology'
+            ? '⚠️ Нөхцөл болон захианы өнгө аясаа сонгоно уу'
+            : '⚠️ 4 template-ээс нэгийг сонгоод үргэлжлүүлнэ үү';
           ts.classList.add('bad');
           ts.classList.remove('ok');
         }
       } else if(currentStep === 2){
-        if(!codeIsValid) setStatus('⚠️ Хүчинтэй эрхийн код оруулна уу');
-        else if(!$('recipientName').value.trim()) setStatus('⚠️ Хүлээн авагчийн нэрийг заавал бөглөнө үү');
+        if(!$('recipientName').value.trim()) setStatus('⚠️ Хүлээн авагчийн нэрийг заавал бөглөнө үү');
+      } else if(currentStep === 4 && currentExperience === 'apology'){
+        setStatus('⚠️ Болсон зүйл, харамсаж буй зүйл, засах бодит үйлдлээ бүгдийг бөглөнө үү');
       }
       return;
     }
     setStatus('');
     goStep(currentStep + 1);
+    saveDraft();
   }
   document.querySelectorAll('[data-step-back]').forEach(function(b){
-    b.addEventListener('click', function(){ setStatus(''); goStep(currentStep - 1); });
+    b.addEventListener('click', function(){ setStatus(''); goStep(currentStep - 1); saveDraft(); });
   });
   ['recipientName'].forEach(function(id){
     var el = $(id); if(el) el.addEventListener('input', updateDockNext);
@@ -2128,7 +3240,6 @@
     }
     status.textContent = msg || '';
     codeIsValid = (state==='ok');
-    $('generate').disabled = !codeIsValid;
     if(typeof updateDockNext === 'function') updateDockNext();
     // Keep the fullscreen-preview CTA in sync if it's open.
     if(typeof updatePreviewPrimaryCta === 'function') updatePreviewPrimaryCta();
@@ -2136,19 +3247,21 @@
   async function checkCode(){
     var code = normalizeCode($('accessCode').value);
     $('accessCode').value = code;
-    if(!code){ setCodeUI('', ''); return; }
-    if(code === lastCheckedCode) return;
+    if(!code){ setCodeUI('', ''); return false; }
+    if(code === lastCheckedCode) return codeIsValid;
     lastCheckedCode = code;
     setCodeUI('', '⏳ шалгаж байна…');
     try{
       var r = await BolzooAPI.validateCode(code);
-      if(lastCheckedCode !== code) return; // race: newer check in flight
-      if(r.ok){ setCodeUI('ok', '✅ Эрхийн код баталгаажлаа — үргэлжлүүлээрэй'); return; }
+      if(lastCheckedCode !== code) return false; // race: newer check in flight
+      if(r.ok){ setCodeUI('ok', '✅ Код баталгаажлаа — одоо линкээ аваарай'); return true; }
       if(r.reason === 'used')      setCodeUI('bad', '❌ Энэ эрхийн код нэгэнт ашиглагдсан байна');
       else if(r.reason === 'not_found') setCodeUI('bad', '❌ Ийм эрхийн код олдсонгүй');
       else                          setCodeUI('bad', '❌ Шалгах үед алдаа гарлаа');
+      return false;
     }catch(e){
       setCodeUI('bad', '❌ Шалгах үед алдаа: ' + (e.message||e));
+      return false;
     }
   }
   $('accessCode').addEventListener('input', function(){
@@ -2172,16 +3285,29 @@
       }, 60);
     }
   }
-  function validate(cfg){
-    if(!codeIsValid){
-      setStatus('⚠️ Хүчинтэй эрхийн код оруулна уу');
-      jumpToField(2, 'accessCode');
+  function validateDraft(cfg){
+    if(!currentExperience){
+      setStatus('⚠️ Эхлээд болзооны урилга эсвэл эвлэрлийн захианаас сонгоно уу');
+      goStep(1);
       return false;
     }
     if(!cfg.recipientName){
       setStatus('⚠️ Хүлээн авагчийн нэрийг заавал бөглөнө үү');
       jumpToField(2, 'recipientName');
       return false;
+    }
+    if(currentExperience === 'apology'){
+      if(!cfg.apologyIssue || !cfg.apologyTone){
+        setStatus('⚠️ Нөхцөл болон захианы өнгө аясаа сонгоно уу');
+        jumpToField(1, 'apologyIssues');
+        return false;
+      }
+      if(!cfg.apologyWhatHappened || !cfg.apologyRegret || !cfg.apologyRepair){
+        setStatus('⚠️ Захианы гурван хувийн хэсгийг бүгдийг бөглөнө үү');
+        jumpToField(4, 'apologyWhatHappened');
+        return false;
+      }
+      return true;
     }
     if(!cfg.askTemplate){
       setStatus('⚠️ Эхний хуудасны хэлбэрээс нэгийг сонгоно уу');
@@ -2205,7 +3331,10 @@
 
   /* ---------- Success modal ---------- */
   function successShareText(recipientName){
-    return (recipientName ? recipientName + ' минь, ' : '') + 'чамд болзооны урилга ирлээ 💌';
+    return (recipientName ? recipientName + ' минь, ' : '')
+      + (currentExperience === 'apology'
+        ? 'чамд чин сэтгэлээсээ хэлэх зүйл байна 🫶'
+        : 'чамд болзооны урилга ирлээ 💌');
   }
   function copyToClipboard(text){
     if(navigator.clipboard && navigator.clipboard.writeText){
@@ -2220,6 +3349,9 @@
     $('successLink').textContent = url;
     $('successStatus').textContent = '';
     $('successRecipient').textContent = recipientName && recipientName.trim() ? recipientName.trim() : 'хайртай хүн';
+    $('successModalTitle').textContent = currentExperience === 'apology'
+      ? 'Эвлэрлийн нууц линк бэлэн!'
+      : 'Урилгын линк бэлэн!';
 
     var recoveryBox = $('successRecovery');
     var recoveryLinkEl = $('successRecoveryLink');
@@ -2286,7 +3418,7 @@
     var url = $('successLink').textContent;
     var recipient = $('successRecipient').textContent;
     navigator.share({
-      title: 'Болзооны урилга 💌',
+      title: currentExperience === 'apology' ? 'Чамд хэлэх зүйл байна 🫶' : 'Болзооны урилга 💌',
       text:  successShareText(recipient === 'хайртай хүн' ? '' : recipient),
       url:   url
     }).then(function(){
@@ -2334,15 +3466,33 @@
 
   $('generate').addEventListener('click', async function(){
     var cfg = collectConfig();
-    if(!validate(cfg)) return;
+    if(!validateDraft(cfg)) return;
+    if(!codeIsValid){
+      startPayment();
+      return;
+    }
+    if(currentExperience === 'apology'){
+      currentExpiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+      cfg = collectConfig();
+      saveDraft();
+    }
     var code = normalizeCode($('accessCode').value);
-    $('generate').disabled = true;
+    isPublishing = true;
+    updateDockNext();
     setStatus('⏳ Хадгалж байна...');
     try{
       var split = splitConfig(cfg);
       var res = await BolzooAPI.createInvite(split.public, code, split.private);
       var url = buildShortUrl(res.id, true);
-      showLink(url, '✅ Урилга үүслээ! Богино линк бэлэн ('+res.id+')', res.id, res.ownerToken);
+      showLink(
+        url,
+        currentExperience === 'apology'
+          ? '✅ Эвлэрлийн нууц линк бэлэн! 30 хоног хүчинтэй ('+res.id+')'
+          : '✅ Урилга үүслээ! Богино линк бэлэн ('+res.id+')',
+        res.id,
+        res.ownerToken
+      );
+      refreshOwnerResponseEntry();
       setCodeUI('bad', '⚠️ Энэ код ашиглагдлаа.');
       // Upgrade the status message to include a direct new-code path so the
       // "why is my button disabled again" moment has an obvious next step.
@@ -2351,22 +3501,23 @@
       lastCheckedCode = '';
       clearPersistence();
       updatePreview();
+      isPublishing = false;
+      updateDockNext();
     }catch(e){
       var msg = e.message || String(e);
+      isPublishing = false;
       if(/already used/i.test(msg)){
         setCodeUI('bad', '❌ Энэ эрхийн код нэгэнт ашиглагдсан байна');
         setStatus('❌ Алдаа: '+ msg);
         // Nothing to retry — the code is really gone.
-        $('generate').disabled = true;
       } else if(/Invalid access code/i.test(msg)){
         setCodeUI('bad', '❌ Ийм эрхийн код олдсонгүй');
         setStatus('❌ Алдаа: '+ msg);
-        $('generate').disabled = true;
       } else {
         // Network/transient — keep the code state, let the user retry.
         setStatus('❌ Алдаа: '+ msg + ' · дахин оролдоно уу');
-        $('generate').disabled = false;
       }
+      updateDockNext();
     }
   });
 
@@ -2390,18 +3541,19 @@
     var url = $('linkBox').textContent.trim();
     if(!url){ setStatus('⚠️ Эхлээд линк үүсгэнэ үү'); return; }
     var cfg = collectConfig();
-    var text = (cfg.recipientName?cfg.recipientName+' минь, ':'')+'чамд болзооны урилга ирлээ 💌';
+    var text = successShareText(cfg.recipientName || '');
     if(navigator.share){
-      navigator.share({title:'Болзооны урилга', text:text, url:url}).catch(function(){});
+      navigator.share({title:currentExperience === 'apology' ? 'Чамд хэлэх зүйл байна' : 'Болзооны урилга', text:text, url:url}).catch(function(){});
     } else {
       window.location.href = 'mailto:?subject='+encodeURIComponent('Болзооны урилга 💌')+'&body='+encodeURIComponent(text+'\n\n'+url);
     }
   });
 
   $('resetForm').addEventListener('click', function(){
-    ['accessCode','recipientName','senderName','videoId','customNote','locationName','locationUrl','specialLetter'].forEach(function(id){
+    ['accessCode','recipientName','senderName','videoId','customNote','locationName','locationUrl','specialLetter','apologyWhatHappened','apologyRegret','apologyRepair'].forEach(function(id){
       $(id).value = '';
     });
+    $('apologyDateOffer').checked = false;
     $('songSearch').value = '';
     $('songResults').style.display = 'none';
     $('songResults').innerHTML = '';
@@ -2413,6 +3565,19 @@
     currentPoster = '';
     markPoster('');
     markAskTemplate('');
+    currentExperience = '';
+    currentApologyIssue = '';
+    currentApologyTone = '';
+    currentApologyPaper = 'soft';
+    currentExpiresAt = '';
+    markApologyChoice('[data-apology-issue]', 'data-apology-issue', '');
+    markApologyChoice('[data-apology-tone]', 'data-apology-tone', '');
+    markApologyChoice('[data-apology-paper]', 'data-apology-paper', currentApologyPaper);
+    applyApologyPaperPreview();
+    document.body.setAttribute('data-experience','');
+    $('createFormCard').hidden = true;
+    $('formDock').hidden = true;
+    document.querySelectorAll('[data-experience-choice]').forEach(function(btn){ btn.setAttribute('aria-pressed','false'); });
     lastCheckedCode = '';
     setCodeUI('', '');
     $('videoPreview').style.display = 'none';
@@ -2420,21 +3585,30 @@
     $('linkActions').style.display = 'none';
     setStatus('');
     clearPersistence();
-    updatePreview();
     setPreviewDirty(false);
     closeSuccessModal();
     goStep(1);
+    $('purposeGate').hidden = false;
+    $('purposeGate').scrollIntoView({behavior:'smooth', block:'start'});
   });
 
-  // Restore session on load: draft form + code from URL (?code=…) or localStorage
-  (function initRestore(){
-    restoreDraft();
+  // Restore the exact draft step. A QPay return validates its fresh code and
+  // automatically publishes, so the user lands directly on the share link.
+  (async function initRestore(){
+    var restoredStep = restoreDraft();
+    if(!currentExperience){
+      var requestedMode = urlGetMode();
+      if(requestedMode) setExperience(requestedMode, {persist:false});
+    }
     updateVideoPreview();
     var urlCode = urlGetCode();
     var savedCode = urlCode || lsGet(STORAGE_CODE_KEY);
+    var validCode = false;
     if(savedCode){
       $('accessCode').value = normalizeCode(savedCode);
-      checkCode();
+      var manual = $('manualCodeOption');
+      if(manual) manual.open = true;
+      validCode = await checkCode();
       // If the code arrived via ?code=… it's fresh from a QPay redirect — the
       // user just paid and needs one clear confirmation that the money moved.
       if(urlCode){
@@ -2445,9 +3619,17 @@
         }
       }
     }
-    updatePreview();
-    setPreviewDirty(false);
-    goStep(1);
+    if(currentExperience){
+      updatePreview();
+      setPreviewDirty(false);
+    }
+    if(urlCode && urlHasPublishIntent() && validCode){
+      goStep(TOTAL_STEPS);
+      setStatus('💚 Төлбөр баталгаажлаа. Урилгын линкийг үүсгэж байна…');
+      setTimeout(function(){ $('generate').click(); }, 350);
+    } else {
+      goStep(restoredStep || 1);
+    }
   })();
 })();
 </script>

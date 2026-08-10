@@ -60,6 +60,11 @@
   function lsGet(k){ try{ return JSON.parse(localStorage.getItem(k)); }catch(e){ return null; } }
   function lsSet(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
   function lsDel(k){ try{ localStorage.removeItem(k); }catch(e){} }
+  function isExpiredConfig(cfg){
+    if(!cfg || cfg.experienceType !== 'apology' || !cfg.expiresAt) return false;
+    var expiry = Date.parse(String(cfg.expiresAt));
+    return isFinite(expiry) && expiry <= Date.now();
+  }
 
   function rememberMine(id){
     var mine = lsGet('bolzoo:my') || [];
@@ -225,6 +230,7 @@
     } else {
       var stored = lsGet('bolzoo:invites:'+id);
       if(!stored) return null;
+      if(isExpiredConfig(stored.config)) throw new Error('Invite expired');
       return { id:id, config:stored.config, response:stored.response, opened_at:stored.opened_at, responded_at:stored.responded_at, created_at:stored.created_at };
     }
   }
@@ -235,7 +241,7 @@
       try{ await rpc('mark_opened', { p_invite_id: id }); }catch(e){}
     } else {
       var s = lsGet('bolzoo:invites:'+id);
-      if(s && !s.opened_at){ s.opened_at = new Date().toISOString(); lsSet('bolzoo:invites:'+id, s); }
+      if(s && !isExpiredConfig(s.config) && !s.opened_at){ s.opened_at = new Date().toISOString(); lsSet('bolzoo:invites:'+id, s); }
     }
   }
 
@@ -267,6 +273,7 @@
       }
     } else {
       var s = lsGet('bolzoo:invites:'+id) || { config:null, response:null, opened_at:null };
+      if(isExpiredConfig(s.config)) throw new Error('Invite expired');
       s.response = payload;
       s.responded_at = clientTs;
       lsSet('bolzoo:invites:'+id, s);
@@ -328,7 +335,15 @@
 
   async function recoverInvite(code){
     if(!HAS_BACKEND) throw new Error('Backend тохируулаагүй тул сэргээх боломжгүй');
-    var data = await appReq('POST', '/api/recover-invite', { code: code });
+    var normalized = String(code || '').trim().toUpperCase();
+    if(!/^LOV-[A-HJ-NP-Z2-9]{6}$/.test(normalized)){
+      var formatError = new Error(/^[A-Za-z0-9_-]{8,64}$/.test(normalized)
+        ? 'Энэ нь урилгын ID байна. Сэргээхдээ төлбөрөөр авсан LOV-XXXXXX кодоо оруулна уу.'
+        : 'Сэргээх код LOV-XXXXXX хэлбэртэй байна. Кодоо дахин шалгана уу.');
+      formatError.reason = 'invalid_format';
+      throw formatError;
+    }
+    var data = await appReq('POST', '/api/recover-invite', { code: normalized });
     if(!data || !data.ok){
       var reason = data && data.reason;
       var msg = reason === 'not_used_yet' ? 'Энэ код хэрэглэгдээгүй байна — /create дээр урилга үүсгэж болно.'

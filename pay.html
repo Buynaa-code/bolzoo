@@ -302,7 +302,7 @@
 <body>
   <div class="wrap">
     <h1 id="pageTitle">💌 Өөрийн урилгыг үүсгэх</h1>
-    <p class="subtitle" id="pageSubtitle">QPay төлөөд 1 урилга үүсгэх эрхийн кодоо шууд аваарай.</p>
+    <p class="subtitle" id="pageSubtitle">QPay төлөөд crush руугаа илгээх урилгын линкээ шууд аваарай.</p>
 
     <div class="price" id="priceBlock" aria-label="1 урилга үүсгэх эрхийн үнэ">
       <div class="price-head">
@@ -361,7 +361,7 @@
 
     <div id="successPanel" style="display:none;">
       <div class="code-box">
-        <span class="warn">⚠️ ЗААВАЛ ХУУЛЖ АВНА УУ · Дараа сэргээх боломжгүй</span>
+        <span class="warn" id="codeWarning">⚠️ ЗААВАЛ ХУУЛЖ АВНА УУ · Дараа сэргээх боломжгүй</span>
         <p class="lbl">✅ ТАНЫ УРИЛГА ҮҮСГЭХ ЭРХИЙН КОД</p>
         <div class="val" id="codeValue">—</div>
         <button class="btn-copy" id="copyBtn" type="button">📋 Эрхийн код хуулах</button>
@@ -384,6 +384,17 @@
   var pollTimer = null;
   var mode      = 'unknown';
   var paymentDescription = 'Bolzoo invite access';
+  var returnToCreate = false;
+
+  try{
+    returnToCreate = new URLSearchParams(location.search).get('from') === 'create';
+  }catch(_){}
+
+  if(returnToCreate){
+    $('pageTitle').textContent = '💌 Урилга чинь бэлэн';
+    $('pageSubtitle').textContent = 'Сүүлийн алхам: төлбөрөө төлмөгц урилгын линк автоматаар гарна.';
+    $('startBtn').textContent = 'QPay-ээр төлөөд линкээ авах →';
+  }
 
   var isLocal = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
 
@@ -607,8 +618,17 @@
     $('pageTitle').textContent       = '✅ Төлбөр амжилттай!';
     $('successPanel').style.display  = 'block';
     $('codeValue').textContent       = code;
-    $('continueBtn').href = 'create.html?code=' + encodeURIComponent(code);
-    // No auto-redirect — user must copy + click continue
+    var createHref = 'create.html?code=' + encodeURIComponent(code);
+    if(returnToCreate){
+      createHref += '&publish=1';
+      $('codeWarning').textContent = '🔐 НӨӨЦ КОД · Линк үүсэхгүй бол хадгалаарай';
+      $('continueBtn').textContent = '💌 Урилгын линкээ авах →';
+      $('redirectHint').textContent = 'Урилга руу автоматаар шилжиж, линкийг бэлдэж байна…';
+    }
+    $('continueBtn').href = createHref;
+    if(returnToCreate){
+      setTimeout(function(){ location.replace(createHref); }, 1400);
+    }
   }
 
   async function copyCode(){

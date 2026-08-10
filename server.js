@@ -340,6 +340,11 @@ async function handleRPC(req, res, url) {
     const priv  = body.p_private_config;
     if (!invId || String(invId).length < 8) return sendPGError(res, 400, 'Invalid invite id');
     if (!code) return sendPGError(res, 400, 'Access code required');
+    if (!cfg || typeof cfg !== 'object' || Array.isArray(cfg) || Buffer.byteLength(JSON.stringify(cfg)) > 32768) {
+      return sendPGError(res, 400, 'Invalid invite config');
+    }
+    const apologyConfigError = validateApologyConfig(cfg);
+    if (apologyConfigError) return sendPGError(res, 400, apologyConfigError);
     const codeRow = codes[code];
     if (!codeRow) return sendPGError(res, 400, 'Invalid access code');
     if (codeRow.used) return sendPGError(res, 400, 'Access code already used');
@@ -373,6 +378,7 @@ async function handleRPC(req, res, url) {
     if (!invId) return sendPGError(res, 400, 'Invite id required');
     const inv = invites[invId];
     if (!inv) return sendPGError(res, 404, 'Invite not found');
+    if (isExpiredConfig(inv.config)) return sendPGError(res, 410, 'Invite expired');
 
     const existing = inv.response;
     if (existing && String(existing.final) === 'true') {
@@ -384,6 +390,26 @@ async function handleRPC(req, res, url) {
     }
 
     const nextResponse = body.p_response == null ? null : body.p_response;
+    if (!nextResponse || typeof nextResponse !== 'object' || Array.isArray(nextResponse) || Buffer.byteLength(JSON.stringify(nextResponse)) > 16384) {
+      return sendPGError(res, 400, 'Invalid response');
+    }
+    if (inv.config && inv.config.experienceType === 'apology') {
+      if (nextResponse.type !== 'apology' || !APOLOGY_STATUSES.has(String(nextResponse.status || ''))) {
+        return sendPGError(res, 400, 'Invalid apology response');
+      }
+      if (nextResponse.readinessPercent != null) {
+        const readiness = Number(nextResponse.readinessPercent);
+        if (!Number.isInteger(readiness) || readiness < 0 || readiness > 100 || readiness % 10 !== 0) {
+          return sendPGError(res, 400, 'Invalid apology readiness');
+        }
+        if (nextResponse.status === 'stop' && readiness !== 0) {
+          return sendPGError(res, 400, 'Stop readiness must be zero');
+        }
+      }
+      if (nextResponse.final === true && nextResponse.status !== 'stop') {
+        return sendPGError(res, 400, 'Only stop may be final');
+      }
+    }
     // Mirror the DB before-update trigger: append the old answer into history
     // whenever it changes so the dashboard timeline is populated in local dev.
     if (existing && JSON.stringify(existing) !== JSON.stringify(nextResponse)) {
@@ -400,7 +426,7 @@ async function handleRPC(req, res, url) {
     const invId = body.p_invite_id;
     if (!invId) return sendJSON(res, 200, null);
     const inv = invites[invId];
-    if (inv && !inv.opened_at) { inv.opened_at = new Date().toISOString(); saveInvites(); }
+    if (inv && !isExpiredConfig(inv.config) && !inv.opened_at) { inv.opened_at = new Date().toISOString(); saveInvites(); }
     return sendJSON(res, 200, null);
   }
 
@@ -464,8 +490,40 @@ const PUBLIC_CONFIG_KEYS = [
   'locationName',
   'locationUrl',
   'specialLetter',
-  'poster'
+  'poster',
+  'experienceType',
+  'apologyIssue',
+  'apologyTone',
+  'apologyWhatHappened',
+  'apologyRegret',
+  'apologyRepair',
+  'apologyLetter',
+  'apologyPaper',
+  'apologyDateOffer',
+  'expiresAt'
 ];
+
+const APOLOGY_STATUSES = new Set(['needs_space', 'read', 'message', 'meet', 'stop']);
+const APOLOGY_PAPERS = new Set(['soft', 'dotted', 'grid', 'handmade', 'linen', 'clean']);
+
+function isExpiredConfig(cfg) {
+  if (!cfg || cfg.experienceType !== 'apology' || !cfg.expiresAt) return false;
+  const expiry = Date.parse(String(cfg.expiresAt));
+  return Number.isFinite(expiry) && expiry <= Date.now();
+}
+
+function validateApologyConfig(cfg) {
+  if (!cfg || cfg.experienceType !== 'apology') return null;
+  const issues = new Set(['harsh_words', 'forgot', 'neglected', 'cancelled', 'jealousy', 'other']);
+  const tones = new Set(['short', 'gentle', 'serious']);
+  if (!issues.has(String(cfg.apologyIssue || ''))) return 'Invalid apology issue';
+  if (!tones.has(String(cfg.apologyTone || ''))) return 'Invalid apology tone';
+  if (cfg.apologyPaper && !APOLOGY_PAPERS.has(String(cfg.apologyPaper))) return 'Invalid apology paper';
+  if (!String(cfg.apologyLetter || '').trim() || String(cfg.apologyLetter).length > 5000) return 'Invalid apology letter';
+  const expiry = Date.parse(String(cfg.expiresAt || ''));
+  if (!Number.isFinite(expiry) || expiry <= Date.now() || expiry > Date.now() + 31 * 86400000) return 'Invalid apology expiry';
+  return null;
+}
 
 function pickPublicConfig(cfg) {
   const out = {};
@@ -499,6 +557,7 @@ async function handleInviteAPI(req, res, url) {
     if (!INVITE_ID_RE.test(id)) return sendJSON(res, 400, { error: 'Invalid invite id' });
     const inv = invites[id];
     if (!inv) return sendJSON(res, 404, { error: 'Invite not found' });
+    if (isExpiredConfig(inv.config)) return sendJSON(res, 410, { error: 'Invite expired' });
     return sendJSON(res, 200, publicInvite(inv), { 'Cache-Control': 'private, no-store' });
   }
 
@@ -544,6 +603,43 @@ async function handleValidateCodeAPI(req, res) {
     return sendJSON(res, 200, { ok: false, reason: 'used' }, { 'Cache-Control': 'private, no-store' });
   }
   return sendJSON(res, 200, { ok: true }, { 'Cache-Control': 'private, no-store' });
+}
+
+// Local-dev mirror of api/recover-invite.js. A public invite id is not enough
+// to unlock the private dashboard; the owner must know the paid LOV code.
+async function handleRecoverInvite(req, res) {
+  if (req.method !== 'POST') return sendJSON(res, 405, { error: 'POST only' });
+  const bodyText = await readBody(req);
+  let body = {};
+  try { body = bodyText ? JSON.parse(bodyText) : {}; } catch (_) {
+    return sendJSON(res, 400, { error: 'Invalid JSON' });
+  }
+
+  const code = String(body.code || '').trim().toUpperCase();
+  const privateHeaders = { 'Cache-Control': 'private, no-store' };
+  if (!ACCESS_CODE_RE.test(code)) {
+    return sendJSON(res, 200, { ok: false, reason: 'not_found' }, privateHeaders);
+  }
+
+  const codeRow = codes[code];
+  if (!codeRow) {
+    return sendJSON(res, 200, { ok: false, reason: 'not_found' }, privateHeaders);
+  }
+  if (!codeRow.used || !codeRow.used_for_invite_id) {
+    return sendJSON(res, 200, { ok: false, reason: 'not_used_yet' }, privateHeaders);
+  }
+
+  const invite = invites[codeRow.used_for_invite_id];
+  if (!invite) {
+    return sendJSON(res, 200, { ok: false, reason: 'invite_missing' }, privateHeaders);
+  }
+
+  return sendJSON(res, 200, {
+    ok: true,
+    id: invite.id,
+    owner_token: invite.owner_token,
+    created_at: invite.created_at
+  }, privateHeaders);
 }
 
 /* ---------- /api/checkout | /api/payment-status | /api/wire-webhook ---------- */
@@ -788,7 +884,8 @@ async function handleNotifyResponse(req, res) {
   const resp = inv.response || {};
   const hasDate = !!(resp.date || resp.dateISO);
   const isDecline = String(resp.answer || '').toLowerCase() === 'no';
-  if (!hasDate && !isDecline) return sendJSON(res, 200, { sent: false, reason: 'not_committed' });
+  const isApologyStatus = resp.type === 'apology' && !!resp.status;
+  if (!hasDate && !isDecline && !isApologyStatus) return sendJSON(res, 200, { sent: false, reason: 'not_committed' });
   const to = (inv.private_config && inv.private_config.responseEmail) || '';
   if (!to) return sendJSON(res, 200, { sent: false, reason: 'no_owner_email' });
   console.log('  📮  [local] notify-response →', to, 'invite', id, JSON.stringify(inv.response));
@@ -821,7 +918,7 @@ async function handleInviteIcs(req, res, url) {
     inviteId:    id,
     title:       title,
     description: (cfg.customNote ? cfg.customNote + '\n' : '') + 'Bolzoo invite',
-    location:    cfg.locationName || '',
+    location:    String(cfg.locationName || '').trim(),
     start:       start,
     end:         end,
     host:        req.headers.host
@@ -922,6 +1019,7 @@ const server = http.createServer(async (req, res) => {
     if (url.pathname === '/api/health') return sendJSON(res, 200, { ok: true, invites: Object.keys(invites).length, codes: Object.keys(codes).length, payments: Object.keys(payments).length, webhook_events: Object.keys(webhookEvents).length, wire: WIRE_ENABLED ? 'live' : 'mock', wire_webhook_secret: WIRE_WEBHOOK_SECRET ? 'set' : 'unset', youtube: YOUTUBE_API_KEY ? 'configured' : 'not_configured', price: PRICE_MNT, payment_description: PAYMENT_DESCRIPTION });
     if (url.pathname === '/api/invite')          return await handleInviteAPI(req, res, url);
     if (url.pathname === '/api/validate-code')   return await handleValidateCodeAPI(req, res);
+    if (url.pathname === '/api/recover-invite')  return await handleRecoverInvite(req, res);
     if (url.pathname === '/api/checkout')        return await handleCheckout(req, res);
     if (url.pathname === '/api/payment-status')  return await handlePaymentStatus(req, res, url);
     if (url.pathname === '/api/wire-webhook')    return await handleWireWebhook(req, res);

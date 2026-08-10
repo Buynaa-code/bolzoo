@@ -120,7 +120,7 @@ module.exports = async function handler(req, res) {
     const cfg   = invite.config || {};
     const title = 'Bolzoo — ' + (cfg.recipientName || 'Болзоо')
                 + (invite.response.kind ? ' · ' + invite.response.kind : '');
-    const location = cfg.locationName || '';
+    const location = String(cfg.locationName || '').trim();
     const description = (cfg.customNote ? cfg.customNote + '\n' : '')
                       + 'Bolzoo invite: '
                       + (cfg.senderName ? cfg.senderName + ' → ' : '')

@@ -55,3 +55,16 @@ test('buildIcs emits a VCALENDAR with the required VEVENT fields', () => {
   assert.match(ics, /URL:https:\/\/bolzoo\.mn\/bolzoo\.html\?id=testAbc12/);
   assert.match(ics, /END:VCALENDAR\r\n$/);
 });
+
+test('buildIcs omits LOCATION when no location was provided', () => {
+  const ics = buildIcs({
+    inviteId:    'testNoLocation',
+    title:       'Bolzoo — Ану',
+    description: 'A message',
+    location:    '',
+    start:       '20260815T113000Z',
+    end:         '20260815T133000Z',
+    host:        'bolzoo.mn'
+  });
+  assert.doesNotMatch(ics, /^LOCATION:/m);
+});

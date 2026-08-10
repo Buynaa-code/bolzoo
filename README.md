@@ -1,6 +1,18 @@
 # bolzoo 💌
 
-Personalised Mongolian date invitation web app.
+Personalised Mongolian date invitation and relationship-repair web app.
+
+`create.html` starts with two product modes:
+
+- **Болзоонд урих** — the existing personalised date invitation flow
+- **Bolzoo · Эвлэрье** — a no-AI, template-based apology letter with five
+  recipient-controlled response states, six paper textures, a self-reported
+  0–100% reconciliation-readiness bar, a 30-day private link, and the same
+  one-time 9,900₮ checkout
+
+The apology flow deliberately does not guess a “forgiven percentage”. The
+recipient may voluntarily choose a 0–100% readiness value in 10% steps; the
+sender sees only that self-reported value and the exact status they chose.
 
 - **create.html** — seller fills a form and gets a short invite URL
 - **bolzoo.html?id=xxx** — recipient opens the invite and answers
