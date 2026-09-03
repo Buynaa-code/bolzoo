@@ -3,36 +3,102 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Миний урилгууд 📊</title>
+<title>Ирсэн хариунууд 💌</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Comfortaa:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/styles.css">
 <style>
   .wrap{max-width:900px; margin:0 auto; padding:32px 20px 60px;}
-  header{display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:22px;}
-  h1{font-family:'Comfortaa',sans-serif; font-weight:700; font-size:26px; margin:0;}
-  .subtitle{margin:0;}
-  /* Dashboard-д стат картны stat илүү том */
-  .stats{display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:22px;}
-  @media (max-width:520px){ .stats{grid-template-columns:1fr;} }
+  header{display:flex; align-items:flex-start; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:18px;}
+  h1{font-family:'Comfortaa',sans-serif; font-weight:700; font-size:26px; margin:0 0 6px;}
+  .subtitle{margin:0; max-width:520px; line-height:1.5;}
+
+  /* ── 1-2-3 тайлбар зурвас ── */
+  .howto{
+    display:grid; grid-template-columns:repeat(3,1fr); gap:10px;
+    background:#fffdfb; border-radius:16px; padding:14px 16px; margin-bottom:18px;
+    box-shadow:0 12px 30px -18px rgba(247,106,142,.35);
+  }
+  .howto-step{display:flex; align-items:center; gap:10px; font-size:13px; font-weight:800; color:var(--ink); line-height:1.3;}
+  .howto-step span.n{
+    flex:0 0 26px; width:26px; height:26px; border-radius:50%;
+    display:grid; place-items:center; font-size:12px; color:#fff;
+    background:linear-gradient(135deg,var(--coral),var(--coral-deep));
+  }
+  .howto-step.now{color:var(--coral-deep);}
+  @media (max-width:640px){ .howto{grid-template-columns:1fr; gap:8px;} }
+
+  /* ── ID-аар хайх ── */
+  .lookup{margin-bottom:18px;}
+  .lookup h2{font-family:'Comfortaa',sans-serif; font-size:16px; margin:0 0 4px;}
+  .lookup p.hint{margin:0 0 12px; font-size:12.5px; color:var(--muted); line-height:1.5;}
+  .lookup-row{display:flex; gap:10px; flex-wrap:wrap;}
+  .lookup-row input{flex:1 1 240px;}
+  .lookup-status{margin-top:10px; font-size:13px; font-weight:800; min-height:18px;}
+  .lookup-status.ok{color:#3a8a4a;}
+  .lookup-status.err{color:#c05252;}
+
+  .stats{display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:16px;}
+  @media (max-width:520px){
+    .stats{gap:8px;}
+    .stat{padding:14px 8px; text-align:center;}
+    .stat-num{font-size:22px;}
+    .stat-lbl{font-size:10px; letter-spacing:.3px;}
+  }
   .stat{border-radius:18px; padding:18px 20px; box-shadow:0 12px 30px -18px rgba(247,106,142,.35);}
   .stat-num{font-size:28px;}
   .stat-lbl{font-size:12px;}
+
+  /* ── Шүүлтүүр ── */
+  .filters{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;}
+  .chip{
+    border:2px solid var(--coral-soft); background:#fff; color:var(--coral-deep);
+    border-radius:999px; padding:7px 15px; font-family:'Nunito',sans-serif;
+    font-size:12.5px; font-weight:800; cursor:pointer;
+  }
+  .chip.on{background:linear-gradient(135deg,var(--coral),var(--coral-deep)); color:#fff; border-color:transparent;}
+
   .list{display:flex; flex-direction:column; gap:14px;}
   .empty{text-align:center; background:#fffdfb; border-radius:20px; padding:40px 20px; box-shadow:0 12px 30px -18px rgba(247,106,142,.35);}
   .empty h2{font-family:'Comfortaa',sans-serif; margin:0 0 6px;}
-  .card{border-radius:20px; padding:18px 20px; box-shadow:0 12px 30px -18px rgba(247,106,142,.35); display:grid; grid-template-columns:1fr auto; gap:12px;}
-  .card-title{font-family:'Comfortaa',sans-serif; font-weight:700; font-size:17px; margin:0 0 4px;}
-  .card-meta{font-size:12px; color:var(--muted);}
-  .badge{display:inline-block; font-size:11px; font-weight:800; padding:4px 10px; border-radius:999px; letter-spacing:.4px;}
+
+  .card{border-radius:20px; padding:18px 20px; box-shadow:0 12px 30px -18px rgba(247,106,142,.35);}
+  .card.has-answer{border:2px solid #b7e9bd; background:linear-gradient(180deg,#fbfff8,#fffdfb);}
+  .card-top{display:grid; grid-template-columns:1fr auto; gap:12px; align-items:start;}
+  @media (max-width:560px){ .card-top{grid-template-columns:1fr;} }
+  .card-title{font-family:'Comfortaa',sans-serif; font-weight:700; font-size:18px; margin:0 0 4px;}
+  .card-meta{font-size:12px; color:var(--muted); line-height:1.6;}
+  .badge{display:inline-block; font-size:11px; font-weight:800; padding:5px 12px; border-radius:999px; letter-spacing:.4px;}
   .badge.pending{background:#f3e6ec; color:var(--muted);}
   .badge.opened{background:#fff1cf; color:#b47f16;}
   .badge.responded{background:#dcffde; color:#3a8a4a;}
-  .response{margin-top:10px; padding:10px 14px; background:#fff8f4; border:1px dashed var(--coral-soft); border-radius:12px; font-size:13px; line-height:1.5;}
-  .response b{color:var(--coral-deep);}
-  .card-actions{display:flex; flex-direction:column; gap:6px; align-items:flex-end;}
-  .backend-warn{background:#fff1cf; color:#8a6a20; padding:10px 14px; border-radius:12px; margin-bottom:18px; font-size:13px; font-weight:700;}
+
+  /* ── Хариу — гол блок ── */
+  .answer{margin-top:14px; border-radius:16px; overflow:hidden; border:1px solid #cdeed2;}
+  .answer-head{
+    background:linear-gradient(135deg,#dcffde,#c7f5cf); color:#2f7a41;
+    font-family:'Comfortaa',sans-serif; font-weight:700; font-size:15px;
+    padding:12px 16px; display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+  }
+  .answer-body{background:#fbfff9; padding:14px 16px;}
+  .answer-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:12px;}
+  @media (max-width:420px){ .answer-grid{grid-template-columns:1fr;} }
+  .a-item{background:#fff; border:1px solid #e6f5e8; border-radius:12px; padding:10px 12px;}
+  .a-lbl{display:block; font-size:11px; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; margin-bottom:3px;}
+  .a-val{display:block; font-size:15px; font-weight:800; color:var(--ink); word-break:break-word;}
+  .answer-foot{margin-top:12px; font-size:12px; color:var(--muted); font-weight:700;}
+
+  /* ── Хариугүй тохиолдол ── */
+  .waiting{
+    margin-top:14px; background:#fff8f4; border:1px dashed var(--coral-soft);
+    border-radius:14px; padding:14px 16px; font-size:13px; line-height:1.55; color:var(--muted);
+  }
+  .waiting b{color:var(--coral-deep); display:block; margin-bottom:3px; font-size:14px;}
+
+  .card-actions{display:flex; gap:8px; flex-wrap:wrap; align-items:center;}
+  @media (min-width:561px){ .card-actions{flex-direction:column; align-items:flex-end;} }
+  .backend-warn{background:#fff1cf; color:#8a6a20; padding:12px 16px; border-radius:12px; margin-bottom:18px; font-size:13px; font-weight:700; line-height:1.55;}
   .id-mono{font-family:ui-monospace, Menlo, monospace; font-size:12px; color:var(--muted);}
 </style>
 </head>
@@ -40,32 +106,52 @@
   <div class="wrap">
     <header>
       <div>
-        <h1>📊 Миний урилгууд</h1>
-        <div class="subtitle">Энэ browser-с үүсгэсэн урилгууд ба хариунууд</div>
+        <h1>💌 Ирсэн хариунууд</h1>
+        <p class="subtitle">Таны илгээсэн урилга бүр нээгдсэн эсэх, хүлээн авагч ямар өдөр, цагийг сонгосон нь энд харагдана.</p>
       </div>
       <div style="display:flex; gap:8px; flex-wrap:wrap;">
-        <a class="btn secondary" href="create.html">+ Шинэ урилга</a>
+        <a class="btn secondary" href="create.html">＋ Шинэ урилга</a>
         <button class="btn secondary" id="refresh">🔄 Шинэчлэх</button>
       </div>
     </header>
+
+    <div class="howto">
+      <div class="howto-step"><span class="n">1</span>Урилга үүсгэнэ</div>
+      <div class="howto-step"><span class="n">2</span>Линкээ илгээнэ</div>
+      <div class="howto-step now"><span class="n">3</span>Хариу энэ хуудсанд ирнэ</div>
+    </div>
 
     <div class="backend-warn" id="backendWarn" style="display:none;">
       ⚠️ Supabase backend тохируулаагүй тул зөвхөн энэ browser дээрх урилгууд харагдана. Backend тохируулбал бүх төхөөрөмжөөс харах, хариу цуглуулах боломжтой болно (assets/config.js).
     </div>
 
+    <section class="card lookup">
+      <h2>🔎 Урилгаа ID эсвэл линкээр нь хайх</h2>
+      <p class="hint">
+        Энэ хуудас нь <b>энэ browser-с</b> үүсгэсэн урилгуудыг сануулж харуулдаг.
+        Өөр утас/компьютерээс үүсгэсэн, эсвэл түүх нь арилсан бол урилгын линкээ доор буулгаад нэмээрэй —
+        нэг л удаа нэмбэл цаашид жагсаалтад үлдэнэ.
+      </p>
+      <div class="lookup-row">
+        <input id="lookupInput" type="text" placeholder="https://…/bolzoo.html?id=abc123  эсвэл  abc123" autocomplete="off" />
+        <button class="btn" id="lookupBtn">Хайх</button>
+      </div>
+      <div class="lookup-status" id="lookupStatus"></div>
+    </section>
+
     <div class="stats">
       <div class="stat"><div class="stat-num" id="statTotal">0</div><div class="stat-lbl">Нийт урилга</div></div>
-      <div class="stat"><div class="stat-num" id="statOpened">0</div><div class="stat-lbl">Нээгдсэн</div></div>
+      <div class="stat"><div class="stat-num" id="statOpened">0</div><div class="stat-lbl">Нээж үзсэн</div></div>
       <div class="stat"><div class="stat-num" id="statResponded">0</div><div class="stat-lbl">Хариу ирсэн</div></div>
     </div>
 
-    <div class="list" id="list">
-      <div class="empty" id="empty" style="display:none;">
-        <h2>Урилга байхгүй байна 💌</h2>
-        <p class="subtitle">Эхний урилгаа үүсгээд туршиж үзье!</p>
-        <a class="btn" href="create.html" style="margin-top:10px;">+ Шинэ урилга үүсгэх</a>
-      </div>
+    <div class="filters" id="filters">
+      <button class="chip on" data-filter="all">Бүгд <span data-count="all">0</span></button>
+      <button class="chip" data-filter="responded">✅ Хариу ирсэн <span data-count="responded">0</span></button>
+      <button class="chip" data-filter="waiting">⏳ Хариу хүлээж буй <span data-count="waiting">0</span></button>
     </div>
+
+    <div class="list" id="list"></div>
   </div>
 
 <script src="assets/utils.js"></script>
@@ -74,88 +160,181 @@
 <script>
 (function(){
   var $ = BolzooUtils.$, esc = BolzooUtils.esc, fmtWhen = BolzooUtils.fmtWhen;
-  var list = $('list'), empty = $('empty');
+  var invites = [];
+  var filter = 'all';
 
   var kind = window.BolzooAPI ? window.BolzooAPI.backendKind : 'localStorage';
   if(kind === 'localStorage'){
     $('backendWarn').style.display = 'block';
   }
+
   function inviteUrl(id){
     return new URL('bolzoo.html', window.location.href).href + '?id=' + encodeURIComponent(id);
   }
+  function val(v){ return (v === undefined || v === null || v === '') ? '—' : v; }
 
   function statusBadge(inv){
     if(inv.responded_at) return '<span class="badge responded">✅ Хариу ирсэн</span>';
-    if(inv.opened_at)    return '<span class="badge opened">👀 Нээсэн</span>';
-    return '<span class="badge pending">⏳ Хүлээгдэж буй</span>';
+    if(inv.opened_at)    return '<span class="badge opened">👀 Нээсэн, хариу өгөөгүй</span>';
+    return '<span class="badge pending">⏳ Хараахан нээгээгүй</span>';
   }
 
-  function renderResponse(inv){
-    if(!inv.response) return '';
-    var r = inv.response;
-    return '<div class="response">'
-      + '<b>📅 Өдөр:</b> ' + esc(r.date) + '<br>'
-      + '<b>🕐 Цаг:</b> ' + esc(r.time) + '<br>'
-      + '<b>💝 Төрөл:</b> ' + esc(r.kind) + '<br>'
-      + '<b>🎫 Ticket:</b> ' + esc(r.ticketNo) + '<br>'
-      + '<span class="card-meta">Хариу ирсэн: ' + esc(fmtWhen(inv.responded_at)) + '</span>'
-      + '</div>';
-  }
-
-  function render(list_){
-    var main = $('list');
-    // Clear
-    while(main.firstChild) main.removeChild(main.firstChild);
-    if(!list_.length){
-      var e = empty.cloneNode(true);
-      e.style.display='block';
-      main.appendChild(e);
-      return;
+  function answerBlock(inv){
+    if(!inv.response){
+      if(inv.opened_at){
+        return '<div class="waiting"><b>Хариу хараахан ирээгүй байна</b>'
+          + 'Урилгыг ' + esc(fmtWhen(inv.opened_at)) + '-д нээж үзсэн ч болзооны өдрөө сонгоогүй байна. Түр хүлээгээрэй 💗</div>';
+      }
+      return '<div class="waiting"><b>Урилга хараахан нээгдээгүй</b>'
+        + 'Линкийг илгээсэн эсэхээ шалгаад, дахин нэг сануулаарай 💌</div>';
     }
-    list_.forEach(function(inv){
-      var cfg = inv.config || {};
-      var el = document.createElement('div');
-      el.className = 'card';
-      el.innerHTML =
-        '<div>'
-          + '<h3 class="card-title">' + esc(cfg.recipientName || '(нэргүй)') + '</h3>'
-          + '<div class="card-meta">'
-            + (cfg.senderName ? 'Илгээгч: <b>'+esc(cfg.senderName)+'</b> · ' : '')
-            + 'Үүсгэсэн: ' + esc(fmtWhen(inv.created_at))
-            + ' · <span class="id-mono">' + esc(inv.id) + '</span>'
-          + '</div>'
-          + '<div style="margin-top:8px;">' + statusBadge(inv) + '</div>'
-          + renderResponse(inv)
+    var r = inv.response;
+    return '<div class="answer">'
+      + '<div class="answer-head">🎉 Тийм гэж хариулсан!</div>'
+      + '<div class="answer-body">'
+        + '<div class="answer-grid">'
+          + '<div class="a-item"><span class="a-lbl">📅 Сонгосон өдөр</span><span class="a-val">' + esc(val(r.date)) + '</span></div>'
+          + '<div class="a-item"><span class="a-lbl">🕐 Сонгосон цаг</span><span class="a-val">' + esc(val(r.time)) + '</span></div>'
+          + '<div class="a-item"><span class="a-lbl">💝 Болзооны төрөл</span><span class="a-val">' + esc(val(r.kind)) + '</span></div>'
+          + '<div class="a-item"><span class="a-lbl">🎫 Ticket дугаар</span><span class="a-val">' + esc(val(r.ticketNo)) + '</span></div>'
         + '</div>'
-        + '<div class="card-actions">'
-          + '<a class="btn small secondary" href="' + esc(inviteUrl(inv.id)) + '" target="_blank">🔗 Нээх</a>'
-          + '<button class="btn small secondary" data-copy="' + esc(inviteUrl(inv.id)) + '">📋 Хуулах</button>'
-          + '<button class="btn small danger" data-del="' + esc(inv.id) + '">🗑️ Устгах</button>'
-        + '</div>';
-      main.appendChild(el);
-    });
+        + '<div class="answer-foot">Хариу ирсэн: ' + esc(fmtWhen(inv.responded_at)) + '</div>'
+      + '</div>'
+    + '</div>';
   }
 
-  function updateStats(list_){
-    $('statTotal').textContent = list_.length;
-    $('statOpened').textContent = list_.filter(function(i){ return !!i.opened_at; }).length;
-    $('statResponded').textContent = list_.filter(function(i){ return !!i.responded_at; }).length;
+  function emptyBox(){
+    if(!invites.length){
+      return '<div class="empty">'
+        + '<h2>Одоохондоо урилга алга 💌</h2>'
+        + '<p class="subtitle">Эхний урилгаа үүсгээд линкээ илгээвэл хариу нь яг энд харагдана.</p>'
+        + '<a class="btn" href="create.html" style="margin-top:10px;">＋ Шинэ урилга үүсгэх</a>'
+      + '</div>';
+    }
+    if(filter === 'responded'){
+      return '<div class="empty"><h2>Хариу ирсэн урилга алга ⏳</h2>'
+        + '<p class="subtitle">Хүлээн авагч болзооны өдрөө сонгомогц энд шууд харагдана.</p></div>';
+    }
+    return '<div class="empty"><h2>Хүлээгдэж буй урилга алга ✅</h2>'
+      + '<p class="subtitle">Бүх урилгад чинь хариу ирсэн байна!</p></div>';
+  }
+
+  function matches(inv){
+    if(filter === 'responded') return !!inv.responded_at;
+    if(filter === 'waiting')   return !inv.responded_at;
+    return true;
+  }
+
+  function render(){
+    var main = $('list');
+    var shown = invites.filter(matches);
+    if(!shown.length){ main.innerHTML = emptyBox(); return; }
+    main.innerHTML = shown.map(function(inv){
+      var cfg = inv.config || {};
+      return '<div class="card' + (inv.response ? ' has-answer' : '') + '">'
+        + '<div class="card-top">'
+          + '<div>'
+            + '<h3 class="card-title">' + esc(cfg.recipientName || '(нэргүй)') + '-д илгээсэн урилга</h3>'
+            + '<div class="card-meta">'
+              + (cfg.senderName ? 'Илгээгч: <b>' + esc(cfg.senderName) + '</b><br>' : '')
+              + 'Үүсгэсэн: ' + esc(fmtWhen(inv.created_at))
+              + '<br>ID: <span class="id-mono">' + esc(inv.id) + '</span>'
+            + '</div>'
+            + '<div style="margin-top:8px;">' + statusBadge(inv) + '</div>'
+          + '</div>'
+          + '<div class="card-actions">'
+            + '<a class="btn small secondary" href="' + esc(inviteUrl(inv.id)) + '" target="_blank">🔗 Урилгыг нээх</a>'
+            + '<button class="btn small secondary" data-copy="' + esc(inviteUrl(inv.id)) + '">📋 Линк хуулах</button>'
+            + '<button class="btn small danger" data-del="' + esc(inv.id) + '">🗑️ Устгах</button>'
+          + '</div>'
+        + '</div>'
+        + answerBlock(inv)
+      + '</div>';
+    }).join('');
+  }
+
+  function updateStats(){
+    var opened    = invites.filter(function(i){ return !!i.opened_at; }).length;
+    var responded = invites.filter(function(i){ return !!i.responded_at; }).length;
+    $('statTotal').textContent = invites.length;
+    $('statOpened').textContent = opened;
+    $('statResponded').textContent = responded;
+    $('filters').querySelector('[data-count="all"]').textContent = invites.length;
+    $('filters').querySelector('[data-count="responded"]').textContent = responded;
+    $('filters').querySelector('[data-count="waiting"]').textContent = invites.length - responded;
   }
 
   async function load(){
     $('refresh').disabled = true;
     try{
       var invs = await BolzooAPI.listMyInvites();
-      // sort newest first
-      invs.sort(function(a,b){ return (b.created_at||'').localeCompare(a.created_at||''); });
-      render(invs);
-      updateStats(invs);
+      // Хариу ирсэн нь эхэндээ, дараа нь шинэ үүссэн нь
+      invs.sort(function(a,b){
+        var ar = a.responded_at ? 1 : 0, br = b.responded_at ? 1 : 0;
+        if(ar !== br) return br - ar;
+        return (b.created_at||'').localeCompare(a.created_at||'');
+      });
+      invites = invs;
+      render();
+      updateStats();
     }catch(e){
       alert('Ачаалахад алдаа: '+(e.message||e));
     }finally{
       $('refresh').disabled = false;
     }
   }
+
+  /* ---------- ID / линкээр хайх ---------- */
+  function parseId(raw){
+    var s = (raw||'').trim();
+    if(!s) return '';
+    var m = s.match(/[?&]id=([^&#\s]+)/);
+    if(m) return decodeURIComponent(m[1]);
+    if(/^[A-Za-z0-9_-]+$/.test(s)) return s;
+    return '';
+  }
+  async function lookup(){
+    var st = $('lookupStatus');
+    var id = parseId($('lookupInput').value);
+    if(!id){
+      st.className = 'lookup-status err';
+      st.textContent = '❌ ID олдсонгүй. Урилгын бүтэн линк эсвэл ID-г буулгана уу.';
+      return;
+    }
+    st.className = 'lookup-status';
+    st.textContent = '⏳ Хайж байна…';
+    $('lookupBtn').disabled = true;
+    try{
+      await BolzooAPI.trackInvite(id);
+      st.className = 'lookup-status ok';
+      st.textContent = '✅ Нэмэгдлээ. Доорх жагсаалтаас хараарай.';
+      $('lookupInput').value = '';
+      filter = 'all';
+      setChip('all');
+      await load();
+    }catch(e){
+      st.className = 'lookup-status err';
+      st.textContent = '❌ ' + (e.message || 'Олдсонгүй');
+    }finally{
+      $('lookupBtn').disabled = false;
+    }
+  }
+  function setChip(f){
+    var chips = $('filters').querySelectorAll('.chip');
+    for(var i=0;i<chips.length;i++){
+      chips[i].classList.toggle('on', chips[i].getAttribute('data-filter') === f);
+    }
+  }
+  $('lookupBtn').addEventListener('click', lookup);
+  $('lookupInput').addEventListener('keydown', function(e){ if(e.key === 'Enter') lookup(); });
+
+  $('filters').addEventListener('click', function(e){
+    var chip = e.target.closest('.chip');
+    if(!chip) return;
+    filter = chip.getAttribute('data-filter');
+    setChip(filter);
+    render();
+  });
 
   document.addEventListener('click', function(e){
     var copyBtn = e.target.closest('[data-copy]');
@@ -172,7 +351,7 @@
     var delBtn = e.target.closest('[data-del]');
     if(delBtn){
       var id = delBtn.getAttribute('data-del');
-      if(!confirm('Энэ урилгыг устгах уу? Буцаах боломжгүй.')) return;
+      if(!confirm('Энэ урилгыг жагсаалтаас устгах уу? Буцаах боломжгүй.')) return;
       BolzooAPI.deleteInvite(id).then(load).catch(function(err){
         alert('Устгаж чадсангүй: '+(err.message||err));
       });
@@ -180,8 +359,15 @@
   });
 
   $('refresh').addEventListener('click', load);
-  load();
-  // auto-refresh every 30s to catch new responses
+
+  // Линкээр шууд ирсэн бол (dashboard.html?id=xxx) тухайн урилгыг автоматаар нэмнэ
+  (function(){
+    var q = new URLSearchParams(window.location.search).get('id');
+    if(q){ $('lookupInput').value = q; lookup(); return; }
+    load();
+  })();
+
+  // 30 секунд тутам шинэ хариу ирсэн эсэхийг шалгана
   setInterval(load, 30000);
 })();
 </script>

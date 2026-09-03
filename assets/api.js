@@ -243,6 +243,15 @@
     }
   }
 
+  // Урилгыг энэ browser-ийн "миний жагсаалт"-д нэмнэ (dashboard дээр ID-аар хайхад).
+  async function trackInvite(id){
+    if(!id) throw new Error('ID хоосон байна');
+    var inv = await getInvite(id);
+    if(!inv) throw new Error('Ийм ID-тай урилга олдсонгүй');
+    rememberMine(id);
+    return inv;
+  }
+
   async function deleteInvite(id){
     if(HAS_BACKEND){
       var token = getOwnerToken(id);
@@ -262,6 +271,7 @@
     markOpened: markOpened,
     saveResponse: saveResponse,
     listMyInvites: listMyInvites,
+    trackInvite: trackInvite,
     deleteInvite: deleteInvite,
     getOwnerToken: getOwnerToken,
     validateCode: validateCode,

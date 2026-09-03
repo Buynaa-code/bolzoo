@@ -49,8 +49,28 @@
     display:flex;
     align-items:center;
     justify-content:space-between;
-    gap:18px;
+    gap:14px;
+    flex-wrap:wrap;
   }
+  .topbar-right{display:flex; align-items:center; gap:14px; flex-wrap:wrap;}
+  .nav-answers{
+    display:inline-flex;
+    align-items:center;
+    gap:7px;
+    padding:9px 16px;
+    border-radius:999px;
+    border:2px solid rgba(255,124,164,.55);
+    background:#fff;
+    color:var(--hot);
+    font-family:'Nunito',sans-serif;
+    font-size:13px;
+    font-weight:900;
+    text-decoration:none;
+    white-space:nowrap;
+    box-shadow:0 10px 24px -18px rgba(255,77,130,.8);
+    transition:transform .15s, box-shadow .15s;
+  }
+  .nav-answers:hover{transform:translateY(-2px); box-shadow:0 14px 28px -18px rgba(255,77,130,.85);}
   .main-col{min-width:0;}
   .preview-wrap,
   .form-card,
@@ -258,9 +278,26 @@
     font-size:12px;
     font-weight:900;
   }
-  .link-actions{display:flex; gap:10px; margin-top:10px; flex-wrap:wrap;}
+  .link-actions{display:flex; gap:10px; margin-top:10px; flex-wrap:wrap; align-items:center;}
+  .link-next{
+    margin-top:12px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    background:linear-gradient(135deg,#fff7fb,#f6f0ff);
+    border:1px dashed rgba(157,99,230,.45);
+    border-radius:12px;
+    padding:12px 14px;
+    font-size:12.5px;
+    line-height:1.5;
+    font-weight:800;
+    color:#6d536b;
+    flex-wrap:wrap;
+  }
+  .link-next a{color:var(--hot); font-weight:900;}
   .status{margin-top:14px; min-height:20px; font-weight:900; font-size:13px; color:var(--hot); text-align:center;}
-  .backend-row{margin-top:22px; padding-top:18px; border-top:1px solid rgba(248,215,226,.78); display:flex; align-items:center; justify-content:center; gap:10px; flex-wrap:wrap;}
+  .backend-row{margin-top:22px; padding-top:18px; border-top:1px solid rgba(248,215,226,.78); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; text-align:center;}
+  .backend-row .answers-hint{font-size:12.5px; color:#8b7b8d; font-weight:800; line-height:1.5;}
   #backendBadge{font-size:12px; color:#8b7b8d; font-weight:800;}
 
   .code-gate{
@@ -418,7 +455,10 @@
         <span class="step"><span class="step-num">2</span>Preview харах</span>
         <span class="step"><span class="step-num">3</span>Линк илгээх</span>
       </div>
-      <div class="preview-kicker">✨ Preview</div>
+      <div class="topbar-right">
+        <a class="nav-answers" href="dashboard.html">💌 Ирсэн хариунууд</a>
+        <div class="preview-kicker">✨ Preview</div>
+      </div>
     </header>
 
     <main class="main-col">
@@ -511,6 +551,14 @@
           <button class="btn small secondary" id="copyLink">🔗 Хуулах</button>
           <button class="btn small secondary" id="openLink">Нээж үзэх</button>
         </div>
+        <div class="link-next" id="linkNext" style="display:none;">
+          <span>💌</span>
+          <div style="flex:1; min-width:180px;">
+            Линкээ илгээсний дараа хүлээн авагчийн сонгосон өдөр, цаг
+            <a href="dashboard.html">«Ирсэн хариунууд»</a> хуудсанд харагдана.
+          </div>
+          <a class="btn small" id="goAnswers" href="dashboard.html">Хариу харах →</a>
+        </div>
 
         <div class="form-actions">
           <button class="btn secondary" id="resetForm" type="button">＋ Нэмж шинэ</button>
@@ -520,7 +568,8 @@
         <div class="status" id="status"></div>
 
         <div class="backend-row">
-          <a href="dashboard.html" class="btn small secondary">📊 Миний урилгууд</a>
+          <a href="dashboard.html" class="btn">💌 Ирсэн хариунуудыг харах</a>
+          <div class="answers-hint">Илгээсэн урилга бүрийн төлөв, хүлээн авагчийн хариу тэнд цугларна.</div>
           <span id="backendBadge"></span>
         </div>
         <p class="footer-note">💞 Хийсэнээ! Одоо Messenger/Instagram-р паст хийгээрэй 💌</p>
@@ -545,7 +594,7 @@
         <h2>💡 Туслах зөвлөгөө</h2>
         <div class="tip-row"><span>🔑</span><p>Кодоо хадгал — дараагийн урилгад ашиглана.</p></div>
         <div class="tip-row"><span>🎟</span><p>Preview хийж хараад линкээ илгээнэ үү.</p></div>
-        <div class="tip-row"><span>💌</span><p>Хариу ирсэн даруйд таны имэйл рүү мэдэгдэх болно.</p></div>
+        <div class="tip-row"><span>💌</span><p>Хариу ирсэн даруйд таны имэйл рүү мэдэгдэнэ. Мөн <a href="dashboard.html" style="color:var(--hot); font-weight:900;">«Ирсэн хариунууд»</a> хуудаснаас хэдийд ч харж болно.</p></div>
       </section>
 
       <section class="side-card music-card">
@@ -724,6 +773,9 @@
     $('linkBox').textContent = url;
     $('linkBox').style.display = 'block';
     $('linkActions').style.display = 'flex';
+    $('linkNext').style.display = 'flex';
+    var m = url.match(/[?&]id=([^&#]+)/);
+    $('goAnswers').href = m ? ('dashboard.html?id=' + m[1]) : 'dashboard.html';
     setStatus(msg || '✅ Линк бэлэн!');
   }
   function buildShortUrl(id, absolute){
@@ -794,6 +846,7 @@
     $('videoPreview').style.display = 'none';
     $('linkBox').style.display = 'none';
     $('linkActions').style.display = 'none';
+    $('linkNext').style.display = 'none';
     setStatus('');
     updatePreview();
   });
