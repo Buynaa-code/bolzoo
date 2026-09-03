@@ -252,6 +252,14 @@
     return inv;
   }
 
+  // Зөвхөн энэ browser-ийн жагсаалтаас хасна — backend дээрх урилга хэвээр үлдэнэ.
+  // owner token-ыг хэвээр үлдээнэ (дахин нэмбэл устгах эрх нь сэргэнэ).
+  function forgetInvite(id){
+    var mine = lsGet('bolzoo:my') || [];
+    lsSet('bolzoo:my', mine.filter(function(x){ return x.id!==id; }));
+  }
+
+  // Урилгыг бүрмөсөн устгана — зөвхөн энэ төхөөрөмж дээр үүсгэсэн (owner token-той) урилгад.
   async function deleteInvite(id){
     if(HAS_BACKEND){
       var token = getOwnerToken(id);
@@ -272,6 +280,7 @@
     saveResponse: saveResponse,
     listMyInvites: listMyInvites,
     trackInvite: trackInvite,
+    forgetInvite: forgetInvite,
     deleteInvite: deleteInvite,
     getOwnerToken: getOwnerToken,
     validateCode: validateCode,

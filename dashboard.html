@@ -131,6 +131,8 @@
         Энэ хуудас нь <b>энэ browser-с</b> үүсгэсэн урилгуудыг сануулж харуулдаг.
         Өөр утас/компьютерээс үүсгэсэн, эсвэл түүх нь арилсан бол урилгын линкээ доор буулгаад нэмээрэй —
         нэг л удаа нэмбэл цаашид жагсаалтад үлдэнэ.
+        Ингэж нэмсэн урилгыг зөвхөн жагсаалтаас хасаж болно — бүрмөсөн устгахын тулд
+        уг урилгыг үүсгэсэн browser-ээсээ орно уу.
       </p>
       <div class="lookup-row">
         <input id="lookupInput" type="text" placeholder="https://…/bolzoo.html?id=abc123  эсвэл  abc123" autocomplete="off" />
@@ -245,7 +247,9 @@
           + '<div class="card-actions">'
             + '<a class="btn small secondary" href="' + esc(inviteUrl(inv.id)) + '" target="_blank">🔗 Урилгыг нээх</a>'
             + '<button class="btn small secondary" data-copy="' + esc(inviteUrl(inv.id)) + '">📋 Линк хуулах</button>'
-            + '<button class="btn small danger" data-del="' + esc(inv.id) + '">🗑️ Устгах</button>'
+            + (BolzooAPI.getOwnerToken(inv.id)
+                ? '<button class="btn small danger" data-del="' + esc(inv.id) + '">🗑️ Бүрмөсөн устгах</button>'
+                : '<button class="btn small secondary" data-forget="' + esc(inv.id) + '">✖️ Жагсаалтаас хасах</button>')
           + '</div>'
         + '</div>'
         + answerBlock(inv)
@@ -348,10 +352,18 @@
       }
       return;
     }
+    var forgetBtn = e.target.closest('[data-forget]');
+    if(forgetBtn){
+      var fid = forgetBtn.getAttribute('data-forget');
+      if(!confirm('Зөвхөн энэ жагсаалтаас хасах уу?\n\nУрилга өөрөө устахгүй — илгээсэн линк хэвээр ажиллана. Дараа нь ID-аар нь дахин нэмж болно.')) return;
+      BolzooAPI.forgetInvite(fid);
+      load();
+      return;
+    }
     var delBtn = e.target.closest('[data-del]');
     if(delBtn){
       var id = delBtn.getAttribute('data-del');
-      if(!confirm('Энэ урилгыг жагсаалтаас устгах уу? Буцаах боломжгүй.')) return;
+      if(!confirm('Энэ урилгыг БҮРМӨСӨН устгах уу?\n\nИлгээсэн линк ажиллахаа болино, ирсэн хариу нь ч устана. Буцаах боломжгүй.')) return;
       BolzooAPI.deleteInvite(id).then(load).catch(function(err){
         alert('Устгаж чадсангүй: '+(err.message||err));
       });
