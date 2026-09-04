@@ -107,7 +107,7 @@
     <header>
       <div>
         <h1>💌 Ирсэн хариунууд</h1>
-        <p class="subtitle">Таны илгээсэн урилга бүр нээгдсэн эсэх, хүлээн авагч ямар өдөр, цагийг сонгосон нь энд харагдана.</p>
+        <p class="subtitle">Таны илгээсэн урилга, цэцэг + захидал бүр нээгдсэн эсэх, хүлээн авагч ямар өдөр, цагийг сонгосон нь энд харагдана.</p>
       </div>
       <div style="display:flex; gap:8px; flex-wrap:wrap;">
         <a class="btn secondary" href="create.html">＋ Шинэ урилга</a>
@@ -135,7 +135,7 @@
         уг урилгыг үүсгэсэн browser-ээсээ орно уу.
       </p>
       <div class="lookup-row">
-        <input id="lookupInput" type="text" placeholder="https://…/bolzoo.html?id=abc123  эсвэл  abc123" autocomplete="off" />
+        <input id="lookupInput" type="text" placeholder="https://…/greet.html?id=abc123  эсвэл  abc123" autocomplete="off" />
         <button class="btn" id="lookupBtn">Хайх</button>
       </div>
       <div class="lookup-status" id="lookupStatus"></div>
@@ -159,6 +159,7 @@
 <script src="assets/utils.js"></script>
 <script src="assets/config.js"></script>
 <script src="assets/api.js"></script>
+<script src="assets/bolzoo-garden.js"></script>
 <script>
 (function(){
   var $ = BolzooUtils.$, esc = BolzooUtils.esc, fmtWhen = BolzooUtils.fmtWhen;
@@ -170,8 +171,10 @@
     $('backendWarn').style.display = 'block';
   }
 
-  function inviteUrl(id){
-    return new URL('bolzoo.html', window.location.href).href + '?id=' + encodeURIComponent(id);
+  function isFlower(cfg){ return (cfg || {}).mode === 'flower'; }
+  function invitePage(cfg){ return isFlower(cfg) ? 'greet.html' : 'bolzoo.html'; }
+  function inviteUrl(cfg, id){
+    return new URL(invitePage(cfg), window.location.href).href + '?id=' + encodeURIComponent(id);
   }
   function val(v){ return (v === undefined || v === null || v === '') ? '—' : v; }
 
@@ -182,15 +185,35 @@
   }
 
   function answerBlock(inv){
+    var flower = isFlower(inv.config);
     if(!inv.response){
       if(inv.opened_at){
         return '<div class="waiting"><b>Хариу хараахан ирээгүй байна</b>'
-          + 'Урилгыг ' + esc(fmtWhen(inv.opened_at)) + '-д нээж үзсэн ч болзооны өдрөө сонгоогүй байна. Түр хүлээгээрэй 💗</div>';
+          + (flower
+              ? 'Мэндчилгээг ' + esc(fmtWhen(inv.opened_at)) + '-д нээж үзсэн байна. Түр хүлээгээрэй 💗'
+              : 'Урилгыг ' + esc(fmtWhen(inv.opened_at)) + '-д нээж үзсэн ч болзооны өдрөө сонгоогүй байна. Түр хүлээгээрэй 💗')
+          + '</div>';
       }
-      return '<div class="waiting"><b>Урилга хараахан нээгдээгүй</b>'
+      return '<div class="waiting"><b>' + (flower ? 'Мэндчилгээ хараахан нээгдээгүй' : 'Урилга хараахан нээгдээгүй') + '</b>'
         + 'Линкийг илгээсэн эсэхээ шалгаад, дахин нэг сануулаарай 💌</div>';
     }
     var r = inv.response;
+    if(r.type === 'flower' || flower){
+      var cfgF = inv.config || {};
+      var fname = (window.BolzooGarden ? BolzooGarden.flower(cfgF.flower).name : (cfgF.flower || '—'));
+      var pname = (window.BolzooGarden ? BolzooGarden.paper(cfgF.paper).name : (cfgF.paper || '—'));
+      return '<div class="answer">'
+        + '<div class="answer-head">💗 Цэцгийг хүлээж авлаа!</div>'
+        + '<div class="answer-body">'
+          + '<div class="answer-grid">'
+            + '<div class="a-item"><span class="a-lbl">🌸 Илгээсэн цэцэг</span><span class="a-val">' + esc(fname) + '</span></div>'
+            + '<div class="a-item"><span class="a-lbl">📄 Захидлын цаас</span><span class="a-val">' + esc(pname) + '</span></div>'
+            + '<div class="a-item" style="grid-column:1/-1;"><span class="a-lbl">✍️ Хариу үг</span><span class="a-val">' + esc(r.note ? r.note : '(үг бичээгүй)') + '</span></div>'
+          + '</div>'
+          + '<div class="answer-foot">Хариу ирсэн: ' + esc(fmtWhen(inv.responded_at)) + '</div>'
+        + '</div>'
+      + '</div>';
+    }
     return '<div class="answer">'
       + '<div class="answer-head">🎉 Тийм гэж хариулсан!</div>'
       + '<div class="answer-body">'
@@ -236,7 +259,8 @@
       return '<div class="card' + (inv.response ? ' has-answer' : '') + '">'
         + '<div class="card-top">'
           + '<div>'
-            + '<h3 class="card-title">' + esc(cfg.recipientName || '(нэргүй)') + '-д илгээсэн урилга</h3>'
+            + '<h3 class="card-title">' + esc(cfg.recipientName || '(нэргүй)') + '-д илгээсэн '
+              + (isFlower(cfg) ? 'цэцэг + захидал 🌸' : 'урилга 💌') + '</h3>'
             + '<div class="card-meta">'
               + (cfg.senderName ? 'Илгээгч: <b>' + esc(cfg.senderName) + '</b><br>' : '')
               + 'Үүсгэсэн: ' + esc(fmtWhen(inv.created_at))
@@ -245,8 +269,8 @@
             + '<div style="margin-top:8px;">' + statusBadge(inv) + '</div>'
           + '</div>'
           + '<div class="card-actions">'
-            + '<a class="btn small secondary" href="' + esc(inviteUrl(inv.id)) + '" target="_blank">🔗 Урилгыг нээх</a>'
-            + '<button class="btn small secondary" data-copy="' + esc(inviteUrl(inv.id)) + '">📋 Линк хуулах</button>'
+            + '<a class="btn small secondary" href="' + esc(inviteUrl(cfg, inv.id)) + '" target="_blank">🔗 ' + (isFlower(cfg) ? 'Мэндчилгээг' : 'Урилгыг') + ' нээх</a>'
+            + '<button class="btn small secondary" data-copy="' + esc(inviteUrl(cfg, inv.id)) + '">📋 Линк хуулах</button>'
             + (BolzooAPI.getOwnerToken(inv.id)
                 ? '<button class="btn small danger" data-del="' + esc(inv.id) + '">🗑️ Бүрмөсөн устгах</button>'
                 : '<button class="btn small secondary" data-forget="' + esc(inv.id) + '">✖️ Жагсаалтаас хасах</button>')

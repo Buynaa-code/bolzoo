@@ -838,6 +838,11 @@
       return defaults;
     })();
 
+    /* Цэцэг + захидлын мэндчилгээ бол тусдаа, энгийн хуудсанд харагдана */
+    if(CONFIG.mode === 'flower'){
+      window.location.replace('greet.html' + (INVITE_ID ? '?id=' + encodeURIComponent(INVITE_ID) : '') + window.location.hash);
+    }
+
     function mergeIntoConfig(c){
       if(!c) return;
       for(var k in c){ if(c[k]!==undefined && c[k]!==null && c[k]!==''){ CONFIG[k]=c[k]; } }
@@ -924,6 +929,10 @@
     if(INVITE_ID && window.BolzooAPI){
       BolzooAPI.getInvite(INVITE_ID).then(function(rec){
         if(rec && rec.config){
+          if(rec.config.mode === 'flower'){
+            window.location.replace('greet.html?id=' + encodeURIComponent(INVITE_ID));
+            return;
+          }
           mergeIntoConfig(rec.config);
           applyContent();
           // Аудио модуль эхлүүлэхээс өмнө config ирсэн бол videoId шинэчлэх
