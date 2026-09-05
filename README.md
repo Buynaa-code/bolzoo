@@ -35,4 +35,22 @@ node server.js
 
 ## Deploy
 
-Deployed as a pure static site on Vercel. Backend is Supabase (`invites` table with RLS).
+Vercel дээр цэвэр статик сайтаар deploy хийгддэг (build алхам байхгүй — `vercel.json`-д
+`buildCommand: null`, `outputDirectory: "."`). Backend нь Supabase (`invites` хүснэгт, RLS-тэй).
+
+Vercel-ийн GitHub integration холбогдсон бол `main` руу push хийх бүрд production,
+бусад branch/PR дээр preview автоматаар deploy болно. CLI-аар гараар хийх бол:
+
+```bash
+npx vercel --prod
+```
+
+Deploy болсны дараа шалгах хуудсууд:
+
+| Зам | Юу байх ёстой |
+| --- | --- |
+| `/` эсвэл `/create` | Нүүр хуудас — горим сонгох (цэцэг + захидал / болзооны урилга) |
+| `/greet.html` | Цэцэг + захидлын мэндчилгээ (хүлээн авагч тал) |
+| `/bolzoo.html` | Болзооны урилга (хүлээн авагч тал) |
+| `/dashboard.html` | Илгээсэн зүйлс ба ирсэн хариунууд |
+| `/assets/bolzoo-garden.js` | Цэцэг, захидлын цаасны сан — 200 буцаах ёстой |
