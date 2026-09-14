@@ -306,6 +306,7 @@ server.listen(PORT, () => {
   console.log('  Dashboard   :  ' + url + '/dashboard.html');
   console.log('  Admin page  :  ' + url + '/admin.html');
   console.log('  Invite (id) :  ' + url + '/bolzoo.html?id=<ID>');
+  console.log('  Greeting    :  ' + url + '/greet.html?id=<ID>');
   console.log('  API health  :  ' + url + '/api/health');
   console.log('  Admin pw    :  ' + ADMIN_PASSWORD + '  (set ADMIN_PASSWORD env to change)');
   console.log('');

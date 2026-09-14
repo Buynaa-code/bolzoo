@@ -855,14 +855,16 @@
       return defaults;
     })();
 
-    /* Аргадах захидлыг argadah.html үзүүлдэг. Хэрэв энэ хуудсаар ирвэл шилжүүлнэ
-       (хуучин хадгалсан линк, эсвэл гараар бичсэн хаяг). */
-    function redirectIfSorry(cfg){
-      if(!cfg || cfg.mode !== 'sorry') return false;
-      window.location.replace('argadah.html' + window.location.search + window.location.hash);
+    /* Энэ хуудас зөвхөн болзооны урилгыг үзүүлнэ. Бусад горим өөрийн хуудастай —
+       хуучин хадгалсан линк эсвэл гараар бичсэн хаягаар ирвэл зөв рүү нь шилжүүлнэ. */
+    var MODE_PAGES = { sorry:'argadah.html', flower:'greet.html' };
+    function redirectByMode(cfg){
+      var page = cfg && MODE_PAGES[cfg.mode];
+      if(!page) return false;
+      window.location.replace(page + window.location.search + window.location.hash);
       return true;
     }
-    if(redirectIfSorry(CONFIG)) return;
+    if(redirectByMode(CONFIG)) return;
 
     function mergeIntoConfig(c){
       if(!c) return;
@@ -949,7 +951,7 @@
     /* Load config from backend if ?id=xxx present */
     if(INVITE_ID && window.BolzooAPI){
       BolzooAPI.getInvite(INVITE_ID).then(function(rec){
-        if(rec && redirectIfSorry(rec.config)) return;
+        if(rec && redirectByMode(rec.config)) return;
         if(rec && rec.config){
           mergeIntoConfig(rec.config);
           applyContent();

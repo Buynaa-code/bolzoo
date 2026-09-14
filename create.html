@@ -3,208 +3,176 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Болзооны урилга үүсгэх 💌</title>
+<title>Bolzoo — цэцэг, захидал, урилга илгээх</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Comfortaa:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/styles.css">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root{
-    --page:#fff7f8;
-    --panel:#ffffffd9;
-    --line:#f8d7e2;
-    --field:#fffefe;
-    --hot:#ff4d82;
-    --violet:#9d63e6;
-    --soft-shadow:0 28px 70px -34px rgba(105,39,78,.35);
+    --ink:#3d2433;
+    --muted:#8b7285;
+    --line:#f0e2e8;
+    --accent:#ef5b87;
+    --accent-soft:#ffe9f0;
+    --card:#ffffff;
+    --radius:16px;
   }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0; padding:0;}
   body{
-    background:linear-gradient(135deg,#fff7f8 0%,#fffaf8 54%,#fff2f8 100%);
+    font-family:'Nunito',system-ui,sans-serif;
+    color:var(--ink);
+    background:linear-gradient(180deg,#fffaf8 0%,#fff6f9 40%,#fdf6fb 100%);
+    min-height:100vh;
+    font-size:15px;
+    line-height:1.5;
   }
-  html,body{width:100%; overflow-x:hidden;}
-  *,*::before,*::after{min-width:0;}
-  h1{
-    font-family:'Comfortaa',sans-serif;
-    font-weight:700;
-    font-size:30px;
-    line-height:1.18;
-    margin:0 0 8px;
-    letter-spacing:0;
+  a{color:var(--accent);}
+
+  /* ---------- shell ---------- */
+  .top{
+    display:flex; align-items:center; justify-content:space-between; gap:14px;
+    width:min(1120px, calc(100% - 32px));
+    margin:0 auto; padding:20px 0 4px;
   }
+  .brand{display:flex; align-items:center; gap:9px; font-weight:800; font-size:17px;}
+  .brand span{
+    width:30px; height:30px; border-radius:9px; display:grid; place-items:center;
+    background:var(--accent-soft); font-size:15px;
+  }
+  .top-link{
+    font-size:13px; font-weight:800; text-decoration:none;
+    padding:8px 14px; border-radius:999px;
+    border:1px solid var(--line); background:#fff; color:var(--accent);
+  }
+  .top-link:hover{border-color:var(--accent);}
+
   .wrap{
-    width:min(1360px, calc(100% - 28px));
-    max-width:1360px;
-    margin:14px auto;
-    padding:28px;
-    display:grid;
-    grid-template-columns:minmax(0,1fr) 490px;
-    gap:30px;
-    background:rgba(255,255,255,.72);
-    border:1px solid rgba(255,214,226,.72);
-    border-radius:20px;
-    box-shadow:var(--soft-shadow);
+    width:min(1120px, calc(100% - 32px));
+    margin:0 auto; padding:14px 0 60px;
+    display:grid; grid-template-columns:minmax(0,1fr) 360px; gap:28px;
+    align-items:start;
   }
-  .topbar{
-    grid-column:1/-1;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:18px;
+  .col{min-width:0;}
+
+  h1{font-size:26px; line-height:1.25; margin:14px 0 6px; font-weight:800;}
+  .lede{margin:0 0 22px; color:var(--muted); font-size:14px;}
+
+  /* ---------- steps ---------- */
+  .steps{display:flex; gap:8px; margin:0 0 18px; flex-wrap:wrap;}
+  .steps b{
+    display:inline-flex; align-items:center; gap:7px;
+    font-size:12px; font-weight:800; color:var(--muted);
+    padding:6px 12px; border-radius:999px; background:#fff; border:1px solid var(--line);
   }
-  .main-col{min-width:0;}
-  .preview-wrap,
-  .form-card,
-  .preview-card,
-  .side-card,
-  .music-card{max-width:100%; min-width:0;}
-  .steps{
-    display:flex;
-    align-items:center;
-    gap:0;
-    color:#8b7489;
-    font-size:15px;
-    font-weight:800;
+  .steps b i{
+    font-style:normal; width:18px; height:18px; border-radius:50%;
+    display:grid; place-items:center; font-size:11px;
+    background:var(--line); color:#7a5d6d;
   }
-  .step{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    min-height:34px;
-    padding:0 22px 0 0;
-    margin-right:18px;
-    border-right:1px solid rgba(248,215,226,.9);
-    white-space:nowrap;
+  .steps b.on{color:var(--accent); border-color:#ffd2e0;}
+  .steps b.on i{background:var(--accent); color:#fff;}
+
+  /* ---------- cards ---------- */
+  .card{
+    background:var(--card); border:1px solid var(--line);
+    border-radius:var(--radius); padding:22px;
+    box-shadow:0 18px 40px -34px rgba(90,40,70,.5);
   }
-  .step:last-child{border-right:0; margin-right:0;}
-  .step-num{
-    width:32px;
-    height:32px;
-    border-radius:50%;
-    display:grid;
-    place-items:center;
-    background:#fff;
-    color:#6e5a6d;
-    border:1px solid rgba(248,215,226,.9);
-    box-shadow:0 8px 18px -16px rgba(90,42,70,.45);
+  .card + .card{margin-top:16px;}
+  .card h2{
+    font-size:13px; font-weight:800; letter-spacing:.4px; text-transform:uppercase;
+    color:var(--muted); margin:0 0 14px;
   }
-  .step.on{color:var(--hot);}
-  .step.on .step-num{
-    color:#fff;
-    border-color:transparent;
-    background:linear-gradient(135deg,#ff7ca4,#ff4d82);
+
+  /* ---------- mode picker ---------- */
+  .modes{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+  .mode{
+    display:flex; gap:12px; align-items:flex-start; text-align:left;
+    padding:16px; border-radius:14px; cursor:pointer;
+    border:1.5px solid var(--line); background:#fff; font:inherit; color:inherit;
+    transition:border-color .15s, background .15s, transform .15s;
   }
-  .preview-kicker{
-    display:flex;
-    align-items:center;
-    gap:8px;
-    color:#61305a;
-    font-size:17px;
-    font-weight:900;
-    white-space:nowrap;
-  }
-  .title-block{
-    display:flex;
-    align-items:flex-start;
-    gap:16px;
-    margin:22px 0 28px;
-  }
-  .title-icon{
-    width:48px;
-    height:48px;
-    border-radius:14px;
-    display:grid;
-    place-items:center;
-    background:linear-gradient(145deg,#fff,#ffe8f0);
-    border:1px solid rgba(248,215,226,.8);
-    box-shadow:0 14px 28px -22px rgba(90,42,70,.5);
-    font-size:24px;
-    flex:0 0 auto;
-  }
-  .subtitle{
-    color:#816e82;
-    margin:0;
-    font-size:14px;
-    line-height:1.55;
-    font-weight:700;
-  }
-  .card,
-  .form-card,
-  .preview-card,
-  .side-card{
-    border-radius:18px;
-    border:1px solid rgba(248,215,226,.78);
-    background:var(--panel);
-    box-shadow:0 24px 54px -38px rgba(105,39,78,.36);
-    backdrop-filter:blur(14px);
-  }
-  .form-card{padding:28px 30px;}
-  .field{margin:0 0 26px;}
+  .mode:hover{transform:translateY(-2px);}
+  .mode.on{border-color:var(--accent); background:#fff8fa;}
+  .mode-ic{font-size:22px; line-height:1;}
+  .mode strong{display:block; font-size:15px; margin-bottom:2px;}
+  .mode small{color:var(--muted); font-size:12.5px; line-height:1.45; display:block;}
+
+  /* ---------- fields ---------- */
+  .field{margin:0 0 18px;}
+  .field:last-child{margin-bottom:0;}
   label{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    margin:0 0 12px;
-    color:var(--hot);
-    font-size:14px;
-    font-weight:900;
-    text-transform:uppercase;
-    letter-spacing:0;
+    display:block; margin:0 0 7px;
+    font-size:12.5px; font-weight:800; color:#6d5163; letter-spacing:.2px;
   }
-  .label-icon{font-size:18px; line-height:1;}
-  input, textarea, select{
-    width:100%;
-    min-height:58px;
-    padding:15px 18px;
-    border:1px solid #efd4de;
-    border-radius:10px;
-    color:#3e1738;
-    background:var(--field);
-    font-family:'Nunito',sans-serif;
-    font-size:15px;
-    font-weight:800;
-    letter-spacing:0;
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.85);
+  label em{font-style:normal; color:var(--accent);}
+  label span.opt{color:#b09aa8; font-weight:700;}
+  input, textarea{
+    width:100%; padding:12px 14px;
+    border:1px solid #ecdce4; border-radius:12px;
+    font-family:'Nunito',sans-serif; font-size:14.5px; font-weight:600;
+    color:var(--ink); background:#fffdfe;
   }
-  textarea{min-height:64px; resize:vertical;}
-  input:focus, textarea:focus, select:focus{
-    outline:none;
-    border-color:#ff74a0;
-    box-shadow:0 0 0 4px rgba(255,77,130,.12);
+  input:focus, textarea:focus{
+    outline:none; border-color:var(--accent);
+    box-shadow:0 0 0 3px rgba(239,91,135,.12);
   }
-  .hint{
-    margin-top:8px;
-    color:#8b7b8d;
-    font-size:12px;
-    line-height:1.45;
-    font-weight:700;
+  textarea{resize:vertical; min-height:76px; line-height:1.5;}
+  textarea.hand{
+    font-family:'Caveat',cursive; font-weight:600;
+    font-size:21px; line-height:30px; min-height:130px;
   }
-  .themes{display:grid; grid-template-columns:repeat(8,minmax(42px,1fr)); gap:14px;}
+  .hint{margin:6px 0 0; font-size:12px; color:var(--muted);}
+  .row2{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+
+  /* ---------- code gate ---------- */
+  .gate{border-color:#ffd9e5; background:#fffafc;}
+  .gate.ok{border-color:#bfe3c8; background:#f8fdf9;}
+  .gate.bad{border-color:#f4c4c4; background:#fffafa;}
+  #accessCode{font-family:ui-monospace,Menlo,Consolas,monospace; letter-spacing:1.5px; text-transform:uppercase;}
+  .code-status{margin-top:8px; font-size:12.5px; font-weight:800; min-height:18px; color:var(--muted);}
+  .code-status.ok{color:#3f9457;}
+  .code-status.bad{color:#cf5757;}
+
+  /* ---------- flower picker ---------- */
+  .flowers{display:grid; grid-template-columns:repeat(5,1fr); gap:8px;}
+  .flower{
+    cursor:pointer; padding:10px 4px 8px; border-radius:14px;
+    border:1.5px solid var(--line); background:#fff; text-align:center;
+    transition:border-color .15s, transform .15s, background .15s;
+  }
+  .flower:hover{transform:translateY(-2px);}
+  .flower.on{border-color:var(--accent); background:#fff8fa;}
+  .flower svg{width:100%; height:auto; max-height:78px; display:block; margin:0 auto 4px;}
+  .flower b{display:block; font-size:11px; font-weight:800;}
+  .flower-note{margin:9px 0 0; font-size:12.5px; color:var(--muted);}
+
+  /* ---------- paper picker ---------- */
+  .papers{display:grid; grid-template-columns:repeat(5,1fr); gap:8px;}
+  .paper-opt{
+    cursor:pointer; border-radius:12px; padding:5px;
+    border:1.5px solid var(--line); background:#fff;
+    transition:border-color .15s, transform .15s;
+  }
+  .paper-opt:hover{transform:translateY(-2px);}
+  .paper-opt.on{border-color:var(--accent);}
+  .paper-chip{
+    height:46px; border-radius:8px; margin-bottom:5px;
+    background:var(--pb); border:1px solid var(--pe);
+    background-image:repeating-linear-gradient(to bottom, transparent 0 9px, var(--pl) 9px 10px), var(--pb);
+  }
+  .paper-opt b{display:block; font-size:10.5px; font-weight:800; text-align:center; color:#6d5163;}
+
+  /* ---------- theme dots ---------- */
+  .themes{display:flex; flex-wrap:wrap; gap:8px;}
   .theme{
-    position:relative;
-    cursor:pointer;
-    height:62px;
-    border-radius:12px;
-    border:1px solid rgba(248,215,226,.75);
-    transition:transform .15s, border-color .15s, box-shadow .15s;
-    overflow:hidden;
+    width:32px; height:32px; border-radius:50%; cursor:pointer;
+    border:2px solid #fff; box-shadow:0 0 0 1.5px var(--line);
+    transition:transform .15s, box-shadow .15s;
   }
-  .theme:hover{transform:translateY(-2px);}
-  .theme.on{border:2px solid var(--hot); box-shadow:0 14px 28px -20px rgba(255,77,130,.75);}
-  .theme.on::after{
-    content:"✓";
-    position:absolute;
-    inset:auto auto 50% 50%;
-    transform:translate(-50%,50%);
-    width:24px;
-    height:24px;
-    display:grid;
-    place-items:center;
-    border-radius:50%;
-    color:#ff5c8c;
-    background:#fff;
-    font-size:15px;
-    font-weight:900;
-  }
+  .theme:hover{transform:scale(1.1);}
+  .theme.on{box-shadow:0 0 0 2.5px var(--accent);}
   .theme[data-theme="coral"]{background:linear-gradient(135deg,#ff8fa6,#f76a8e);}
   .theme[data-theme="lavender"]{background:linear-gradient(135deg,#c9b6e4,#8e6dcf);}
   .theme[data-theme="peach"]{background:linear-gradient(135deg,#ffb38a,#f78e5a);}
@@ -214,538 +182,352 @@
   .theme[data-theme="galaxy"]{background:linear-gradient(135deg,#b19cff,#6b47d9);}
   .theme[data-theme="aurora"]{background:linear-gradient(135deg,#7ee1c0,#4b9bcf);}
 
-  /* ---------- Горим сонгогч ---------- */
-  .mode-tabs{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:0 0 28px;}
-  .mode-tab{
-    display:flex; align-items:center; gap:13px;
-    padding:15px 16px; cursor:pointer; text-align:left;
-    border:1px solid rgba(248,215,226,.8); border-radius:14px;
-    background:#fff; font-family:'Nunito',sans-serif;
-    box-shadow:0 12px 26px -24px rgba(90,42,70,.5);
-    transition:transform .15s, border-color .15s, background .15s;
-  }
-  .mode-tab:hover{transform:translateY(-2px);}
-  .mode-tab.on{
-    border:2px solid var(--hot); padding:14px 15px;
-    background:linear-gradient(135deg,#fff6f9,#ffe9f2);
-    box-shadow:0 16px 30px -22px rgba(255,77,130,.7);
-  }
-  .mt-emoji{font-size:27px; line-height:1; flex:0 0 auto;}
-  .mode-tab strong{display:block; color:#4b173f; font-size:14px; font-weight:900; line-height:1.2;}
-  .mode-tab small{display:block; margin-top:3px; color:#8b7b8d; font-size:11.5px; font-weight:700; line-height:1.3;}
+  /* ---------- video preview ---------- */
+  .video-box{display:none; margin-top:10px; gap:10px; align-items:center;}
+  .video-box img{width:74px; border-radius:8px; display:block;}
+  .video-box .v-txt{font-size:12px; font-weight:800; color:var(--muted); min-width:0;}
+  .video-err{display:none; margin-top:8px; font-size:12px; font-weight:800; color:#cf5757;}
 
-  /* Талбарын дугаарыг CSS counter-аар — горим солиход өөрөө зөв дугаарлагдана
-     (display:none талбар counter-ыг нэмэгдүүлэхгүй тул дугаар үргэлж дараалсан байна) */
-  .form-card{counter-reset:fnum;}
-  .code-gate, .field{counter-increment:fnum;}
-  .lbl::before{content:counter(fnum) ". ";}
+  /* ---------- extras ---------- */
+  details{border-top:1px solid var(--line); margin-top:18px; padding-top:14px;}
+  summary{
+    cursor:pointer; list-style:none; font-size:13px; font-weight:800; color:var(--accent);
+  }
+  summary::-webkit-details-marker{display:none;}
+  summary::before{content:'＋ '; font-weight:800;}
+  details[open] summary::before{content:'－ ';}
+  details .field{margin-top:16px;}
 
-  /* Горимд харьяалагдах талбарууд */
-  [data-mode="date"] .only-sorry{display:none;}
-  [data-mode="sorry"] .only-date{display:none;}
-
-  /* ---------- Цаас / стикер сонгогч ---------- */
-  .papers{display:grid; grid-template-columns:repeat(4,1fr); gap:12px;}
-  .paper-opt, .sticker-opt{
-    padding:0; cursor:pointer; overflow:hidden;
-    border:1px solid rgba(248,215,226,.75); border-radius:12px;
-    background:#fff; font-family:'Nunito',sans-serif;
-    transition:transform .15s, border-color .15s, box-shadow .15s;
-  }
-  .paper-opt:hover, .sticker-opt:hover{transform:translateY(-2px);}
-  .paper-opt.on, .sticker-opt.on{
-    border:2px solid var(--hot);
-    box-shadow:0 14px 28px -20px rgba(255,77,130,.75);
-  }
-  .paper-swatch{
-    height:54px; padding:0 11px;
-    display:flex; flex-direction:column; justify-content:center; gap:5px;
-    border-bottom:1px solid rgba(248,215,226,.6);
-  }
-  .paper-swatch i{height:3px; border-radius:2px; background:currentColor; opacity:.45;}
-  .paper-swatch i:nth-child(1){width:68%;}
-  .paper-swatch i:nth-child(2){width:92%;}
-  .paper-swatch i:nth-child(3){width:50%;}
-  .paper-name, .sticker-name{
-    display:block; padding:7px 4px;
-    color:#6d536b; font-size:11px; font-weight:800; line-height:1.2;
-  }
-  .stickers{display:grid; grid-template-columns:repeat(4,1fr); gap:12px;}
-  .sticker-art{
-    height:74px; display:flex; align-items:center; justify-content:center;
-    padding:6px; overflow:hidden;
-    background:linear-gradient(160deg,#fffaf7,#fff3f7);
-    border-bottom:1px solid rgba(248,215,226,.6);
-  }
-  /* max-height хувиар өгвөл grid/flex дотор тойрог хамаарал үүсч хязгаарлахгүй —
-     тул тогтмол пикселээр өгнө */
-  .sticker-art img{max-height:62px; max-width:100%; width:auto; object-fit:contain;}
-  .sticker-art svg{width:56px; height:56px;}
-  .sticker-none{color:#c9a9bb; font-size:26px; font-weight:800;}
-
-  /* ---------- Амлалтын сонголт ---------- */
-  .promise-chips{display:flex; flex-wrap:wrap; gap:9px; margin-bottom:12px;}
-  .chip{
-    padding:9px 14px; cursor:pointer;
-    border:1px solid #efd4de; border-radius:999px; background:#fff;
-    color:#6d536b; font-family:'Nunito',sans-serif; font-size:13px; font-weight:800;
-    transition:background .15s, border-color .15s, color .15s;
-  }
-  .chip:hover{border-color:var(--hot);}
-  .chip.on{
-    border-color:var(--hot); color:var(--hot);
-    background:linear-gradient(135deg,#fff0f6,#ffe1ee);
-  }
-  .chip.on::before{content:"✓ ";}
-  .promise-add{display:grid; grid-template-columns:minmax(0,1fr) auto; gap:10px; align-items:start;}
-  .promise-add input{min-height:48px;}
-  .promise-add .btn{min-height:48px; white-space:nowrap;}
-  .promise-picked{list-style:none; margin:12px 0 0; padding:0;}
-  .promise-picked li{
-    display:grid; grid-template-columns:minmax(0,1fr) 32px; gap:10px; align-items:center;
-    margin-bottom:8px; padding:11px 12px 11px 14px;
-    border:1px dashed rgba(255,150,180,.75); border-radius:12px;
-    background:linear-gradient(135deg,#fffdfb,#fff5f9);
-    color:#4b173f; font-size:13.5px; font-weight:800; line-height:1.35;
-  }
-  .promise-picked button{
-    width:32px; height:32px; cursor:pointer;
-    border:0; border-radius:50%; background:#ffe6ee;
-    color:var(--hot); font-size:15px; font-weight:900; line-height:1;
-  }
-  .promise-picked button:hover{background:#ffd3e2;}
-  .promise-empty{margin:12px 0 0; color:#9a8a9c; font-size:12.5px; font-weight:700;}
-
+  /* ---------- buttons ---------- */
   .btn{
-    min-height:54px;
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    gap:10px;
-    border-radius:10px;
-    font-size:15px;
-    padding:14px 22px;
-    box-shadow:0 16px 30px -18px rgba(247,106,142,.72);
+    border:none; cursor:pointer; font-family:'Nunito',sans-serif;
+    font-weight:800; font-size:14.5px; padding:13px 22px; border-radius:999px;
+    color:#fff; background:var(--accent); text-decoration:none;
+    display:inline-flex; align-items:center; justify-content:center; gap:6px;
+    transition:transform .15s, opacity .15s;
   }
-  .btn.small{min-height:42px; padding:9px 16px; font-size:13px;}
-  .btn.secondary{
-    color:#6a4062;
-    background:#fff;
-    border:1px solid rgba(248,215,226,.9);
-    box-shadow:0 12px 24px -22px rgba(90,42,70,.5);
-  }
-  .btn.wide{
-    width:100%;
-    background:linear-gradient(100deg,#ff4f86,#ff5f93 54%,#ff4d82);
-  }
-  .btn.wide.muted{opacity:.55; box-shadow:none;}
-  .form-actions{display:grid; grid-template-columns:1fr 1fr 1.6fr; gap:14px; margin-top:22px;}
+  .btn:hover{transform:translateY(-1px);}
+  .btn:disabled{opacity:.45; cursor:not-allowed; transform:none;}
+  .btn.ghost{background:#fff; color:var(--accent); border:1.5px solid #ffd2e0;}
+  .btn.sm{padding:9px 15px; font-size:13px;}
+  .actions{display:flex; gap:10px; margin-top:20px; flex-wrap:wrap;}
+  .actions .btn:last-child{flex:1; min-width:180px;}
+  .status{min-height:20px; margin:12px 0 0; font-size:13px; font-weight:800; color:var(--muted);}
+
+  /* ---------- result ---------- */
+  .result{display:none; margin-top:16px; padding:16px; border-radius:14px; background:#f8fdf9; border:1px solid #cbe8d3;}
+  .result.on{display:block;}
   .link-box{
-    margin-top:8px;
-    background:linear-gradient(135deg,#fff6f9,#ffe8f0);
-    border:1px solid #ffcbd9;
-    border-radius:12px;
-    padding:14px 16px;
-    word-break:break-all;
-    color:#3e1738;
-    font-family:ui-monospace, Menlo, monospace;
-    font-size:13px;
-    line-height:1.45;
-    font-weight:800;
+    font-family:ui-monospace,Menlo,Consolas,monospace; font-size:12.5px;
+    word-break:break-all; background:#fff; border:1px solid #dceee1;
+    border-radius:10px; padding:11px 12px; margin-bottom:10px;
   }
-  .link-box::before{
-    content:"Таны урилгын линк";
-    display:block;
-    margin:0 0 5px;
-    color:#6d536b;
-    font-family:'Nunito',sans-serif;
-    font-size:12px;
-    font-weight:900;
-  }
-  .link-actions{display:flex; gap:10px; margin-top:10px; flex-wrap:wrap;}
-  .next-step{
-    margin-top:14px;
-    padding:16px 18px;
-    border-radius:14px;
-    background:linear-gradient(135deg,#f5eeff,#faf0ff);
-    border:1px solid #e3d2f9;
-    display:flex;
-    align-items:center;
-    gap:14px;
-    flex-wrap:wrap;
-    animation:nextStepIn .3s ease;
-  }
-  @keyframes nextStepIn{ from{opacity:0; transform:translateY(-4px);} to{opacity:1; transform:none;} }
-  .next-step-icon{
-    width:38px; height:38px; flex:0 0 38px;
-    border-radius:50%;
-    display:grid; place-items:center;
-    background:#fff;
-    border:1px solid #e3d2f9;
-    font-size:18px;
-  }
-  .next-step-text{flex:1 1 220px; min-width:0; color:#5a4270; font-size:13px; line-height:1.5; font-weight:700;}
-  .next-step-text strong{color:var(--violet); font-weight:900;}
-  .next-step .btn{flex:0 0 auto; white-space:nowrap; background:linear-gradient(100deg,#a86bf0,#9d63e6); box-shadow:0 14px 28px -18px rgba(105,39,190,.55);}
-  @media (max-width:520px){ .next-step{flex-direction:column; align-items:stretch; text-align:center;} }
-  .status{margin-top:14px; min-height:20px; font-weight:900; font-size:13px; color:var(--hot); text-align:center;}
-  .backend-row{margin-top:22px; padding-top:18px; border-top:1px solid rgba(248,215,226,.78); display:flex; align-items:center; justify-content:center; gap:10px; flex-wrap:wrap;}
-  #backendBadge{font-size:12px; color:#8b7b8d; font-weight:800;}
+  .result-actions{display:flex; gap:8px; flex-wrap:wrap;}
 
-  .code-gate{
-    margin:0 0 26px;
-    padding:0;
-    border:0;
-    background:transparent;
-  }
-  .code-gate.ok .code-input{border-color:#7ecb8b; box-shadow:0 0 0 4px rgba(126,203,139,.13);}
-  .code-gate.bad .code-input{border-color:#e46060; box-shadow:0 0 0 4px rgba(228,96,96,.12);}
-  .code-gate .code-input{font-family:ui-monospace,Menlo,monospace; text-transform:uppercase; letter-spacing:0; font-weight:900; font-size:16px;}
-  .code-gate .code-status{margin-top:8px; font-size:12px; font-weight:800; min-height:16px;}
-  .code-gate .code-status.ok{color:#3a8a4a;}
-  .code-gate .code-status.bad{color:#c74747;}
-  .code-gate .code-help{
-    margin-top:14px;
-    padding:16px 18px;
-    border:1px solid #ffcbd9;
-    border-left:4px solid var(--hot);
-    border-radius:10px;
-    background:linear-gradient(135deg,#fff7fa,#fff1f6);
-    color:#735f73;
-    font-size:13px;
-    line-height:1.6;
-    font-weight:700;
-  }
-  .code-gate .code-help strong{display:block; color:#5d3a58; margin-bottom:5px; font-weight:900;}
-  #videoPreview.video-preview{
-    margin-top:14px !important;
-    padding:12px !important;
-    border:1px solid #ffd8b5 !important;
-    border-radius:12px !important;
-    background:linear-gradient(135deg,#fffaf5,#fff7ed) !important;
-  }
-  .video-thumbbox{display:flex; gap:12px; align-items:center;}
-  #videoThumb{width:110px; height:62px; object-fit:cover; border-radius:8px; background:#eee; box-shadow:0 8px 18px -14px rgba(90,42,70,.45);}
-  .video-status{font-weight:900; font-size:14px; color:#34a853;}
-  .video-id{font-family:ui-monospace,Menlo,monospace; font-size:12px; color:#8b7b8d; word-break:break-all; margin:2px 0;}
-  .video-open{font-size:12px; color:var(--hot); font-weight:900; text-decoration:none;}
-
-  .preview-wrap{position:sticky; top:20px; align-self:start;}
-  .refresh{text-align:right; margin:0 0 18px;}
-  .refresh .btn{border-radius:999px; color:var(--hot); padding-inline:20px;}
-  .preview-card{padding:28px;}
-  .preview-title{margin:0 0 20px; color:#4b173f; font-size:15px; font-weight:900;}
-  .phone-shell{
-    width:min(355px,100%);
-    margin:0 auto 16px;
-    padding:8px;
-    border-radius:46px;
-    background:linear-gradient(145deg,#ffc4d3,#fff 36%,#ff8fb0);
-    box-shadow:0 28px 54px -30px rgba(255,77,130,.68);
+  /* ---------- preview ---------- */
+  .side{position:sticky; top:20px;}
+  .phone{
+    width:270px; margin:0 auto; border-radius:34px; padding:9px;
+    background:#2b1c26; box-shadow:0 26px 60px -34px rgba(60,25,45,.75);
   }
   .phone-screen{
-    position:relative;
-    aspect-ratio:9/17.5;
-    overflow:hidden;
-    border-radius:38px;
-    background:#fff;
+    position:relative; border-radius:26px; overflow:hidden; background:#fff; height:520px;
   }
-  .phone-status{
-    position:absolute;
-    z-index:3;
-    top:14px;
-    left:18px;
-    right:18px;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    color:#111;
-    font-size:12px;
-    font-weight:900;
-    pointer-events:none;
+  /* Жинхэнэ утасны өргөнөөр (390px) render хийгээд багасгаж харуулна */
+  .phone-screen iframe{
+    width:390px; height:805px; border:0; display:block;
+    transform:scale(.6462); transform-origin:0 0;
   }
-  .phone-camera{
-    position:absolute;
-    z-index:4;
-    top:0;
-    left:50%;
-    width:78px;
-    height:6px;
-    border-radius:0 0 999px 999px;
-    background:#5c183a;
-    transform:translateX(-50%);
-    opacity:.9;
+  .phone-notch{
+    position:absolute; top:7px; left:50%; transform:translateX(-50%);
+    width:64px; height:5px; border-radius:99px; background:rgba(0,0,0,.35); z-index:2;
   }
-  .preview-frame{
-    position:absolute;
-    inset:0;
-    width:100%;
-    height:100%;
-    border:0;
-    background:#fffdfb;
-  }
-  .phone-dots{display:flex; justify-content:center; gap:10px; margin-top:10px;}
-  .phone-dots i{width:11px; height:11px; border-radius:50%; background:#e9dfe5;}
-  .phone-dots i:first-child{background:#ff5d93;}
-  .side-card{padding:26px; margin-top:34px;}
-  .side-card h2{
-    margin:0 0 18px;
-    color:#4b173f;
-    font-family:'Nunito',sans-serif;
-    font-size:19px;
-    line-height:1.2;
-    font-weight:900;
-  }
-  .tip-row{display:grid; grid-template-columns:34px minmax(0,1fr); gap:14px; align-items:center; color:#7d687d; font-size:13px; line-height:1.45; font-weight:700; margin-top:18px;}
-  .tip-row span:first-child{width:28px; height:28px; display:grid; place-items:center; border-radius:50%; background:#fff1d9; color:#c88318;}
-  .tip-row:nth-child(3) span:first-child{background:#f5dcff; color:#9d63e6;}
-  .tip-row:nth-child(4) span:first-child{background:#ffe1dc; color:#ff6f61;}
-  .music-card{
-    display:grid;
-    grid-template-columns:minmax(0,1fr) 58px;
-    gap:16px;
-    align-items:center;
-    padding:26px;
-    margin-top:28px;
-    background:linear-gradient(135deg,#fff,#fbf3ff);
-  }
-  .music-card h2{margin:0 0 8px; color:#7a4dcf; font-size:19px; font-weight:900;}
-  .music-card p{margin:0 0 16px; color:#7d687d; font-size:13px; line-height:1.45; font-weight:700;}
-  .music-heart{width:58px; height:58px; border-radius:50%; display:grid; place-items:center; background:#ffe1ef; font-size:24px;}
-  .wave{height:34px; display:flex; align-items:center; gap:4px;}
-  .wave i{width:4px; border-radius:999px; background:linear-gradient(180deg,#9d63e6,#ff8fb0); opacity:.7;}
-  .wave i:nth-child(1){height:10px}.wave i:nth-child(2){height:18px}.wave i:nth-child(3){height:25px}.wave i:nth-child(4){height:13px}.wave i:nth-child(5){height:30px}.wave i:nth-child(6){height:16px}.wave i:nth-child(7){height:22px}.wave i:nth-child(8){height:12px}.wave i:nth-child(9){height:26px}.wave i:nth-child(10){height:15px}.wave i:nth-child(11){height:20px}.wave i:nth-child(12){height:11px}
-  .footer-note{margin:20px 0 0; color:#9a6b84; text-align:center; font-size:13px; font-weight:800;}
+  .side-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;}
+  .side-head h2{margin:0;}
+  .backend{margin-top:14px; font-size:11.5px; font-weight:700; color:var(--muted); text-align:center; line-height:1.45;}
 
-  @media (max-width:1120px){
-    .wrap{grid-template-columns:1fr; max-width:860px;}
-    .preview-wrap{position:relative; top:auto;}
-    .preview-kicker{display:none;}
+  /* ---------- mode visibility ----------
+     Горим бүр өөрийн хэсгүүдтэй. Шинэ горим нэмэхэд энд нэг мөр нэмнэ. */
+  body[data-mode="flower"] .only-date,
+  body[data-mode="flower"] .only-sorry{display:none;}
+  body[data-mode="date"] .only-flower,
+  body[data-mode="date"] .only-sorry{display:none;}
+  body[data-mode="sorry"] .only-flower,
+  body[data-mode="sorry"] .only-date{display:none;}
+  body[data-mode="flower"] .not-flower{display:none;}
+
+  /* ---------- аргадах: цаасны текстур / стикер / амлалт ---------- */
+  .textures{display:grid; grid-template-columns:repeat(4,1fr); gap:10px;}
+  .texture, .sticker-opt{
+    position:relative; padding:0; cursor:pointer; overflow:hidden;
+    border:1px solid var(--line); border-radius:12px; background:#fff;
+    font-family:inherit; transition:transform .15s, border-color .15s;
   }
-  @media (max-width:720px){
-    .wrap{width:100%; max-width:none; margin:0; padding:18px 12px 28px; border-radius:0; border-left:0; border-right:0;}
-    .topbar{align-items:flex-start;}
-    .steps{width:100%; display:grid; grid-template-columns:repeat(3,1fr); gap:8px; overflow:visible; padding-bottom:4px;}
-    .step{justify-content:center; gap:5px; margin:0; padding:0; border-right:0; font-size:11px; line-height:1.2; text-align:center; white-space:normal;}
-    .step-num{width:24px; height:24px; flex:0 0 24px; font-size:11px;}
-    .title-block{margin-top:16px;}
-    h1{font-size:24px;}
-    .form-card,.preview-card,.side-card,.music-card{padding:20px 16px; border-radius:16px;}
-    .themes{grid-template-columns:repeat(4,1fr); gap:10px;}
-    .theme{height:54px;}
-    .mode-tabs{grid-template-columns:1fr; gap:10px; margin-bottom:22px;}
-    .papers, .stickers{grid-template-columns:repeat(4,1fr); gap:8px;}
-    .paper-swatch{height:46px;}
-    .sticker-art{height:62px;}
+  .texture:hover, .sticker-opt:hover{transform:translateY(-2px);}
+  .texture.on, .sticker-opt.on{border:2px solid var(--accent); background:#fff8fa;}
+  .tex-swatch{
+    height:52px; padding:0 10px; display:flex; flex-direction:column;
+    justify-content:center; gap:5px; border-bottom:1px solid var(--line);
+  }
+  .tex-swatch i{height:3px; border-radius:2px; background:currentColor; opacity:.45;}
+  .tex-swatch i:nth-child(1){width:68%;} .tex-swatch i:nth-child(2){width:92%;} .tex-swatch i:nth-child(3){width:50%;}
+  .tex-name, .stk-name{display:block; padding:6px 4px; font-size:11px; font-weight:800; color:var(--muted); line-height:1.2;}
+  .stickers{display:grid; grid-template-columns:repeat(4,1fr); gap:10px;}
+  .stk-art{
+    height:70px; display:flex; align-items:center; justify-content:center;
+    padding:6px; overflow:hidden; border-bottom:1px solid var(--line);
+  }
+  /* max-height хувиар өгвөл flex дотор тойрог хамаарал үүсэх тул тогтмол пикселээр */
+  .stk-art img{max-height:58px; max-width:100%; width:auto; object-fit:contain;}
+  .stk-art svg{width:52px; height:52px;}
+  .stk-none{color:#c9a9bb; font-size:22px; font-weight:800;}
+  .chips{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:10px;}
+  .chip{
+    padding:8px 13px; cursor:pointer; border:1px solid var(--line); border-radius:999px;
+    background:#fff; font-family:inherit; font-size:12.5px; font-weight:800; color:var(--muted);
+  }
+  .chip.on{border-color:var(--accent); color:var(--accent); background:#fff8fa;}
+  .chip.on::before{content:"✓ ";}
+  .promise-add{display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px;}
+  .picked{list-style:none; margin:10px 0 0; padding:0;}
+  .picked li{
+    display:grid; grid-template-columns:minmax(0,1fr) 30px; gap:8px; align-items:center;
+    margin-bottom:7px; padding:9px 10px 9px 13px;
+    border:1px dashed var(--accent); border-radius:11px; background:#fff8fa;
+    font-size:13px; font-weight:800; line-height:1.35;
+  }
+  .picked button{
+    width:30px; height:30px; cursor:pointer; border:0; border-radius:50%;
+    background:#ffe6ee; color:var(--accent); font-size:14px; font-weight:900; line-height:1;
+  }
+
+  @media (max-width:960px){
+    .wrap{grid-template-columns:minmax(0,1fr);}
+    .side{position:static;}
+    .flowers,.papers{grid-template-columns:repeat(3,1fr);}
+    .modes{grid-template-columns:1fr;}
+  }
+  @media (max-width:520px){
+    .row2{grid-template-columns:1fr;}
+    .flowers,.papers{grid-template-columns:repeat(2,1fr);}
+    .textures,.stickers{grid-template-columns:repeat(3,1fr);}
     .promise-add{grid-template-columns:1fr;}
-    .form-actions{grid-template-columns:1fr;}
-    .preview-wrap{order:3;}
-    .phone-shell{width:min(330px,100%);}
+    h1{font-size:22px;}
   }
 </style>
 </head>
-<body>
+<body data-mode="flower">
+  <header class="top">
+    <div class="brand"><span>💌</span>Bolzoo</div>
+    <a class="top-link" href="dashboard.html">Ирсэн хариунууд →</a>
+    <a class="top-link" href="unelgee.html">Үнэ →</a>
+  </header>
+
   <div class="wrap">
-    <header class="topbar">
+    <main class="col">
       <div class="steps">
-        <span class="step on"><span class="step-num">1</span>Мэдээлэл бөглөх</span>
-        <span class="step"><span class="step-num">2</span>Preview харах</span>
-        <span class="step"><span class="step-num">3</span>Линк илгээх</span>
-      </div>
-      <div class="preview-kicker">✨ Preview</div>
-    </header>
-
-    <main class="main-col">
-      <div class="title-block">
-        <div class="title-icon" id="pageIcon">💌</div>
-        <div>
-          <h1 id="pageTitle">Болзооны урилга үүсгэх</h1>
-          <p class="subtitle" id="pageSubtitle">Формоо бөглөөд линкээ хүлээн авагчид илгээ. Тэр линкийг нээгээд хариу өгөх боломжтой.</p>
-        </div>
+        <b class="on"><i>1</i>Юу илгээхээ сонго</b>
+        <b class="on"><i>2</i>Бөглө</b>
+        <b><i>3</i>Линкээ илгээ</b>
       </div>
 
-      <section class="form-card" id="formCard" data-mode="date">
-        <div class="mode-tabs" id="modeTabs">
-          <button class="mode-tab on" type="button" data-mode="date">
-            <span class="mt-emoji">💌</span>
+      <h1>Юу илгээх вэ?</h1>
+      <p class="lede">Сонголтоо хийгээд формоо бөглө. Хүлээн авагчид яг ингэж харагдахыг preview-ээс шууд хараарай.</p>
+
+      <section class="card">
+        <div class="modes" id="modes">
+          <button type="button" class="mode on" data-mode="flower">
+            <span class="mode-ic">🌸</span>
+            <span>
+              <strong>Цэцэг + захидал</strong>
+              <small>Нэг цэцэг, гар бичмэл захидал. Хамгийн энгийн мэндчилгээ.</small>
+            </span>
+          </button>
+          <button type="button" class="mode" data-mode="date">
+            <span class="mode-ic">💌</span>
             <span>
               <strong>Болзооны урилга</strong>
-              <small>Уулзалт санал болгож, хариуг нь аваарай</small>
+              <small>Хүлээн авагч өдөр, цаг, төрлөө сонгож хариу өгнө.</small>
             </span>
           </button>
-          <button class="mode-tab" type="button" data-mode="sorry">
-            <span class="mt-emoji">🥺</span>
+          <button type="button" class="mode" data-mode="sorry">
+            <span class="mode-ic">🥺</span>
             <span>
               <strong>Аргадах захидал</strong>
-              <small>Гомдоосон бол уучлал гуйж эвлэрээрэй</small>
+              <small>Гомдоосон бол уучлал гуйж эвлэрээрэй.</small>
             </span>
           </button>
         </div>
+      </section>
 
-        <div class="code-gate" id="codeGate">
-          <label><span class="label-icon">🔑</span><span class="lbl">НЭВТРЭХ КОД *</span></label>
-          <input id="accessCode" class="code-input" type="text" placeholder="LOV-XXXXXX" maxlength="24" autocomplete="off" />
+      <section class="card gate" id="codeGate">
+        <h2>Нэвтрэх код</h2>
+        <div class="field">
+          <input id="accessCode" type="text" placeholder="LOV-XXXXXX" maxlength="24" autocomplete="off" />
           <div class="code-status" id="codeStatus"></div>
-          <div class="code-help">
-            <strong>💡 Энэ код ашиглагдана. Дараагийн урилгаа шинэ кодоор үүсгэнэ үү.</strong>
-            Кодгүй бол Instagram/Messenger-ээр надтай холбогдоно уу. Гүйлгээ хийсний дараа код илгээгдэнэ.<br>
-            Нэг код = нэг урилга. <a href="unelgee.html" target="_blank" rel="noopener" style="color:var(--hot); font-weight:900;">Үнэ харах →</a>
+          <p class="hint">Нэг код = нэг илгээлт. Кодгүй бол Instagram/Messenger-ээр холбогдоорой.</p>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Хэнд, хэнээс</h2>
+        <div class="row2">
+          <div class="field">
+            <label for="recipientName">Хүлээн авагчийн нэр <em>*</em></label>
+            <input id="recipientName" type="text" placeholder="жишээ: Аная" maxlength="30" />
+          </div>
+          <div class="field">
+            <label for="senderName">Таны нэр <span class="opt">(заавал биш)</span></label>
+            <input id="senderName" type="text" placeholder="жишээ: Мики" maxlength="30" />
           </div>
         </div>
+      </section>
+
+      <!-- ============ ЦЭЦЭГ + ЗАХИДАЛ ============ -->
+      <section class="card only-flower">
+        <h2>Цэцгээ сонго</h2>
+        <div class="flowers" id="flowerGrid"></div>
+        <p class="flower-note" id="flowerNote"></p>
+      </section>
+
+      <section class="card only-flower">
+        <h2>Захидлын цаас</h2>
+        <div class="papers" id="paperGrid"></div>
+        <div class="field" style="margin-top:18px;">
+          <label for="letterText">Захидлын бичвэр <span class="opt">(гар бичмэл фонтоор харагдана)</span></label>
+          <textarea id="letterText" class="hand" maxlength="400" placeholder="Чамайг санасандаа энэ цэцгийг илгээлээ…"></textarea>
+          <p class="hint">Хоосон орхивол автомат зөөлөн мэндчилгээ бичигдэнэ.</p>
+        </div>
+      </section>
+
+      <!-- ============ АРГАДАХ ЗАХИДАЛ ============ -->
+      <section class="card only-sorry">
+        <h2>Уучлалын захидал</h2>
         <div class="field">
-          <label><span class="label-icon">♙</span><span class="lbl" id="lblRecipient">УРИЛГЫН АВАГЧИЙН НЭР *</span></label>
-          <input id="recipientName" type="text" placeholder="жишээ: Аная" maxlength="30" />
-          <div class="hint" id="hintRecipient">Урилгыг хэнд илгээх вэ? (Жишээ нь: надтай болзоонд явах уу?)</div>
+          <label for="sorryReason">Юун дээр буруудсан бэ <span class="opt">(заавал биш)</span></label>
+          <input id="sorryReason" type="text" maxlength="80" placeholder="жишээ: Чиний төрсөн өдрийг мартсан" />
+          <p class="hint">Буруугаа хүлээсэн богино өгүүлбэр — захидлын дээр тодоор харагдана.</p>
         </div>
         <div class="field">
-          <label><span class="label-icon">💗</span><span class="lbl">ТАНЫ НЭР (ИЛГЭЭГЧ)</span></label>
-          <input id="senderName" type="text" placeholder="жишээ: Мики" maxlength="30" />
-          <div class="hint" id="hintSender">Ticket дээр “X”-ийн нэрийг тань харуулна</div>
+          <label for="sorryLetter">Захидлын бичвэр <span class="opt">(гар бичмэл фонтоор харагдана)</span></label>
+          <textarea id="sorryLetter" class="hand" maxlength="600" placeholder="Би чамайг гомдоосон гэдгээ мэдэж байна…"></textarea>
+          <p class="hint">Хоосон орхивол найрсаг үлгэр текст автоматаар тавигдана 🥺 <span id="letterCount"></span></p>
+        </div>
+      </section>
+
+      <section class="card only-sorry">
+        <h2>Захидлын цаас</h2>
+        <div class="textures" id="textureGrid"></div>
+        <p class="hint" style="margin-top:9px;">Захидал ямар цаасан дээр бичигдсэн харагдахыг сонгоно уу.</p>
+      </section>
+
+      <section class="card only-sorry">
+        <h2>Муурын зураг</h2>
+        <div class="stickers" id="stickerGrid"></div>
+        <p class="hint" style="margin-top:9px;">Захидлын дээр гарч ирэх зураг.</p>
+      </section>
+
+      <section class="card only-sorry">
+        <h2>Амлалтууд <span class="opt">(заавал биш)</span></h2>
+        <div class="chips" id="promiseChips"></div>
+        <div class="promise-add">
+          <input id="promiseInput" type="text" maxlength="70" placeholder="өөрийн амлалт бичих…" />
+          <button class="btn ghost" id="promiseAdd" type="button">＋ Нэмэх</button>
+        </div>
+        <ul class="picked" id="promisePicked"></ul>
+        <p class="hint" id="promiseEmpty">Амлалт нэмбэл тусдаа «купон» хуудас болж харагдана 🎟</p>
+      </section>
+
+      <!-- ============ БОЛЗООНЫ УРИЛГА ============ -->
+      <!-- Имэйл, дуу, тема — болзоо болон аргадах хоёуланд нь хэрэгтэй -->
+      <section class="card not-flower">
+        <h2>Хариу ба хэлбэр</h2>
+        <div class="field">
+          <label for="responseEmail">Хариу хүлээн авах имэйл <em>*</em></label>
+          <input id="responseEmail" type="email" placeholder="you@gmail.com" />
+          <p class="hint" id="hintEmail">Хүлээн авагчийн сонголт энэ хаяг руу мэдэгдэнэ.</p>
         </div>
         <div class="field">
-          <label><span class="label-icon">✉️</span><span class="lbl">ХАРИУ ХҮЛЭЭН АВАХ EMAIL *</span></label>
-          <input id="responseEmail" type="email" placeholder="you@email.com" />
-          <div class="hint" id="hintEmail">Хүлээн авагч “тийм” эсвэл “үгүй” хариу имэйлээр ирнэ</div>
-        </div>
-        <div class="field">
-          <label><span class="label-icon">🎵</span><span class="lbl">YOUTUBE ДУУ (URL эсвэл ID)</span></label>
-          <input id="videoId" type="text" placeholder="https://youtu.be/qsPzEsxyzB8" />
-          <div class="hint">Хүссэн дуугаа YouTube URL эсвэл ID-оор нэмнэ. Жишээ: youtube, watch?v=..., shorts, music.</div>
-          <div id="videoPreview" class="video-preview" style="display:none;">
-            <div id="videoThumbBox" class="video-thumbbox">
-              <img id="videoThumb" src="" alt="" />
-              <div style="flex:1; min-width:0;">
-                <div id="videoStatus" class="video-status">Видео танигдлаа ✅</div>
-                <div id="videoIdShow" class="video-id"></div>
-                <a id="videoOpen" class="video-open" href="#" target="_blank" rel="noopener">▶ YouTube дээр нээж шалгах</a>
-              </div>
-            </div>
-            <div id="videoErr" style="display:none; font-size:12px; color:#c05252; font-weight:700;">⚠️ Энэ линк YouTube-т таарахгүй байна. URL-аа шалгана уу.</div>
+          <label for="videoId">YouTube дуу <span class="opt">(заавал биш)</span></label>
+          <input id="videoId" type="text" placeholder="https://youtu.be/…" />
+          <div id="videoBox" class="video-box">
+            <img id="videoThumb" src="" alt="" />
+            <div class="v-txt"><span id="videoIdShow"></span><br><a id="videoOpen" href="#" target="_blank" rel="noopener">YouTube дээр нээх ▸</a></div>
           </div>
+          <div id="videoErr" class="video-err">Энэ линк YouTube-т таарахгүй байна.</div>
         </div>
         <div class="field">
-          <label><span class="label-icon">🎟</span><span class="lbl">ТЕМА ӨНГӨ</span></label>
+          <label>Тема өнгө</label>
           <div class="themes" id="themes">
             <div class="theme on" data-theme="coral" title="Coral"></div>
             <div class="theme" data-theme="lavender" title="Lavender"></div>
             <div class="theme" data-theme="peach" title="Peach"></div>
             <div class="theme" data-theme="mint" title="Mint"></div>
             <div class="theme" data-theme="sky" title="Sky"></div>
-            <div class="theme" data-theme="sunset" title="Sunset ✨"></div>
-            <div class="theme" data-theme="galaxy" title="Galaxy ✨"></div>
-            <div class="theme" data-theme="aurora" title="Aurora ✨"></div>
+            <div class="theme" data-theme="sunset" title="Sunset"></div>
+            <div class="theme" data-theme="galaxy" title="Galaxy"></div>
+            <div class="theme" data-theme="aurora" title="Aurora"></div>
           </div>
         </div>
-        <!-- ===== Зөвхөн болзооны горим ===== -->
-        <div class="field only-date">
-          <label><span class="label-icon">🖊</span><span class="lbl">НЭМЭЛТ ЗУРВАС (ЗААВАЛ БИШ)</span></label>
-          <textarea id="customNote" placeholder="жишээ: чиний хариу л надад бүх зүйл" maxlength="120"></textarea>
-          <div class="hint">Энэ текст урилгын доод хэсэгт харагдана 💕</div>
-        </div>
-        <div class="field only-date">
-          <label><span class="label-icon">📍</span><span class="lbl">УУЛЗАХ ГАЗАР (ЗААВАЛ БИШ)</span></label>
-          <input id="locationName" type="text" placeholder="жишээ: Café Bene, State Circus" maxlength="60" />
-          <div class="hint">Тийм газарт үүссэн бол энэ хэсэгт харагдана</div>
-        </div>
-        <div class="field only-date">
-          <label><span class="label-icon">🗺</span><span class="lbl">GOOGLE MAPS ЛИНК (ЗААВАЛ БИШ)</span></label>
-          <input id="locationUrl" type="text" placeholder="https://maps.app.goo.gl/..." />
-          <div class="hint">Google Maps share линкээ оруулна уу ✨</div>
-        </div>
-        <div class="field only-date">
-          <label><span class="label-icon">💌</span><span class="lbl">ТУСГАЙ ЗАХИДАЛ (ЗААВАЛ БИШ)</span></label>
-          <textarea id="specialLetter" placeholder="жишээ: Чамайг анх харснаас хойш..." maxlength="300"></textarea>
-          <div class="hint">Таны хайртад зориулсан захидал энэ хэсэгт харагдана ❤️</div>
-        </div>
+      </section>
 
-        <!-- ===== Зөвхөн аргадах горим ===== -->
-        <div class="field only-sorry">
-          <label><span class="label-icon">💔</span><span class="lbl">ЮУН ДЭЭР БУРУУДСАН БЭ (ЗААВАЛ БИШ)</span></label>
-          <input id="sorryReason" type="text" placeholder="жишээ: Чиний төрсөн өдрийг мартсан" maxlength="80" />
-          <div class="hint">Буруугаа хүлээсэн богино өгүүлбэр — захидлын дээр тодоор харагдана</div>
-        </div>
-        <div class="field only-sorry">
-          <label><span class="label-icon">✍️</span><span class="lbl">УУЧЛАЛЫН ЗАХИДАЛ</span></label>
-          <textarea id="sorryLetter" rows="6" placeholder="жишээ: Би чамайг гомдоосон гэдгээ мэдэж байна…" maxlength="600"></textarea>
-          <div class="hint">Хоосон орхивол найрсаг үлгэр текст автоматаар тавигдана 🥺</div>
-        </div>
-        <div class="field only-sorry">
-          <label><span class="label-icon">📜</span><span class="lbl">ЗАХИДЛЫН ЦААС</span></label>
-          <div class="papers" id="papers"></div>
-          <div class="hint">Захидал ямар цаасан дээр бичигдсэн харагдахыг сонгоно уу</div>
-        </div>
-        <div class="field only-sorry">
-          <label><span class="label-icon">🐱</span><span class="lbl">МУУРЫН ЗУРАГ</span></label>
-          <div class="stickers" id="stickers"></div>
-          <div class="hint">Захидлын дээр гарч ирэх зураг</div>
-        </div>
-        <div class="field only-sorry">
-          <label><span class="label-icon">🤞</span><span class="lbl">АМЛАЛТУУД (ЗААВАЛ БИШ)</span></label>
-          <div class="promise-chips" id="promiseChips"></div>
-          <div class="promise-add">
-            <input id="promiseInput" type="text" placeholder="өөрийн амлалт бичих…" maxlength="70" />
-            <button class="btn secondary" id="promiseAdd" type="button">＋ Нэмэх</button>
+      <section class="card only-date">
+        <h2>Урилгын нэмэлт</h2>
+        <details>
+          <summary>Нэмэлт мэдээлэл</summary>
+          <div class="field">
+            <label for="customNote">Нэмэлт зурвас</label>
+            <input id="customNote" type="text" maxlength="120" placeholder="жишээ: чиний хариу л надад бүх зүйл" />
           </div>
-          <ul class="promise-picked" id="promisePicked"></ul>
-          <div class="promise-empty" id="promiseEmpty">Амлалт нэмбэл тусдаа “купон” хуудас болж харагдана 🎟</div>
-        </div>
+          <div class="row2">
+            <div class="field">
+              <label for="locationName">Уулзах газар</label>
+              <input id="locationName" type="text" maxlength="60" placeholder="жишээ: Café Bene" />
+            </div>
+            <div class="field">
+              <label for="locationUrl">Google Maps линк</label>
+              <input id="locationUrl" type="text" placeholder="https://maps.app.goo.gl/…" />
+            </div>
+          </div>
+          <div class="field">
+            <label for="specialLetter">Тусгай захидал</label>
+            <textarea id="specialLetter" maxlength="300" placeholder="Чамайг анх харснаас хойш…"></textarea>
+          </div>
+        </details>
+      </section>
 
-        <div class="link-box" id="linkBox" style="display:none;"></div>
-        <div class="link-actions" id="linkActions" style="display:none;">
-          <button class="btn small secondary" id="copyLink">🔗 Хуулах</button>
-          <button class="btn small secondary" id="openLink">Нээж үзэх</button>
-        </div>
-
-        <div class="next-step" id="nextStep" style="display:none;">
-          <div class="next-step-icon">👀</div>
-          <div class="next-step-text" id="nextStepText"><strong>Дараагийн алхам:</strong> Линкээ илгээгээд, хариу ирсэн эсэхийг шалгахын тулд дараа энд эргэж ороорой.</div>
-          <a href="dashboard.html" class="btn small">📊 Хариугаа энд хараарай</a>
-        </div>
-
-        <div class="form-actions">
-          <button class="btn secondary" id="resetForm" type="button">＋ Нэмж шинэ</button>
-          <button class="btn secondary" id="shareLink" type="button">🔗 Хуваалцах</button>
-          <button class="btn wide muted" id="generate">Линк илгээх →</button>
+      <section class="card">
+        <div class="actions">
+          <button class="btn ghost" id="resetForm" type="button">Цэвэрлэх</button>
+          <button class="btn" id="generate" disabled>Линк үүсгэх →</button>
         </div>
         <div class="status" id="status"></div>
 
-        <div class="backend-row">
-          <a href="dashboard.html" class="btn small secondary">📊 Миний урилгууд</a>
-          <a href="unelgee.html" class="btn small secondary">💰 Үнэ</a>
-          <span id="backendBadge"></span>
+        <div class="result" id="result">
+          <div class="link-box" id="linkBox"></div>
+          <div class="result-actions">
+            <button class="btn sm" id="copyLink" type="button">Линк хуулах</button>
+            <button class="btn sm ghost" id="openLink" type="button">Нээж үзэх</button>
+            <button class="btn sm ghost" id="shareLink" type="button">Хуваалцах</button>
+            <a class="btn sm ghost" id="goAnswers" href="dashboard.html">Хариу харах →</a>
+          </div>
         </div>
-        <p class="footer-note">💞 Хийсэнээ! Одоо Messenger/Instagram-р паст хийгээрэй 💌</p>
       </section>
     </main>
 
-    <aside class="preview-wrap">
-      <div class="refresh"><button class="btn small secondary" id="refreshPreview">🔄 Preview шинэчлэх</button></div>
-      <section class="preview-card">
-        <p class="preview-title">Урилгын харагдац (preview)</p>
-        <div class="phone-shell">
+    <aside class="col side">
+      <section class="card">
+        <div class="side-head">
+          <h2>Харагдах байдал</h2>
+          <button class="btn sm ghost" id="refreshPreview" type="button">Шинэчлэх</button>
+        </div>
+        <div class="phone">
           <div class="phone-screen">
-            <div class="phone-camera"></div>
-            <div class="phone-status"><span>9:41</span><span>••• Wi‑Fi ▰</span></div>
-            <iframe class="preview-frame" id="preview" title="preview"></iframe>
+            <div class="phone-notch"></div>
+            <iframe id="preview" title="preview"></iframe>
           </div>
         </div>
-        <div class="phone-dots" aria-hidden="true"><i></i><i></i><i></i></div>
-      </section>
-
-      <section class="side-card">
-        <h2>💡 Туслах зөвлөгөө</h2>
-        <div class="tip-row"><span>🔑</span><p>Кодоо хадгал — дараагийн урилгад ашиглана.</p></div>
-        <div class="tip-row"><span>🎟</span><p>Preview хийж хараад линкээ илгээнэ үү.</p></div>
-        <div class="tip-row"><span>💌</span><p id="tipResponse">Хариу ирсэн даруйд “Миний урилгууд” хуудсанд харагдана.</p></div>
-      </section>
-
-      <section class="side-card music-card">
-        <div>
-          <h2>🎵 Дуу танилцуулга</h2>
-          <p>Сайн дуу нь урилгыг илүү дурсамжтай болгодог.</p>
-          <div class="wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
-        </div>
-        <div class="music-heart">💗</div>
+        <p class="backend" id="backendBadge"></p>
       </section>
     </aside>
   </div>
@@ -753,161 +535,141 @@
 <script src="assets/utils.js"></script>
 <script src="assets/config.js"></script>
 <script src="assets/api.js"></script>
+<script src="assets/bolzoo-garden.js"></script>
 <script src="assets/bolzoo-cat.js"></script>
 <script src="assets/bolzoo-paper.js"></script>
 <script src="assets/bolzoo-sticker.js"></script>
 <script>
 (function(){
+  "use strict";
   var $ = BolzooUtils.$;
   var esc = BolzooUtils.esc;
-  var currentTheme = 'coral';
+  var G = BolzooGarden;
+
+  var mode = 'flower';           // 'flower' | 'date' | 'sorry'
+  var editId = null;             // ?edit=<id> үед — шинээр үүсгэхгүй, засна
   // Автомат имэйл тохируулсан эсэх (assets/config.js → emailWebhookUrl).
-  // Тохируулаагүй бол "имэйлээр ирнэ" гэж амлахгүй — хариу нь dashboard дээр л харагдана.
+  // Тохируулаагүй бол "имэйлээр ирнэ" гэж амлахгүй.
   var AUTO_EMAIL = !!(window.BolzooAPI && BolzooAPI.hasEmailWebhook);
-  var editId = null;              // ?edit=<id> үед — шинээр үүсгэхгүй, засна
-  var currentMode = 'date';       // 'date' | 'sorry'
-  var currentPaper = 'cream';
-  var currentSticker = 'roses';
+  var currentTheme = 'coral';
+  var currentFlower = G.FLOWERS[0].id;
+  var currentPaper = G.PAPERS[0].id;     // цэцгийн захидлын цаас (bolzoo-garden)
+  var sorryPaper = 'cream';              // аргадах захидлын текстур (bolzoo-paper)
+  var sorrySticker = 'roses';
   var promises = [];
 
-  // Backend status badge
-  if(AUTO_EMAIL){
-    $('tipResponse').textContent = 'Хариу ирсэн даруйд таны имэйл рүү мэдэгдэх болно.';
-    $('nextStepText').innerHTML = '<strong>Дараагийн алхам:</strong> Линкээ илгээгээрэй. Хариу ирэхэд имэйл рүү чинь мэдэгдэнэ — яараад ч энд шалгаж болно.';
-  }
+  /* ---------- backend badge ---------- */
+  (function(){
+    var kind = window.BolzooAPI ? window.BolzooAPI.backendKind : 'localStorage';
+    var lbl = BolzooUtils.backendLabel(kind);
+    $('backendBadge').textContent = lbl.text;
+    if(lbl.tone === 'ok') $('backendBadge').style.color = '#4fa15b';
+  })();
 
-  var badge = $('backendBadge');
-  var kind = window.BolzooAPI ? window.BolzooAPI.backendKind : 'localStorage';
-  var lbl = BolzooUtils.backendLabel(kind);
-  badge.textContent = lbl.text;
-  badge.style.color = (lbl.tone === 'ok') ? '#4fa15b' : '';
-  $('themes').addEventListener('click', function(e){
-    var t = e.target.closest('.theme'); if(!t) return;
-    currentTheme = t.getAttribute('data-theme');
-    var kids = $('themes').children;
-    for(var i=0;i<kids.length;i++){ kids[i].classList.toggle('on', kids[i]===t); }
-    schedulePreview();
-  });
-
-  /* ---------- Горим (болзоо / аргадах) ---------- */
-  var MODE_COPY = {
-    date: {
-      icon: '💌',
-      title: 'Болзооны урилга үүсгэх',
-      subtitle: 'Формоо бөглөөд линкээ хүлээн авагчид илгээ. Тэр линкийг нээгээд хариу өгөх боломжтой.',
-      recipient: 'УРИЛГЫН АВАГЧИЙН НЭР *',
-      recipientHint: 'Урилгыг хэнд илгээх вэ? (Жишээ нь: надтай болзоонд явах уу?)',
-      senderHint: 'Ticket дээр “X”-ийн нэрийг тань харуулна',
-      emailHint: AUTO_EMAIL
-        ? 'Хүлээн авагч хариулмагц “тийм/үгүй” нь энэ хаяг руу имэйлээр ирнэ'
-        : 'Хүлээн авагч хариулмагц “Миний урилгууд” хуудсанд шууд харагдана',
-      page: 'bolzoo.html'
-    },
-    sorry: {
-      icon: '🥺',
-      title: 'Аргадах захидал үүсгэх',
-      subtitle: 'Гомдоосон бол уучлалаа захидал болгож илгээ. Тэр уншаад уучилсан эсэхээ хэлнэ.',
-      recipient: 'ХЭНД УУЧЛАЛ ГУЙХ ВЭ *',
-      recipientHint: 'Захидлыг хэнд илгээх вэ? Нэр нь захидлын дээр гарч ирнэ',
-      senderHint: 'Захидлын доор гарын үсэг болж харагдана',
-      emailHint: AUTO_EMAIL
-        ? 'Уучилсан эсэх, уучлалын хэмжүүр энэ хаяг руу имэйлээр ирнэ'
-        : 'Уучилсан эсэх, уучлалын хэмжүүр “Миний урилгууд” хуудсанд харагдана',
-      page: 'argadah.html'
-    }
-  };
-
-  // Горимын бичвэрийг буулгана. Анхны ачаалалт дээр ч дуудагдана —
-  // эс тэгвэл HTML-д бичсэн статик текст үлдэж, имэйлийн амлалт буруу болно.
-  function applyModeCopy(mode){
-    var c = MODE_COPY[mode];
-    $('formCard').setAttribute('data-mode', mode);
-    $('pageIcon').textContent = c.icon;
-    $('pageTitle').textContent = c.title;
-    $('pageSubtitle').textContent = c.subtitle;
-    $('lblRecipient').textContent = c.recipient;
-    $('hintRecipient').textContent = c.recipientHint;
-    $('hintSender').textContent = c.senderHint;
-    $('hintEmail').textContent = c.emailHint;
-    document.title = c.title + ' ' + c.icon;
-
-    var tabs = $('modeTabs').children;
-    for(var i=0;i<tabs.length;i++){
-      tabs[i].classList.toggle('on', tabs[i].getAttribute('data-mode') === mode);
-    }
-  }
-
-  function setMode(mode){
-    if(!MODE_COPY[mode] || mode === currentMode) return;
-    currentMode = mode;
-    applyModeCopy(mode);
-    // Горим солигдвол линк хүчингүй — шинээр үүсгэнэ
-    $('linkBox').style.display = 'none';
-    $('linkActions').style.display = 'none';
-    $('nextStep').style.display = 'none';
+  /* ---------- mode ---------- */
+  $('modes').addEventListener('click', function(e){
+    var btn = e.target.closest('.mode');
+    if(!btn) return;
+    setMode(btn.getAttribute('data-mode'));
     setStatus('');
     updatePreview();
-  }
-
-  applyModeCopy(currentMode);
-
-  $('modeTabs').addEventListener('click', function(e){
-    var t = e.target.closest('.mode-tab'); if(!t) return;
-    setMode(t.getAttribute('data-mode'));
   });
 
-  /* Сонгогдсон хувилбарыг тэмдэглэнэ (цаас / стикер аль алинд нь) */
+  /* ---------- flower picker ---------- */
+  (function(){
+    $('flowerGrid').innerHTML = G.FLOWERS.map(function(f, i){
+      return '<div class="flower' + (i === 0 ? ' on' : '') + '" data-flower="' + f.id + '" title="' + f.name + '">'
+           + G.flowerSVG(f.id) + '<b>' + f.name + '</b></div>';
+    }).join('');
+    $('flowerNote').textContent = G.FLOWERS[0].note;
+    $('flowerGrid').addEventListener('click', function(e){
+      var el = e.target.closest('.flower');
+      if(!el) return;
+      currentFlower = el.getAttribute('data-flower');
+      var kids = $('flowerGrid').children;
+      for(var i = 0; i < kids.length; i++){ kids[i].classList.toggle('on', kids[i] === el); }
+      $('flowerNote').textContent = G.flower(currentFlower).note;
+      updatePreview();
+    });
+  })();
+
+  /* ---------- paper picker ---------- */
+  (function(){
+    $('paperGrid').innerHTML = G.PAPERS.map(function(p, i){
+      return '<div class="paper-opt' + (i === 0 ? ' on' : '') + '" data-paper="' + p.id + '" title="' + p.name + '">'
+           + '<div class="paper-chip" style="--pb:' + p.bg + '; --pl:' + p.line + '; --pe:' + p.edge + ';"></div>'
+           + '<b>' + p.name + '</b></div>';
+    }).join('');
+    $('paperGrid').addEventListener('click', function(e){
+      var el = e.target.closest('.paper-opt');
+      if(!el) return;
+      currentPaper = el.getAttribute('data-paper');
+      var kids = $('paperGrid').children;
+      for(var i = 0; i < kids.length; i++){ kids[i].classList.toggle('on', kids[i] === el); }
+      updatePreview();
+    });
+  })();
+
+  /* ---------- theme picker ---------- */
+  $('themes').addEventListener('click', function(e){
+    var t = e.target.closest('.theme');
+    if(!t) return;
+    currentTheme = t.getAttribute('data-theme');
+    var kids = $('themes').children;
+    for(var i = 0; i < kids.length; i++){ kids[i].classList.toggle('on', kids[i] === t); }
+    updatePreview();
+  });
+
+  /* ---------- сонгогдсоныг тэмдэглэх (аргадахын цаас / стикер) ---------- */
   function markSelected(hostId, attr, value){
     var kids = $(hostId).children;
-    for(var i=0;i<kids.length;i++){
+    for(var i = 0; i < kids.length; i++){
       kids[i].classList.toggle('on', kids[i].getAttribute(attr) === value);
     }
   }
 
-  /* ---------- Цаасны текстур сонгогч ---------- */
-  (function renderPapers(){
-    var host = $('papers'), html = '';
-    BolzooPaper.LIST.forEach(function(p){
-      // Цаас бүр дээр гурван "бэхний мөр" — цагаан цааснуудыг бэхнийх нь өнгөөр ялгаж харуулна
-      html += '<button type="button" class="paper-opt' + (p.id === currentPaper ? ' on' : '')
+  /* ---------- аргадах: цаасны текстур ---------- */
+  (function(){
+    var host = $('textureGrid');
+    host.innerHTML = BolzooPaper.LIST.map(function(p){
+      // Гурван "бэхний мөр" — цагаан цааснуудыг бэхнийх нь өнгөөр ялгаж харуулна
+      return '<button type="button" class="texture' + (p.id === sorryPaper ? ' on' : '')
         + '" data-paper="' + p.id + '" title="' + esc(p.label) + '">'
-        + '<div class="paper-swatch"><i></i><i></i><i></i></div>'
-        + '<span class="paper-name">' + p.emoji + ' ' + esc(p.label) + '</span>'
-        + '</button>';
-    });
-    host.innerHTML = html;
+        + '<div class="tex-swatch"><i></i><i></i><i></i></div>'
+        + '<span class="tex-name">' + p.emoji + ' ' + esc(p.label) + '</span></button>';
+    }).join('');
     // background нь давхар хашилттай data-URI агуулдаг тул зөвхөн JS-ээр тавина
     BolzooPaper.LIST.forEach(function(p){
-      BolzooPaper.apply(host.querySelector('[data-paper="' + p.id + '"] .paper-swatch'), p.id);
+      BolzooPaper.apply(host.querySelector('[data-paper="' + p.id + '"] .tex-swatch'), p.id);
     });
     host.addEventListener('click', function(e){
-      var t = e.target.closest('.paper-opt'); if(!t) return;
-      currentPaper = t.getAttribute('data-paper');
-      markSelected('papers', 'data-paper', currentPaper);
-      schedulePreview();
+      var el = e.target.closest('.texture');
+      if(!el) return;
+      sorryPaper = el.getAttribute('data-paper');
+      markSelected('textureGrid', 'data-paper', sorryPaper);
+      updatePreview();
     });
   })();
 
-  /* ---------- Муурын зураг сонгогч ---------- */
-  (function renderStickers(){
-    var host = $('stickers'), html = '';
-    BolzooSticker.LIST.forEach(function(s){
-      html += '<button type="button" class="sticker-opt' + (s.id === currentSticker ? ' on' : '')
+  /* ---------- аргадах: муурын зураг ---------- */
+  (function(){
+    var host = $('stickerGrid');
+    host.innerHTML = BolzooSticker.LIST.map(function(s){
+      return '<button type="button" class="sticker-opt' + (s.id === sorrySticker ? ' on' : '')
         + '" data-sticker="' + s.id + '" title="' + esc(s.label) + '">'
-        + '<div class="sticker-art">' + BolzooSticker.thumbHtml(s.id) + '</div>'
-        + '<span class="sticker-name">' + s.emoji + ' ' + esc(s.label) + '</span>'
-        + '</button>';
-    });
-    host.innerHTML = html;
+        + '<div class="stk-art">' + BolzooSticker.thumbHtml(s.id) + '</div>'
+        + '<span class="stk-name">' + s.emoji + ' ' + esc(s.label) + '</span></button>';
+    }).join('');
     host.addEventListener('click', function(e){
-      var t = e.target.closest('.sticker-opt'); if(!t) return;
-      currentSticker = t.getAttribute('data-sticker');
-      markSelected('stickers', 'data-sticker', currentSticker);
-      schedulePreview();
+      var el = e.target.closest('.sticker-opt');
+      if(!el) return;
+      sorrySticker = el.getAttribute('data-sticker');
+      markSelected('stickerGrid', 'data-sticker', sorrySticker);
+      updatePreview();
     });
   })();
 
-  /* ---------- Амлалтууд ---------- */
+  /* ---------- аргадах: амлалтууд ---------- */
   var PROMISE_PRESETS = [
     'Дараагийн болзоог би бүтнээр төлөвлөнө',
     'Кино чиний сонголтоор',
@@ -918,146 +680,149 @@
   ];
   var MAX_PROMISES = 5;
 
-  function renderPromiseChips(){
-    var host = $('promiseChips'), html = '';
-    PROMISE_PRESETS.forEach(function(p, i){
-      var on = promises.indexOf(p) !== -1;
-      html += '<button type="button" class="chip' + (on ? ' on' : '') + '" data-preset="' + i + '">'
-        + esc(p) + '</button>';
-    });
-    host.innerHTML = html;
-  }
-
-  function renderPromiseList(){
-    var host = $('promisePicked'), html = '';
-    promises.forEach(function(p, i){
-      html += '<li><span>' + esc(p) + '</span>'
+  function renderPromises(){
+    $('promiseChips').innerHTML = PROMISE_PRESETS.map(function(p, i){
+      return '<button type="button" class="chip' + (promises.indexOf(p) !== -1 ? ' on' : '')
+        + '" data-preset="' + i + '">' + esc(p) + '</button>';
+    }).join('');
+    $('promisePicked').innerHTML = promises.map(function(p, i){
+      return '<li><span>' + esc(p) + '</span>'
         + '<button type="button" data-del="' + i + '" aria-label="Хасах">✕</button></li>';
-    });
-    host.innerHTML = html;
+    }).join('');
     $('promiseEmpty').style.display = promises.length ? 'none' : 'block';
   }
-
   function addPromise(text){
     text = String(text || '').trim();
     if(!text) return;
-    if(promises.length >= MAX_PROMISES){
-      setStatus('⚠️ Хамгийн ихдээ ' + MAX_PROMISES + ' амлалт нэмнэ');
-      return;
-    }
+    if(promises.length >= MAX_PROMISES){ setStatus('⚠️ Хамгийн ихдээ ' + MAX_PROMISES + ' амлалт'); return; }
     if(promises.indexOf(text) !== -1) return;
     promises.push(text);
-    renderPromiseChips();
-    renderPromiseList();
-    schedulePreview();
+    renderPromises(); updatePreview();
   }
-
-  function removePromise(i){
-    promises.splice(i, 1);
-    renderPromiseChips();
-    renderPromiseList();
-    schedulePreview();
-  }
+  function removePromise(i){ promises.splice(i, 1); renderPromises(); updatePreview(); }
 
   $('promiseChips').addEventListener('click', function(e){
     var t = e.target.closest('.chip'); if(!t) return;
     var text = PROMISE_PRESETS[Number(t.getAttribute('data-preset'))];
     var at = promises.indexOf(text);
-    if(at !== -1){ removePromise(at); } else { addPromise(text); }
+    if(at !== -1) removePromise(at); else addPromise(text);
   });
   $('promisePicked').addEventListener('click', function(e){
     var t = e.target.closest('[data-del]'); if(!t) return;
     removePromise(Number(t.getAttribute('data-del')));
   });
   $('promiseAdd').addEventListener('click', function(){
-    addPromise($('promiseInput').value);
-    $('promiseInput').value = '';
+    addPromise($('promiseInput').value); $('promiseInput').value = '';
   });
   $('promiseInput').addEventListener('keydown', function(e){
-    if(e.key === 'Enter'){
-      e.preventDefault();
-      addPromise($('promiseInput').value);
-      $('promiseInput').value = '';
-    }
+    if(e.key === 'Enter'){ e.preventDefault(); addPromise($('promiseInput').value); $('promiseInput').value = ''; }
   });
-  renderPromiseChips();
-  renderPromiseList();
+  renderPromises();
 
-  function collectConfig(){
-    var base = {
-      mode:          currentMode,
-      recipientName: $('recipientName').value.trim(),
-      senderName:    $('senderName').value.trim(),
-      responseEmail: $('responseEmail').value.trim(),
-      videoId:       $('videoId').value.trim(),
-      theme:         currentTheme
-    };
-    if(currentMode === 'sorry'){
-      base.sorryReason = $('sorryReason').value.trim();
-      base.sorryLetter = $('sorryLetter').value.trim();
-      base.paper       = currentPaper;
-      base.sticker     = currentSticker;
-      base.promises    = promises.slice();
-    } else {
-      base.customNote    = $('customNote').value.trim();
-      base.locationName  = $('locationName').value.trim();
-      base.locationUrl   = $('locationUrl').value.trim();
-      base.specialLetter = $('specialLetter').value.trim();
-    }
-    return base;
+  /* Захидлын үлдсэн тэмдэгтийн тоо */
+  function updateLetterCount(){
+    var el = $('sorryLetter');
+    $('letterCount').textContent = '(' + el.value.length + '/600)';
+  }
+  $('sorryLetter').addEventListener('input', updateLetterCount);
+  updateLetterCount();
+
+  /* Имэйл тохируулаагүй бол "имэйлээр ирнэ" гэж амлахгүй */
+  if(!AUTO_EMAIL){
+    $('hintEmail').textContent = 'Хариу нь «Миний урилгууд» хуудсанд шууд харагдана.';
   }
 
-  function currentPage(){ return MODE_COPY[currentMode].page; }
+  /* ---------- config ---------- */
+  function collectConfig(){
+    var base = {
+      mode:          mode,
+      recipientName: $('recipientName').value.trim(),
+      senderName:    $('senderName').value.trim()
+    };
+    if(mode === 'flower'){
+      base.flower = currentFlower;
+      base.paper = currentPaper;
+      base.specialLetter = $('letterText').value.trim();
+      return base;
+    }
+
+    base.responseEmail = $('responseEmail').value.trim();
+    base.videoId       = $('videoId').value.trim();
+    base.theme         = currentTheme;
+
+    if(mode === 'sorry'){
+      base.sorryReason = $('sorryReason').value.trim();
+      base.sorryLetter = $('sorryLetter').value.trim();
+      base.paper       = sorryPaper;
+      base.sticker     = sorrySticker;
+      base.promises    = promises.slice();
+      return base;
+    }
+
+    base.customNote    = $('customNote').value.trim();
+    base.locationName  = $('locationName').value.trim();
+    base.locationUrl   = $('locationUrl').value.trim();
+    base.specialLetter = $('specialLetter').value.trim();
+    return base;
+  }
 
   function encodeConfig(cfg){
     var clean = {};
     for(var k in cfg){
       var v = cfg[k];
+      // Хоосон массивыг оруулахгүй (хоосон [] нь truthy тул тусад нь шалгана)
       if(Array.isArray(v)){ if(v.length) clean[k] = v; }
       else if(v){ clean[k] = v; }
     }
-    var json = JSON.stringify(clean);
-    // handle unicode via encodeURIComponent+unescape trick
-    var b64 = btoa(unescape(encodeURIComponent(json)));
-    return encodeURIComponent(b64);
+    return encodeURIComponent(btoa(unescape(encodeURIComponent(JSON.stringify(clean)))));
+  }
+  var MODE_PAGES = { flower:'greet.html', sorry:'argadah.html', date:'bolzoo.html' };
+  function targetPage(m){ return MODE_PAGES[m] || 'bolzoo.html'; }
+
+  var previewSeq = 0;
+  function previewUrl(cfg){
+    // hash л өөрчлөгдвөл iframe дахин ачаалагддаггүй тул query-д дугаар нэмж reload хийлгэнэ
+    var url = targetPage(cfg.mode) + '?v=' + (++previewSeq) + '#c=' + encodeConfig(cfg);
+    if(cfg.mode === 'flower') url += '&p=1';
+    return url;
+  }
+  function shortUrl(m, id){
+    return new URL(targetPage(m), window.location.href).href + '?id=' + encodeURIComponent(id);
   }
 
+  /* ---------- preview ---------- */
   var previewTimer = null;
-  var previewSeq = 0;
   function schedulePreview(){
     if(previewTimer) clearTimeout(previewTimer);
     previewTimer = setTimeout(updatePreview, 400);
   }
   function updatePreview(){
-    // Зөвхөн #hash солигдоход browser iframe-ыг ДАХИН АЧААЛДАГГҮЙ (fragment navigation),
-    // тэгэхээр preview хуучин утгаараа хөлдөнө. Тоолуур бүхий query нэмж шинэчлэлтийг албадна.
-    previewSeq++;
-    $('preview').src = currentPage() + '?pv=' + previewSeq + '#c=' + encodeConfig(collectConfig());
+    $('preview').src = previewUrl(collectConfig());
   }
   function settlePreview(){
-    var frame = $('preview');
     try{
+      var frame = $('preview');
       var doc = frame.contentDocument || (frame.contentWindow && frame.contentWindow.document);
       if(!doc) return;
       var overlay = doc.getElementById('introOverlay');
       if(overlay) overlay.style.display = 'none';
-      var soundDock = doc.querySelector('.sound-dock');
-      if(soundDock) soundDock.style.display = 'none';
+      var dock = doc.querySelector('.sound-dock');
+      if(dock) dock.style.display = 'none';
       var progress = doc.querySelector('.progress');
       if(progress) progress.style.display = 'none';
     }catch(e){}
   }
   $('preview').addEventListener('load', function(){
-    setTimeout(settlePreview, 300);
+    setTimeout(settlePreview, 250);
     setTimeout(settlePreview, 3400);
-  });
-
-  ['recipientName','senderName','responseEmail','videoId','customNote','locationName','locationUrl','specialLetter',
-   'sorryReason','sorryLetter'].forEach(function(id){
-    $(id).addEventListener('input', schedulePreview);
   });
   $('refreshPreview').addEventListener('click', updatePreview);
 
+  ['recipientName','senderName','letterText','responseEmail','videoId','customNote','locationName','locationUrl','specialLetter',
+   'sorryReason','sorryLetter']
+    .forEach(function(id){ $(id).addEventListener('input', schedulePreview); });
+
+  /* ---------- YouTube helper ---------- */
   function extractYtId(v){
     if(!v) return '';
     v = String(v).trim();
@@ -1065,47 +830,32 @@
     var m = v.match(/(?:v=|youtu\.be\/|embed\/|shorts\/)([a-zA-Z0-9_-]{11})/);
     return m ? m[1] : '';
   }
-  function updateVideoPreview(){
+  $('videoId').addEventListener('input', function(){
     var raw = $('videoId').value.trim();
-    var box = $('videoPreview');
-    if(!raw){ box.style.display='none'; return; }
     var id = extractYtId(raw);
-    box.style.display = 'block';
+    $('videoBox').style.display = (raw && id) ? 'flex' : 'none';
+    $('videoErr').style.display = (raw && !id) ? 'block' : 'none';
     if(id){
-      $('videoThumbBox').style.display = 'flex';
-      $('videoErr').style.display = 'none';
-      $('videoThumb').src = 'https://img.youtube.com/vi/'+id+'/mqdefault.jpg';
-      $('videoIdShow').textContent = 'ID: '+id;
-      $('videoOpen').href = 'https://youtu.be/'+id;
-    } else {
-      $('videoThumbBox').style.display = 'none';
-      $('videoErr').style.display = 'block';
+      $('videoThumb').src = 'https://img.youtube.com/vi/' + id + '/mqdefault.jpg';
+      $('videoIdShow').textContent = 'ID: ' + id;
+      $('videoOpen').href = 'https://youtu.be/' + id;
     }
-  }
-  $('videoId').addEventListener('input', updateVideoPreview);
+  });
 
-  function setStatus(msg){ $('status').textContent = msg; }
+  function setStatus(msg){ $('status').textContent = msg || ''; }
 
-  /* ---------- Access code gate ---------- */
-  var codeIsValid = false;
-  var codeTimer = null;
-  var lastCheckedCode = '';
+  /* ---------- access code ---------- */
+  var codeIsValid = false, codeTimer = null, lastCheckedCode = '';
 
-  function normalizeCode(v){
-    return String(v||'').toUpperCase().replace(/[^A-Z0-9-]/g,'').trim();
-  }
+  function normalizeCode(v){ return String(v || '').toUpperCase().replace(/[^A-Z0-9-]/g, '').trim(); }
   function setCodeUI(state, msg){
-    var gate = $('codeGate'), status = $('codeStatus');
+    var gate = $('codeGate'), st = $('codeStatus');
     gate.classList.remove('ok','bad');
-    status.classList.remove('ok','bad');
-    if(state==='ok'){ gate.classList.add('ok'); status.classList.add('ok'); }
-    if(state==='bad'){ gate.classList.add('bad'); status.classList.add('bad'); }
-    status.textContent = msg || '';
-    codeIsValid = (state==='ok');
-    // "disabled" биш "muted" ангилал ашиглана — товч үргэлж дарагдаж чадна,
-    // ингэснээр validate() код дутуу үед шалтгааныг харуулж чадна (харин disabled
-    // товч дээр click listener огт ажиллахгүй тул юу ч харуулж чадахгүй байсан).
-    $('generate').classList.toggle('muted', !codeIsValid);
+    st.classList.remove('ok','bad');
+    if(state){ gate.classList.add(state); st.classList.add(state); }
+    st.textContent = msg || '';
+    codeIsValid = (state === 'ok');
+    $('generate').disabled = !codeIsValid;
   }
   async function checkCode(){
     var code = normalizeCode($('accessCode').value);
@@ -1113,16 +863,16 @@
     if(!code){ setCodeUI('', ''); return; }
     if(code === lastCheckedCode) return;
     lastCheckedCode = code;
-    setCodeUI('', '⏳ шалгаж байна…');
+    setCodeUI('', 'шалгаж байна…');
     try{
       var r = await BolzooAPI.validateCode(code);
-      if(lastCheckedCode !== code) return; // race: newer check in flight
-      if(r.ok){ setCodeUI('ok', '✅ Код хүчинтэй — үргэлжлүүлээрэй'); return; }
-      if(r.reason === 'used')      setCodeUI('bad', '❌ Энэ код нэгэнт ашиглагдсан байна');
+      if(lastCheckedCode !== code) return;
+      if(r.ok){ setCodeUI('ok', '✅ Код хүчинтэй'); return; }
+      if(r.reason === 'used')           setCodeUI('bad', '❌ Энэ код нэгэнт ашиглагдсан');
       else if(r.reason === 'not_found') setCodeUI('bad', '❌ Ийм код олдсонгүй');
-      else                          setCodeUI('bad', '❌ Шалгах үед алдаа гарлаа');
+      else                              setCodeUI('bad', '❌ Шалгах үед алдаа гарлаа');
     }catch(e){
-      setCodeUI('bad', '❌ Шалгах үед алдаа: ' + (e.message||e));
+      setCodeUI('bad', '❌ Шалгах үед алдаа: ' + (e.message || e));
     }
   }
   $('accessCode').addEventListener('input', function(){
@@ -1131,31 +881,31 @@
   });
   $('accessCode').addEventListener('blur', checkCode);
 
+  /* ---------- generate ---------- */
   function validate(cfg){
     // Засварлаж байгаа үед код дахин шаардахгүй — тэр аль хэдийн ашиглагдсан
     if(!editId && !codeIsValid){ setStatus('⚠️ Хүчинтэй код оруулна уу'); return false; }
     if(!cfg.recipientName){
-      setStatus(currentMode === 'sorry'
+      setStatus(cfg.mode === 'sorry'
         ? '⚠️ Хэнд уучлал гуйхаа бөглөнө үү'
-        : '⚠️ Хүлээн авагчийн нэрийг заавал бөглөнө үү');
+        : '⚠️ Хүлээн авагчийн нэрийг бөглөнө үү');
       return false;
     }
-    if(!cfg.responseEmail || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(cfg.responseEmail)){
-      setStatus('⚠️ Зөв email хаяг оруулна уу'); return false;
+    if(cfg.mode === 'date' || cfg.mode === 'sorry'){
+      if(!cfg.responseEmail || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(cfg.responseEmail)){
+        setStatus('⚠️ Зөв имэйл хаяг оруулна уу'); return false;
+      }
     }
     return true;
   }
   function showLink(url, msg){
     $('linkBox').textContent = url;
-    $('linkBox').style.display = 'block';
-    $('linkActions').style.display = 'flex';
-    $('nextStep').style.display = 'flex';
+    $('result').classList.add('on');
+    var m = url.match(/[?&]id=([^&#]+)/);
+    $('goAnswers').href = m ? ('dashboard.html?id=' + m[1]) : 'dashboard.html';
+    var steps = document.querySelectorAll('.steps b');
+    if(steps[2]) steps[2].classList.add('on');
     setStatus(msg || '✅ Линк бэлэн!');
-  }
-  function buildShortUrl(id, absolute){
-    var page = currentPage();
-    var base = absolute ? new URL(page, window.location.href).href : page;
-    return base + '?id=' + encodeURIComponent(id);
   }
 
   $('generate').addEventListener('click', async function(){
@@ -1164,15 +914,13 @@
     $('generate').disabled = true;
 
     if(editId){
-      setStatus('⏳ Засварыг хадгалж байна...');
+      setStatus('⏳ Засварыг хадгалж байна…');
       try{
         await BolzooAPI.updateInvite(editId, cfg);
-        showLink(buildShortUrl(editId, true), '✅ Хадгаллаа — линк хэвээрээ, агуулга нь шинэчлэгдлээ');
+        showLink(shortUrl(cfg.mode, editId), '✅ Хадгаллаа — линк хэвээрээ, агуулга нь шинэчлэгдлээ');
       }catch(e){
         var m = e.message || String(e);
-        setStatus(/Already answered/i.test(m)
-          ? '❌ Хариу ирсэн тул засах боломжгүй'
-          : '❌ Алдаа: ' + m);
+        setStatus(/Already answered/i.test(m) ? '❌ Хариу ирсэн тул засах боломжгүй' : '❌ Алдаа: ' + m);
       }finally{
         $('generate').disabled = false;
       }
@@ -1180,85 +928,67 @@
     }
 
     var code = normalizeCode($('accessCode').value);
-    setStatus('⏳ Хадгалж байна...');
+    setStatus('⏳ Хадгалж байна…');
     try{
       var res = await BolzooAPI.createInvite(cfg, code);
-      var url = buildShortUrl(res.id, true);
-      var what = currentMode === 'sorry' ? 'Захидал' : 'Урилга';
-      showLink(url, '✅ '+what+' үүслээ! Алдаа гарсан бол “Миний урилгууд”-аас засаж болно.');
-      setCodeUI('bad', '⚠️ Энэ код ашиглагдлаа. Дараагийн урилгад шинэ код авна уу.');
+      showLink(shortUrl(cfg.mode, res.id), '✅ Бэлэн боллоо! Алдаа гарсан бол «Миний урилгууд»-аас засаж болно.');
+      setCodeUI('bad', '⚠️ Энэ код ашиглагдлаа. Дараагийнхад шинэ код авна уу.');
       $('accessCode').value = '';
       lastCheckedCode = '';
-      updatePreview();
     }catch(e){
       var msg = e.message || String(e);
-      if(/already used/i.test(msg)) setCodeUI('bad', '❌ Энэ код нэгэнт ашиглагдсан байна');
+      if(/already used/i.test(msg))            setCodeUI('bad', '❌ Энэ код нэгэнт ашиглагдсан');
       else if(/Invalid access code/i.test(msg)) setCodeUI('bad', '❌ Ийм код олдсонгүй');
-      setStatus('❌ Алдаа: '+ msg);
-    }finally{
-      $('generate').disabled = false;
+      setStatus('❌ Алдаа: ' + msg);
+      $('generate').disabled = !codeIsValid;
     }
   });
 
+  /* ---------- link actions ---------- */
   $('copyLink').addEventListener('click', function(){
     var text = $('linkBox').textContent;
     if(navigator.clipboard && navigator.clipboard.writeText){
-      navigator.clipboard.writeText(text).then(function(){
-        setStatus('📋 Хуулагдлаа! Одоо Messenger/Instagram-т paste хий');
-      });
+      navigator.clipboard.writeText(text).then(function(){ setStatus('📋 Хуулагдлаа — одоо Messenger/Instagram-д paste хий'); });
     } else {
-      var t = document.createElement('textarea'); t.value=text; document.body.appendChild(t); t.select(); document.execCommand('copy'); t.remove();
-      setStatus('📋 Хуулагдлаа!');
+      var t = document.createElement('textarea');
+      t.value = text; document.body.appendChild(t); t.select();
+      document.execCommand('copy'); t.remove();
+      setStatus('📋 Хуулагдлаа');
     }
   });
-
   $('openLink').addEventListener('click', function(){
     window.open($('linkBox').textContent, '_blank');
   });
-
   $('shareLink').addEventListener('click', function(){
     var url = $('linkBox').textContent.trim();
     if(!url){ setStatus('⚠️ Эхлээд линк үүсгэнэ үү'); return; }
-    var cfg = collectConfig();
-    var who = cfg.recipientName ? cfg.recipientName + ' минь, ' : '';
-    var isSorry = currentMode === 'sorry';
-    var title = isSorry ? 'Аргадах захидал 🥺' : 'Болзооны урилга 💌';
-    var text = isSorry
-      ? who + 'чамд захидал бичсэн юм, уншаач 🥺'
-      : who + 'чамд болзооны урилга ирлээ 💌';
+    var name = $('recipientName').value.trim();
+    var text = (name ? name + ' минь, ' : '')
+      + (mode === 'flower' ? 'чамд цэцэг ирлээ 🌸' : 'чамд болзооны урилга ирлээ 💌');
     if(navigator.share){
-      navigator.share({title:title, text:text, url:url}).catch(function(){});
+      navigator.share({ title:'Bolzoo', text:text, url:url }).catch(function(){});
     } else {
-      window.location.href = 'mailto:?subject='+encodeURIComponent(title)+'&body='+encodeURIComponent(text+'\n\n'+url);
+      window.location.href = 'mailto:?subject=' + encodeURIComponent('Bolzoo 💌')
+        + '&body=' + encodeURIComponent(text + '\n\n' + url);
     }
   });
 
+  /* ---------- reset ---------- */
   $('resetForm').addEventListener('click', function(){
-    var resetFields = ['accessCode','recipientName','senderName','responseEmail','videoId','customNote','locationName','locationUrl','specialLetter',
-     'sorryReason','sorryLetter','promiseInput'];
-    var hasContent = promises.length > 0 || resetFields.some(function(id){ return $(id).value.trim(); });
-    if(hasContent && !confirm('Бөглөсөн бүх мэдээллийг устгаад дахин эхлэх үү?')) return;
-    resetFields.forEach(function(id){
-      $(id).value = '';
-    });
+    ['accessCode','recipientName','senderName','letterText','responseEmail','videoId','customNote','locationName','locationUrl','specialLetter',
+     'sorryReason','sorryLetter','promiseInput']
+      .forEach(function(id){ $(id).value = ''; });
     currentTheme = 'coral';
-    var kids = $('themes').children;
-    for(var i=0;i<kids.length;i++){ kids[i].classList.toggle('on', kids[i].getAttribute('data-theme') === 'coral'); }
-
-    currentPaper = 'cream';
-    currentSticker = 'roses';
-    markSelected('papers', 'data-paper', currentPaper);
-    markSelected('stickers', 'data-sticker', currentSticker);
-    promises = [];
-    renderPromiseChips();
-    renderPromiseList();
-
+    var themes = $('themes').children;
+    for(var i = 0; i < themes.length; i++){ themes[i].classList.toggle('on', themes[i].getAttribute('data-theme') === 'coral'); }
+    sorryPaper = 'cream';   markSelected('textureGrid', 'data-paper', sorryPaper);
+    sorrySticker = 'roses'; markSelected('stickerGrid', 'data-sticker', sorrySticker);
+    promises = []; renderPromises(); updateLetterCount();
     lastCheckedCode = '';
     setCodeUI('', '');
-    $('videoPreview').style.display = 'none';
-    $('linkBox').style.display = 'none';
-    $('linkActions').style.display = 'none';
-    $('nextStep').style.display = 'none';
+    $('videoBox').style.display = 'none';
+    $('videoErr').style.display = 'none';
+    $('result').classList.remove('on');
     setStatus('');
     updatePreview();
   });
@@ -1267,42 +997,46 @@
    * Нэг код = нэг урилга тул нэг үсгийн алдаа кодыг шатаадаг байсан.
    * Хариу ирэхээс өмнө бол линкээ хэвээр нь үлдээж агуулгыг засаж болно.
    */
-  function fillForm(cfg){
-    setMode(cfg.mode === 'sorry' ? 'sorry' : 'date');
+  function setMode(m){
+    mode = m;
+    document.body.setAttribute('data-mode', m);
+    var kids = $('modes').children;
+    for(var i = 0; i < kids.length; i++){
+      kids[i].classList.toggle('on', kids[i].getAttribute('data-mode') === m);
+    }
+  }
 
+  function fillForm(cfg){
+    setMode(MODE_PAGES[cfg.mode] ? cfg.mode : 'date');
     $('recipientName').value = cfg.recipientName || '';
     $('senderName').value    = cfg.senderName    || '';
     $('responseEmail').value = cfg.responseEmail || '';
     $('videoId').value       = cfg.videoId       || '';
+    $('letterText').value    = (cfg.mode === 'flower' ? (cfg.specialLetter || '') : '');
     $('customNote').value    = cfg.customNote    || '';
     $('locationName').value  = cfg.locationName  || '';
     $('locationUrl').value   = cfg.locationUrl   || '';
-    $('specialLetter').value = cfg.specialLetter || '';
+    $('specialLetter').value = (cfg.mode === 'date' ? (cfg.specialLetter || '') : '');
     $('sorryReason').value   = cfg.sorryReason   || '';
     $('sorryLetter').value   = cfg.sorryLetter   || '';
 
     currentTheme = cfg.theme || 'coral';
     markSelected('themes', 'data-theme', currentTheme);
-    currentPaper = BolzooPaper.PAPERS[cfg.paper] ? cfg.paper : 'cream';
-    markSelected('papers', 'data-paper', currentPaper);
-    currentSticker = BolzooSticker.STICKERS[cfg.sticker] ? cfg.sticker : 'roses';
-    markSelected('stickers', 'data-sticker', currentSticker);
 
+    if(cfg.mode === 'flower'){
+      currentFlower = cfg.flower || G.FLOWERS[0].id;
+      currentPaper  = cfg.paper  || G.PAPERS[0].id;
+      markSelected('flowerGrid', 'data-flower', currentFlower);
+      markSelected('paperGrid', 'data-paper', currentPaper);
+    } else if(cfg.mode === 'sorry'){
+      sorryPaper   = BolzooPaper.PAPERS[cfg.paper] ? cfg.paper : 'cream';
+      sorrySticker = BolzooSticker.STICKERS[cfg.sticker] ? cfg.sticker : 'roses';
+      markSelected('textureGrid', 'data-paper', sorryPaper);
+      markSelected('stickerGrid', 'data-sticker', sorrySticker);
+    }
     promises = Array.isArray(cfg.promises) ? cfg.promises.slice() : [];
-    renderPromiseChips();
-    renderPromiseList();
-    updateVideoPreview();
-  }
-
-  function enterEditUI(id){
-    $('codeGate').style.display = 'none';
-    $('resetForm').style.display = 'none';
-    $('generate').disabled = false;
-    $('generate').classList.remove('muted');
-    $('generate').textContent = '💾 Засварыг хадгалах';
-    $('pageTitle').textContent = 'Урилга засах';
-    $('pageSubtitle').textContent = 'Хариу ирэхээс өмнө засаж болно. Илгээсэн линк чинь хэвээрээ үлдэнэ.';
-    showLink(buildShortUrl(id, true), '');
+    renderPromises();
+    updateLetterCount();
   }
 
   async function initEditMode(){
@@ -1318,7 +1052,11 @@
       if(rec.responded_at) throw new Error('Хариу ирсэн тул засах боломжгүй');
       editId = id;
       fillForm(rec.config || {});
-      enterEditUI(id);
+      $('codeGate').style.display = 'none';
+      $('resetForm').style.display = 'none';
+      $('generate').disabled = false;
+      $('generate').textContent = '💾 Засварыг хадгалах';
+      showLink(shortUrl(mode, id), '');
       setStatus('');
     }catch(e){
       setStatus('❌ ' + (e.message || e));

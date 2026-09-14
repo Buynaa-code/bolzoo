@@ -2,37 +2,45 @@
 
 Personalised Mongolian date invitation web app.
 
-Two invite modes, picked in `create.html`:
+Гурван төрлийн илгээлт, бүгдийг `create.html`-ээс сонгоно:
 
-| Mode | Recipient page | What it does |
+| Горим | Хүлээн авагчийн хуудас | Юу хийдэг |
 |---|---|---|
-| 💌 Болзоо (date) | `bolzoo.html?id=xxx` | Suggest a date, recipient picks day/time/kind |
-| 🥺 Аргадах (sorry) | `argadah.html?id=xxx` | Apology letter, promise coupons, forgiveness meter |
+| 🌸 Цэцэг + захидал | `greet.html?id=xxx` | Нэг цэцэг, гар бичмэл захидал. Хүлээн авагч «Хүлээж авлаа» гээд богино хариу бичнэ |
+| 💌 Болзооны урилга | `bolzoo.html?id=xxx` | Хүлээн авагч өдөр, цаг, болзооны төрлөө сонгоно |
+| 🥺 Аргадах захидал | `argadah.html?id=xxx` | Уучлалын захидал, амлалтын купон, 0–100% уучлалын хэмжүүр |
 
-- **create.html** — seller fills a form and gets a short invite URL (both modes)
-- **bolzoo.html?id=xxx** — date invite; redirects to `argadah.html` if the record is a sorry letter
-- **argadah.html?id=xxx** — apology letter on a textured paper, ends with a 0–100% forgiveness answer
-- **dashboard.html** — seller sees invites and responses
-- **unelgee.html** — public pricing page (9,900₮, everything included) — shareable on Instagram
-- **server.js** — pure Node local dev server (also emulates the Supabase PostgREST API for offline dev)
-- **assets/config.js** — Supabase URL + publishable key + email webhook URL
-- **assets/bolzoo-paper.js** — letter paper textures (pure CSS/SVG, no image files)
-- **assets/bolzoo-sticker.js** — cat artwork options for the letter
-- **assets/img/** — cut-out cat photos (WebP with alpha)
+## Файлууд
+
+- **create.html** — нүүр хуудас: горимоо сонгож, формоо бөглөөд линкээ авна
+- **greet.html?id=xxx** — цэцэг + захидлын мэндчилгээ
+- **bolzoo.html?id=xxx** — болзооны урилга; бичлэг нь өөр горимынх бол зөв хуудас руу шилжүүлнэ
+- **argadah.html?id=xxx** — текстуртэй цаасан дээрх уучлалын захидал
+- **dashboard.html** — илгээсэн зүйлс ба ирсэн хариунууд
+- **unelgee.html** — олон нийтэд харагдах үнийн хуудас (9,900₮, бүх боломж багтсан)
+- **server.js** — pure Node local dev server (Supabase PostgREST API-г офлайнаар эмуляц хийнэ)
+- **assets/config.js** — Supabase URL + publishable key + имэйл webhook URL
+- **assets/bolzoo-garden.js** — 5 цэцгийн inline SVG + 5 захидлын цаасны тодорхойлолт
+- **assets/bolzoo-paper.js** — захидлын цаасны 8 текстур (цэвэр CSS/SVG, зураг ашиглахгүй)
+- **assets/bolzoo-sticker.js** — захидлын муурын зургийн сонголтууд
+- **assets/img/** — тайрсан муурын гэрэл зураг (WebP, alpha-тай)
 - **sql/schema.sql** — Supabase table + RLS policies
 
-`config` is a `jsonb` column, so the sorry-mode fields (`mode`, `sorryReason`, `sorryLetter`,
-`paper`, `sticker`, `promises`) needed no schema migration.
+Бүх горимын өгөгдөл `invites.config` (jsonb) дотор хадгалагдана — `mode`, цэцгийн
+`flower`/`paper`/`specialLetter`, аргадахын `sorryReason`/`sorryLetter`/`sticker`/`promises`.
+Горим нэмэх бүрд өгөгдлийн сангийн бүтэц өөрчлөгдөхгүй.
 
-Adding a new paper texture or cat image is a one-entry change in the matching
-`assets/bolzoo-*.js` module — the pickers in `create.html` are built from those lists.
+Шинэ цаасны текстур эсвэл муурын зураг нэмэх нь холбогдох `assets/bolzoo-*.js`
+модульд нэг мөр нэмэхэд л хангалттай — `create.html`-ийн сонгогчид тэр жагсаалтаас угсардаг.
+
+Гар бичмэл фонт: [Caveat](https://fonts.google.com/specimen/Caveat) (кирилл, `Ө/Ү` үсэг дэмждэг).
 
 ## How the sender finds out (response notification)
 
 Two independent paths — the second one is a safety net for the first:
 
 1. **The response is always written to the database** (`save_response` RPC) as soon as the
-   recipient answers, in both modes. Nothing depends on email for the data to survive.
+   recipient answers, in every mode. Nothing depends on email for the data to survive.
 2. **An email is sent to `config.responseEmail`** — but only once you set
    `emailWebhookUrl` in `assets/config.js`. Setup instructions are at the top of
    `bolzoo-email-apps-script.js` (a Google Apps Script web app, ~5 minutes, one time).
@@ -77,9 +85,10 @@ Editing keeps the same link.
 
 `dashboard.html` reads `bolzoo:my` from **localStorage**, so switching phones or clearing
 history empties the list. The invites themselves are untouched on the server — the
-dashboard has a "Урилга нэмэх" box that takes an invite link (or bare ID) and puts it
-back in the list. Recovered entries are read-only: the `owner_token` needed for deletion
-lives only on the original device.
+dashboard takes an invite link (or bare ID) and puts it back in the list. Recovered
+entries are read-only: the `owner_token` needed for deletion lives only on the original
+device, which is why `forgetInvite` (list-only removal) and `deleteInvite` (permanent)
+are separate actions.
 
 ## Local dev
 
@@ -90,7 +99,27 @@ node server.js
 
 ## Deploy
 
-Deployed as a pure static site on Vercel. Backend is Supabase (`invites` table with RLS).
+Vercel дээр цэвэр статик сайтаар deploy хийгддэг (build алхам байхгүй — `vercel.json`-д
+`buildCommand: null`, `outputDirectory: "."`). Backend нь Supabase (`invites` хүснэгт, RLS-тэй).
+
+Vercel-ийн GitHub integration холбогдсон бол `main` руу push хийх бүрд production,
+бусад branch/PR дээр preview автоматаар deploy болно. CLI-аар гараар хийх бол:
+
+```bash
+npx vercel --prod
+```
+
+Deploy болсны дараа шалгах хуудсууд:
+
+| Зам | Юу байх ёстой |
+| --- | --- |
+| `/` эсвэл `/create` | Нүүр хуудас — горим сонгох |
+| `/greet.html` | Цэцэг + захидлын мэндчилгээ |
+| `/bolzoo.html` | Болзооны урилга |
+| `/argadah.html` | Аргадах захидал |
+| `/unelgee.html` | Үнийн хуудас |
+| `/dashboard.html` | Илгээсэн зүйлс ба ирсэн хариунууд |
+| `/assets/bolzoo-garden.js` | Цэцэг, захидлын цаасны сан — 200 буцаах ёстой |
 
 ### Upgrading a site that is already live — order matters
 
