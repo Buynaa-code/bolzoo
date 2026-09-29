@@ -6,15 +6,60 @@
   "installCommand": null,
   "framework": null,
   "rewrites": [
-    { "source": "/", "destination": "/create" }
+    {
+      "source": "/api/checkout",
+      "destination": "/api/payment?payment_route=checkout"
+    },
+    {
+      "source": "/api/payment-status",
+      "destination": "/api/payment?payment_route=payment-status"
+    },
+    {
+      "source": "/api/wire-webhook",
+      "destination": "/api/payment?payment_route=wire-webhook"
+    },
+    {
+      "source": "/api/cancel-payment",
+      "destination": "/api/payment?payment_route=cancel-payment"
+    },
+    {
+      "source": "/api/dev-mark-paid",
+      "destination": "/api/payment?payment_route=dev-mark-paid"
+    },
+    {
+      "source": "/",
+      "destination": "/create"
+    }
   ],
   "headers": [
     {
       "source": "/(.*)",
       "headers": [
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        }
       ]
     }
-  ]
+  ],
+  "build": {
+    "env": {
+      "NODEJS_HELPERS": "0"
+    }
+  },
+  "env": {
+    "NODEJS_HELPERS": "0"
+  },
+  "functions": {
+    "api/*.js": {
+      "maxDuration": 60
+    }
+  },
+  "git": {
+    "deploymentEnabled": false
+  }
 }

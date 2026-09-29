@@ -12,7 +12,7 @@
   --coral-deep:#f76a8e;
   --coral-soft:#ffb3c0;
   --ink:#5a2a46;
-  --muted:#9a6b84;
+  --muted:#79556b;
   --chip:#fff0e8;
 }
 
@@ -93,4 +93,25 @@ input:focus, textarea:focus, select:focus{
 .stat-lbl{
   font-size:11px; color:var(--muted);
   text-transform:uppercase; letter-spacing:.6px; font-weight:800;
+}
+
+/* Readable controls, keyboard navigation and comfortable touch targets. */
+[hidden]{display:none !important;}
+:where(button,a,input,textarea,select,summary,[tabindex]):focus-visible{
+  outline:3px solid #763ca7;
+  outline-offset:4px;
+}
+button,input,textarea,select{font:inherit;}
+.btn{min-height:44px; background:linear-gradient(135deg,#b52e5b,#993b71);}
+.btn.secondary{color:#a32d57;}
+.btn.small{display:inline-flex; align-items:center; justify-content:center;}
+label{color:#a32d57; text-transform:none; letter-spacing:0;}
+input,textarea,select{font-size:16px; line-height:1.5;}
+textarea{resize:vertical; min-height:100px;}
+input[aria-invalid="true"],textarea[aria-invalid="true"]{border-color:#b32645;}
+.skip-link{position:fixed; top:8px; left:12px; z-index:200; padding:12px 18px; background:#fff; color:#6b254b; border:2px solid currentColor; border-radius:10px; transform:translateY(-150%);}
+.skip-link:focus{transform:none;}
+.skip-link:not(:focus){width:1px;height:1px;overflow:hidden;clip-path:inset(50%);padding:0;border:0;white-space:nowrap;}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; scroll-behavior:auto !important;}
 }

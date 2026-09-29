@@ -1,0 +1,18 @@
+[data-campaign-banner]{--campaign-ink:#57313b;--campaign-muted:#785862;--campaign-rose:#98344e;box-sizing:border-box;display:flex;flex-wrap:wrap;align-items:center;gap:16px 28px;padding:20px 24px;margin:24px 0 0;border:1px solid #d8aeb7;border-radius:18px;background:linear-gradient(115deg,#f9e9e9,#f3e1e7 62%,#f8eee2);color:var(--campaign-ink);font-family:Arial,'Helvetica Neue',sans-serif;position:relative;overflow-wrap:anywhere}
+[data-campaign-banner][hidden],body[data-experience="apology"] [data-campaign-banner]{display:none!important}
+[data-campaign-banner] *{box-sizing:border-box}
+[data-campaign-banner] .campaign-copy{flex:1 1 285px;min-width:0}
+[data-campaign-banner] .campaign-kicker{font-size:10px;line-height:1.5;font-weight:700;letter-spacing:1.1px;color:var(--campaign-rose);margin:0 0 7px}
+[data-campaign-banner] .campaign-title{font-family:Georgia,'Times New Roman',serif;font-size:24px;line-height:1.25;font-weight:400;letter-spacing:-.5px;color:var(--campaign-ink);margin:0 0 8px}
+[data-campaign-banner] .campaign-title span{display:block;color:var(--campaign-rose);font-style:italic}
+[data-campaign-banner] .campaign-dates{font-size:12px;line-height:1.5;color:var(--campaign-muted);margin:0}
+[data-campaign-banner] .campaign-offer{flex:0 1 310px;min-width:0;max-width:100%}
+[data-campaign-banner] .campaign-prices{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 11px;font-size:13px;line-height:1.4;margin:0 0 9px}
+[data-campaign-banner] .campaign-price-label{font-size:11px;color:var(--campaign-muted)}
+[data-campaign-banner] .campaign-previous{color:var(--campaign-muted);text-decoration-thickness:1px}
+[data-campaign-banner] .campaign-current{color:var(--campaign-rose);font-size:27px;font-weight:700;letter-spacing:-.7px}
+[data-campaign-banner] .campaign-cta{display:flex;align-items:center;justify-content:center;min-height:44px;padding:10px 13px;border:1px solid var(--campaign-rose);border-radius:10px;background:var(--campaign-rose);color:#fff;text-decoration:none;text-align:center;font-size:12px;line-height:1.5;font-weight:700}
+[data-campaign-banner] .campaign-cta:hover{background:#7c2940}
+[data-campaign-banner] .campaign-cta:focus-visible{outline:3px solid #68263c;outline-offset:3px}
+[data-campaign-banner] .campaign-deadline{font-size:10px;line-height:1.5;color:var(--campaign-muted);margin:7px 0 0;text-align:center}
+@media(max-width:640px){[data-campaign-banner]{padding:17px 18px;gap:13px;margin-top:18px;border-radius:14px}[data-campaign-banner] .campaign-title{font-size:22px}[data-campaign-banner] .campaign-offer{flex-basis:100%}[data-campaign-banner] .campaign-prices{gap:6px 9px;margin-bottom:8px}[data-campaign-banner] .campaign-current{font-size:25px}[data-campaign-banner] .campaign-cta{font-size:12px}}

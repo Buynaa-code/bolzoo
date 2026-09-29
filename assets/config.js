@@ -1,14 +1,3 @@
-/**
- * Bolzoo backend config.
- *
- * Хоосон үлдээвэл app localStorage-д fallback хийнэ (backend байхгүй ажиллана).
- * Supabase project үүсгэсний дараа доорх утгуудыг бөглөнө:
- *
- *   1. https://supabase.com  → New project
- *   2. Settings → API → URL болон anon/public key-г хуулаад доор тавь
- *   3. SQL editor руу орж sql/schema.sql-ийг ажиллуулах
- */
-window.BOLZOO_CONFIG = {
-  supabaseUrl: 'https://chmxjljudmwttwhemdri.supabase.co',
-  supabaseAnonKey: 'sb_publishable_arrXY92vzLxUIKrb5SKenQ_fM7Y7vKR'
-};
+// Measurement source snapshot: production credentials/endpoints intentionally omitted.
+// Use the local Node server; configure a separate test backend before any preview.
+window.BOLZOO_CONFIG = {};

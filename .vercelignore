@@ -1,5 +1,7 @@
 server.js
 data
+output
+scripts
 sql
 bolzoo-email-apps-script.js
 .admin-pw
@@ -7,3 +9,9 @@ bolzoo-email-apps-script.js
 .agents
 .claude
 skills-lock.json
+# Payment endpoints share api/payment.js on Vercel (keep local wrappers/tests).
+api/checkout.js
+api/payment-status.js
+api/wire-webhook.js
+api/cancel-payment.js
+api/dev-mark-paid.js

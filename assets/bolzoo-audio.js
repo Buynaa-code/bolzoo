@@ -27,12 +27,12 @@
     // Оронд нь setVideoId эсвэл safety timeout-оор эхэлнэ. Race condition-с сэргийлнэ.
     var deferPlayerCreation = opts.deferPlayerCreation === true;
 
-    var muted = false, fxReady = false;
+    var muted = true, fxReady = false;
     var masterVol = null, reverbNode = null, fxPop = null, fxBell = null;
     var toneMelodyStarted = false;
     var ytApiReady = false;
     var ytPlayer = null, ytState = 'loading', bgStarted = false;
-    var wantPlay = false, firstGestureAt = 0;
+    var wantPlay = false;
 
     function updateSoundUI(){
       var playing = wantPlay && bgStarted && !muted;
@@ -44,7 +44,7 @@
     }
 
     function initFX(){
-      if(fxReady || !window.Tone) return;
+      if(!wantPlay || fxReady || !window.Tone) return;
       try{
         Tone.start();
         masterVol = new Tone.Volume(-11).toDestination();
@@ -85,7 +85,8 @@
       // 1) Player аль хэдийн 'ready' бол шууд солино (амжилттай тохиолдол).
       if(ytPlayer && ytState === 'ready' && changed){
         try{
-          ytPlayer.loadVideoById(id);
+          if(wantPlay) ytPlayer.loadVideoById(id);
+          else ytPlayer.cueVideoById(id);
           ytPlayer.setVolume(YT_VOLUME);
           if(muted){ ytPlayer.mute(); } else { ytPlayer.unMute(); }
           if(bgStarted){ ytPlayer.playVideo(); }
@@ -152,14 +153,12 @@
       updateSoundUI();
     }
     function firstGesture(){
-      firstGestureAt = Date.now();
       wantPlay = true;
       initFX();
       startBackground();
       updateSoundUI();
       setTimeout(function(){ if(!bgStarted){ ytState = 'failed'; startBackground(); } }, 4500);
     }
-    window.addEventListener('pointerdown', firstGesture, { once:true });
 
     function setMuted(m){
       muted = m;
@@ -169,9 +168,7 @@
     }
 
     soundBtn.addEventListener('click', function(){
-      if(!fxReady){ initFX(); }
-      if(Date.now() - firstGestureAt < 350){ setMuted(false); }
-      else if(!wantPlay || !bgStarted){ muted = false; firstGesture(); setMuted(false); }
+      if(!wantPlay){ muted = false; firstGesture(); setMuted(false); }
       else { setMuted(!muted); }
     });
 

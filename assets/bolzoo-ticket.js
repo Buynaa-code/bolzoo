@@ -39,6 +39,7 @@
   }
 
   function drawTicketOn(ctx, ox, oy, d){
+    var hasLocation = !!String((d.locationName || '') + (d.locationAddress || '')).trim();
     ctx.save();
     ctx.translate(ox, oy);
     ctx.save();
@@ -59,7 +60,7 @@
     ctx.fillStyle = '#ffd9e4';
     roundedRect(ctx, 132, 36, 268, 36, 18); ctx.fill();
     ctx.fillStyle = '#f44583'; ctx.font = '800 15px Nunito, Arial, sans-serif';
-    centerText(ctx, '🎉 БОЛЗОО БАТАЛГААЖЛАА', 266, 60, 240);
+    centerText(ctx, d.statusText || 'БОЛЗООНЫ САНАЛ', 266, 60, 240);
 
     ctx.fillStyle = '#4b173f'; ctx.font = '800 45px Comfortaa, Arial, sans-serif';
     centerText(ctx, capFirst(d.kindTicket || 'болзоо'), 266, 128, 480);
@@ -97,11 +98,19 @@
         ctx.textAlign = 'left';
       }
     }
-    infoRow(252, '📅', 'Огноо', d.dateDots || d.dateText, '', d.weekday || '');
-    ctx.strokeStyle = '#ffd8e2'; ctx.beginPath(); ctx.moveTo(66, 306); ctx.lineTo(466, 306); ctx.stroke();
-    infoRow(340, '🕐', 'Цаг', d.time, '', '');
-    ctx.strokeStyle = '#ffd8e2'; ctx.beginPath(); ctx.moveTo(66, 394); ctx.lineTo(466, 394); ctx.stroke();
-    infoRow(424, '📍', 'Байршил', d.locationName || 'Уулзах газар', d.locationAddress || 'Улаанбаатар', '');
+    if(hasLocation){
+      infoRow(252, '📅', 'Огноо', d.dateDots || d.dateText, '', d.weekday || '');
+      ctx.strokeStyle = '#ffd8e2'; ctx.beginPath(); ctx.moveTo(66, 306); ctx.lineTo(466, 306); ctx.stroke();
+      infoRow(340, '🕐', 'Цаг', d.time, '', '');
+      ctx.strokeStyle = '#ffd8e2'; ctx.beginPath(); ctx.moveTo(66, 394); ctx.lineTo(466, 394); ctx.stroke();
+      infoRow(424, '📍', 'Байршил', d.locationName, d.locationAddress || '', '');
+    } else {
+      // Байршил оруулаагүй үед хиймэл default харуулахгүй; огноо, цагийг
+      // хоёр цэвэрхэн мөрөөр төвлөрүүлнэ.
+      infoRow(280, '📅', 'Огноо', d.dateDots || d.dateText, '', d.weekday || '');
+      ctx.strokeStyle = '#ffd8e2'; ctx.beginPath(); ctx.moveTo(66, 326); ctx.lineTo(466, 326); ctx.stroke();
+      infoRow(382, '🕐', 'Цаг', d.time, '', '');
+    }
 
     ctx.save();
     drawSoftShadow(ctx, 'rgba(116,45,88,.13)', 24, 12);
@@ -110,17 +119,13 @@
     ctx.restore();
     ctx.strokeStyle = '#ffd0dc'; ctx.lineWidth = 1;
     roundedRect(ctx, 42, 476, 448, 84, 22); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(266, 492); ctx.lineTo(266, 544); ctx.stroke();
-    ctx.textAlign = 'left';
+    ctx.textAlign = 'center';
     ctx.fillStyle = '#8c7d95'; ctx.font = '800 14px Nunito, Arial, sans-serif';
-    ctx.fillText('Суудал', 116, 511);
-    ctx.fillText('Ticket No.', 340, 511);
+    centerText(ctx, 'Дурсгалын тикет · Үйлчилгээний эрх биш', 266, 505, 410);
     ctx.fillStyle = '#4b173f'; ctx.font = '900 28px Nunito, Arial, sans-serif';
-    ctx.fillText('A5', 116, 542);
-    ctx.fillText(String(d.ticketNo || '500'), 340, 542);
-    ctx.font = '28px Arial, sans-serif';
-    ctx.fillText('🪑', 74, 532);
-    ctx.fillText('🎟', 298, 532);
+    centerText(ctx, String(d.ticketNo || 'Хамтдаа'), 266, 537, 390);
+    ctx.fillStyle = '#8c7d95'; ctx.font = '700 11px Nunito, Arial, sans-serif';
+    centerText(ctx, 'Үйлчилгээний төлбөр, захиалга ороогүй', 266, 553, 410);
 
     var cd = d.countdownParts || {};
     ctx.save();
@@ -134,7 +139,13 @@
     ctx.beginPath(); ctx.arc(92, 646, 33, 0, Math.PI*2); ctx.fill();
     ctx.font = '32px Arial, sans-serif'; ctx.textAlign = 'center'; centerText(ctx, '💘', 92, 658, 60);
     ctx.fillStyle = '#7e7388'; ctx.font = '800 15px Nunito, Arial, sans-serif';
-    centerText(ctx, 'Болзоонд үлдсэн хугацаа', 285, 626, 300);
+    centerText(ctx, d.countdownParts ? 'Болзоонд үлдсэн хугацаа' : 'Хамт хийх жижиг зүйлс', 285, 626, 300);
+    if(!d.countdownParts){
+      ctx.fillStyle = '#4b173f'; ctx.font = '900 26px Nunito, Arial, sans-serif';
+      centerText(ctx, 'Өөрсдийнхөө хэмнэлээр ♡', 285, 670, 300);
+      ctx.restore();
+      return;
+    }
     ctx.fillStyle = '#4b173f'; ctx.font = '900 37px Nunito, Arial, sans-serif';
     centerText(ctx, cd.days || '00', 206, 670, 70);
     centerText(ctx, cd.hours || '00', 300, 670, 70);
@@ -171,15 +182,23 @@
     if(isStory){
       ctx.textAlign = 'center';
       ctx.fillStyle = '#f76a8e'; ctx.font = '800 58px Comfortaa, Arial, sans-serif';
-      centerText(ctx, 'Болзоо баталгаажлаа', W/2, 190, W - 80);
-      drawTicketOn(ctx, (W-532)/2, 340, d);
+      centerText(ctx, 'bolzoo · Хамтдаа', W/2, 300, W - 80);
+      ctx.fillStyle = '#fffdfb';
+      roundedRect(ctx, 130, 550, 820, 740, 38); ctx.fill();
+      ctx.fillStyle = '#ac526e'; ctx.font = '100px Arial, sans-serif';
+      centerText(ctx, '♡', W/2, 735, W - 120);
+      ctx.fillStyle = '#4b173f'; ctx.font = '700 62px Comfortaa, Arial, sans-serif';
+      centerText(ctx, 'Нэг санаа.', W/2, 900, W - 180);
+      centerText(ctx, 'Хоёулангийн дурсамж.', W/2, 1000, W - 180);
+      ctx.fillStyle = '#8b6578'; ctx.font = '500 31px Nunito, Arial, sans-serif';
+      centerText(ctx, 'Хамтдаа шинэ зүйл хийе.', W/2, 1150, W - 180);
       ctx.fillStyle = '#9a6b84'; ctx.font = '800 34px Nunito, Arial, sans-serif';
-      centerText(ctx, 'Дараагийн уулзалтыг төлөвлөөд эхэлжээ 💕', W/2, 1780, W - 80);
+      centerText(ctx, 'Болзооны санаа · Хамт хийх зүйлс', W/2, 1570, W - 80);
     } else {
       drawTicketOn(ctx, 54, 58, d);
     }
     var a = document.createElement('a');
-    a.download = 'bolzoo-' + (isStory ? 'story' : 'ticket') + '-' + d.ticketNo + '.png';
+    a.download = 'bolzoo-' + (isStory ? 'story' : 'ticket') + '.png';
     a.href = canvas.toDataURL('image/png');
     document.body.appendChild(a);
     a.click();
@@ -188,8 +207,8 @@
 
   function save(d){
     var run = function(){ drawSaveInvite(d); };
-    if(document.fonts && document.fonts.ready){ document.fonts.ready.then(run); }
-    else { run(); }
+    if(document.fonts && document.fonts.ready){ return document.fonts.ready.then(run); }
+    return Promise.resolve().then(run);
   }
 
   window.BolzooTicket = { save: save };

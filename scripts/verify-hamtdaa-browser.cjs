@@ -1,0 +1,80 @@
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
+const {spawn} = require('node:child_process');
+// Optional browser verification: requires Playwright and an installed browser.
+const {chromium} = require(process.env.BOLZOO_PLAYWRIGHT_PATH || 'playwright');
+const cwd=path.resolve(__dirname,'..');
+const artifacts=path.join(cwd,'output/hamtdaa-validation');
+fs.mkdirSync(artifacts,{recursive:true});
+const dir=fs.mkdtempSync(path.join(os.tmpdir(),'bolzoo-browser-'));
+const invite='browser_mission_01';
+const owner='920cf0f4-1b48-4d8c-95c5-8b0e66e20db1';
+fs.writeFileSync(path.join(dir,'invites.json'),JSON.stringify({[invite]:{id:invite,owner_token:owner,config:{experienceType:'date',recipientName:'Номин',senderName:'Бат',missionIdeaId:'movie-and-talk'},created_at:new Date().toISOString()}}));
+const child=spawn(process.execPath,['server.js'],{cwd,env:{PATH:process.env.PATH,PORT:'0',HOST:'127.0.0.1',BOLZOO_DATA_DIR:dir,WIRE_API_KEY:'',ALLOW_MOCK_PAYMENT:'0',YOUTUBE_API_KEY:'',GOOGLE_API_KEY:''},stdio:['ignore','pipe','pipe']});
+let browser;
+const pageErrors=[];
+async function ready(page,selector){await page.locator(selector).waitFor({state:'visible'});await page.waitForFunction(()=>document.getElementById('main')?.getAttribute('aria-busy')!=='true');}
+async function noOverflow(page){const width=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,view:innerWidth}));assert.ok(width.scroll<=width.view,JSON.stringify(width));}
+(async()=>{
+  const origin=await new Promise((resolve,reject)=>{let output='';const timeout=setTimeout(()=>reject(Error('Server startup timeout')),15000);child.stdout.on('data',data=>{output+=data;const match=output.match(/Create page\s+:\s+(http:\/\/[^/]+)/);if(match){clearTimeout(timeout);resolve(match[1]);}});child.stderr.on('data',data=>{output+=data});child.once('exit',code=>reject(Error('Server exited '+code)));});
+  browser=await chromium.launch({headless:true,executablePath:process.env.BOLZOO_CHROME_PATH||undefined,timeout:60000});
+  const a=await browser.newContext({viewport:{width:1280,height:900},timezoneId:'UTC',acceptDownloads:true});
+  const b=await browser.newContext({viewport:{width:390,height:844},timezoneId:'America/Los_Angeles'});
+  for(const context of [a,b]){await context.route('**/*',route=>route.request().url().startsWith(origin)?route.continue():route.abort());context.on('page',p=>p.on('pageerror',e=>pageErrors.push(e.message)));}
+  const creator=await a.newPage(),partner=await b.newPage();
+  await creator.goto(origin+'/ideas.html');
+  await creator.locator('#idea-grid .idea-card').first().waitFor();
+  assert.equal(await creator.locator('#idea-grid .idea-card').count(),3);
+  while(await creator.locator('#show-more').isVisible())await creator.locator('#show-more').click();
+  assert.equal(await creator.locator('#idea-grid .idea-card').count(),require('../assets/mission-catalog').ideas.length);
+  await noOverflow(creator);
+  await creator.screenshot({path:path.join(artifacts,'ideas-desktop.png'),fullPage:true});
+  for(const width of [320,390,768]){await creator.setViewportSize({width,height:900});await noOverflow(creator);}
+  await creator.setViewportSize({width:1280,height:900});
+  await creator.evaluate(({invite,owner})=>{localStorage.setItem('bolzoo:owner:'+invite,JSON.stringify(owner));localStorage.setItem('bolzoo:my',JSON.stringify([{id:invite,createdAt:new Date().toISOString()}]));},{invite,owner});
+  await creator.goto(origin+'/date-plan.html?invite='+invite+'&idea=movie-and-talk');
+  await ready(creator,'#plan-editor');
+  await creator.locator('#plan-title').fill('Киноны дараах дулаан яриа');
+  await creator.locator('#plan-time').fill('2027-03-12T18:30');
+  await creator.locator('#plan-location').fill('Хамт сонгох кино театр');
+  await creator.locator('#plan-budget').fill('Хоёр хүний нийт төсвөө ярилцана');
+  await creator.locator('#save-plan').click();await ready(creator,'#plan-content');
+  assert.equal(await creator.evaluate(async()=>(await BolzooDatePlanAPI.get(new URLSearchParams(location.search).get("invite"))).scheduled_at),'2027-03-12T10:30:00.000Z');
+  assert.equal(await creator.locator('#ticket-time').textContent(),'2027.03.12 · 18:30 · УБ');
+  const join=await creator.evaluate(()=>BolzooDatePlanAPI.joinLink(new URLSearchParams(location.search).get('invite')));
+  assert.ok(join.includes('#join='));
+  await partner.goto(join);await ready(partner,'#claim-plan');
+  assert.equal(new URL(partner.url()).hash,'');
+  await partner.locator('#claim-plan').click();await ready(partner,'#plan-content');
+  assert.equal(await partner.evaluate(async()=>(await BolzooDatePlanAPI.get(new URLSearchParams(location.search).get("invite"))).role),'partner');
+  await partner.locator('#edit-plan').click();
+  assert.equal(await partner.locator('#plan-time').inputValue(),'2027-03-12T18:30');
+  await partner.locator('#plan-location').fill('Киноны дараа ойролцоох кафе');
+  await partner.locator('#save-plan').click();await ready(partner,'#plan-content');
+  await creator.locator('#refresh-plan').click();await ready(creator,'#accept-plan');
+  await creator.locator('#accept-plan').click();await ready(creator,'#start-panel');
+  assert.equal(await creator.evaluate(async()=>(await BolzooDatePlanAPI.get(new URLSearchParams(location.search).get("invite"))).revision),2);
+  assert.match(await creator.locator('#ticket-consent').textContent(),/Хоёулаа тохирлоо/);
+  const downloadPromise=creator.waitForEvent('download');await creator.locator('#download-ticket').click();const download=await downloadPromise;await download.saveAs(path.join(artifacts,'mission-ticket.png'));
+  const storyPromise=creator.waitForEvent('download');await creator.locator('#download-story').click();const story=await storyPromise;await story.saveAs(path.join(artifacts,'public-story.png'));
+  await creator.screenshot({path:path.join(artifacts,'plan-desktop.png'),fullPage:true});
+  await partner.locator('#refresh-plan').click();await ready(partner,'#start-plan');
+  await partner.locator('#start-plan').click();await ready(partner,'#end-panel');
+  await partner.locator('[data-step-id="before"][data-outcome="done"]').click();await partner.waitForFunction(()=>document.querySelector('[data-step-id="before"][data-outcome="done"]')?.getAttribute('aria-pressed')==='true');
+  await partner.locator('[data-step-id="together"][data-outcome="skipped"]').click();await partner.waitForFunction(()=>document.querySelector('[data-step-id="together"][data-outcome="skipped"]')?.getAttribute('aria-pressed')==='true');
+  for(const width of [320,390]){await partner.setViewportSize({width,height:844});await noOverflow(partner);await partner.screenshot({path:path.join(artifacts,'plan-mobile-'+width+'.png'),fullPage:true});}
+  await partner.reload();await ready(partner,'#end-panel');
+  assert.equal(await partner.locator('[data-step-id="before"][data-outcome="done"]').getAttribute('aria-pressed'),'true');
+  await partner.locator('#end-plan').click();await partner.locator('#confirm-action').click();await ready(partner,'#memory-panel');
+  await partner.locator('#memory-text').fill('Зөвхөн Номингийн хувийн тэмдэглэл.');await partner.locator('#save-memory').click();
+  await partner.waitForFunction(()=>document.getElementById('plan-message').textContent.includes('Таны хувийн тэмдэглэл хадгалагдлаа'));
+  await creator.locator('#refresh-plan').click();await ready(creator,'#memory-panel');assert.equal(await creator.locator('#memory-text').inputValue(),'');
+  await creator.locator('#memory-text').fill('Зөвхөн Батын хувийн тэмдэглэл.');await creator.locator('#save-memory').click();await creator.waitForFunction(()=>document.getElementById('plan-message').textContent.includes('Таны хувийн тэмдэглэл хадгалагдлаа'));
+  await partner.reload();await ready(partner,'#memory-panel');assert.equal(await partner.locator('#memory-text').inputValue(),'Зөвхөн Номингийн хувийн тэмдэглэл.');
+  await noOverflow(partner);await partner.screenshot({path:path.join(artifacts,'memory-mobile.png'),fullPage:true});
+  assert.deepEqual(pageErrors,[]);
+  fs.writeFileSync(path.join(artifacts,'browser-verification.json'),JSON.stringify({passed:true,checks:['versioned idea catalog','owner create','two independent browser contexts','one-time claim fragment removed','revision proposal/acceptance','Ulaanbaatar input in UTC and America/Los_Angeles browsers','PNG ticket and safe story export','done/skip persistence after reload','end with incomplete steps','both private memories isolated','no JS page errors','320/390/768/1280 layout no horizontal overflow'],screenshots:fs.readdirSync(artifacts).filter(n=>n.endsWith('.png'))},null,2));
+  console.log('PASS real Chrome two-browser lifecycle, privacy, reload, ticket/story downloads, timezone and responsive widths.');
+})().catch(e=>{console.error(e.stack);process.exitCode=1;}).finally(async()=>{if(browser)await browser.close();child.kill();await new Promise(resolve=>child.exitCode!==null?resolve():child.once('exit',resolve));fs.rmSync(dir,{recursive:true,force:true});});

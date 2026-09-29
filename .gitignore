@@ -11,3 +11,20 @@ data
 .mcp.json
 skills-lock.json
 .admin-pw
+
+# Contains the admin password in clear text
+sql/set-admin-password.sql
+
+# Source snapshot exclusions
+.env*
+!.env.example
+.dev.vars*
+*.log
+output/
+node_modules/
+.vercel/
+data/
+mobile/
+prototype/
+marketing/
+supabase/.temp/

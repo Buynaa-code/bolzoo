@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 580" fill="none">
+  <defs>
+    <g id="daisy">
+      <g fill="#fffdf0" stroke="#f1dfba" stroke-width="1.5">
+        <ellipse cy="-29" rx="11" ry="25"/>
+        <ellipse cy="-29" rx="11" ry="25" transform="rotate(45)"/>
+        <ellipse cy="-29" rx="11" ry="25" transform="rotate(90)"/>
+        <ellipse cy="-29" rx="11" ry="25" transform="rotate(135)"/>
+        <ellipse cy="-29" rx="11" ry="25" transform="rotate(180)"/>
+        <ellipse cy="-29" rx="11" ry="25" transform="rotate(225)"/>
+        <ellipse cy="-29" rx="11" ry="25" transform="rotate(270)"/>
+        <ellipse cy="-29" rx="11" ry="25" transform="rotate(315)"/>
+      </g>
+      <circle r="16" fill="#eac260"/>
+      <g fill="#b18b39"><circle cx="-6" cy="-4" r="2"/><circle cx="4" cy="-8" r="2"/><circle cx="8" cy="3" r="2"/><circle cx="-2" cy="7" r="2"/></g>
+    </g>
+    <g id="cosmos">
+      <g fill="currentColor" stroke="#c66a89" stroke-width="1">
+        <path d="M0 4C-40-7-42-47-25-54C-18-46-11-59-4-52C6-48 11-17 0 4Z"/>
+        <path d="M0 4C-40-7-42-47-25-54C-18-46-11-59-4-52C6-48 11-17 0 4Z" transform="rotate(60)"/>
+        <path d="M0 4C-40-7-42-47-25-54C-18-46-11-59-4-52C6-48 11-17 0 4Z" transform="rotate(120)"/>
+        <path d="M0 4C-40-7-42-47-25-54C-18-46-11-59-4-52C6-48 11-17 0 4Z" transform="rotate(180)"/>
+        <path d="M0 4C-40-7-42-47-25-54C-18-46-11-59-4-52C6-48 11-17 0 4Z" transform="rotate(240)"/>
+        <path d="M0 4C-40-7-42-47-25-54C-18-46-11-59-4-52C6-48 11-17 0 4Z" transform="rotate(300)"/>
+      </g>
+      <g stroke="#a9466b" opacity=".32" stroke-linecap="round"><path d="M-6-16-17-38M7-14 16-37M17 0 40-4M9 14 24 33M-8 14-19 34M-17 0-37 8"/></g>
+      <circle r="13" fill="#72344d"/><circle r="7" fill="#e9ba62"/>
+    </g>
+    <g id="leaf"><path d="M0 0Q-53-6-55-54Q-10-52 0 0Z" fill="#8d9d72"/><path d="M0 0-39-39" stroke="#627554" stroke-width="1.5"/></g>
+  </defs>
+  <g stroke="#728660" stroke-width="5" stroke-linecap="round">
+    <path d="M260 539Q241 280 145 159M260 539Q318 279 357 157M260 539Q206 267 261 83M260 539Q272 267 198 240M260 539Q315 337 377 271M260 539Q184 374 106 299M260 539Q303 358 290 284"/>
+    <path d="M258 463Q351 382 418 206M252 443Q136 314 110 222" stroke-width="3"/>
+  </g>
+  <use href="#leaf" transform="translate(240 386) rotate(-12)"/>
+  <use href="#leaf" transform="translate(281 417) rotate(85) scale(1.25)"/>
+  <use href="#leaf" transform="translate(199 309) rotate(5) scale(.8)"/>
+  <use href="#leaf" transform="translate(296 338) rotate(88)"/>
+  <use href="#leaf" transform="translate(328 254) rotate(87) scale(.7)"/>
+  <use href="#leaf" transform="translate(249 226) rotate(-25) scale(.75)"/>
+  <use href="#leaf" transform="translate(369 312) rotate(86) scale(.65)"/>
+  <use href="#leaf" transform="translate(179 411) rotate(-20) scale(.7)"/>
+  <g fill="#f4d7df" stroke="#c790a8"><ellipse cx="417" cy="201" rx="10" ry="17" transform="rotate(25 417 201)"/><ellipse cx="108" cy="219" rx="10" ry="16" transform="rotate(-25 108 219)"/></g>
+  <use href="#cosmos" transform="translate(143 156) rotate(-12) scale(1.14)" color="#eeb0c4"/>
+  <use href="#daisy" transform="translate(260 87) rotate(12) scale(.85)"/>
+  <use href="#cosmos" transform="translate(358 157) rotate(18) scale(1.1)" color="#d98ea9"/>
+  <use href="#daisy" transform="translate(377 271) rotate(8) scale(.9)"/>
+  <use href="#daisy" transform="translate(106 299) rotate(-15) scale(.73)"/>
+  <use href="#cosmos" transform="translate(201 241) rotate(35) scale(.95)" color="#f2c3d0"/>
+  <use href="#cosmos" transform="translate(290 291) rotate(-10) scale(.88)" color="#ce7c9b"/>
+  <path d="M239 464C205 421 177 443 195 465C204 477 232 474 249 470M264 466C303 425 333 449 309 468C298 478 278 474 257 470" stroke="#be6484" stroke-width="12" stroke-linecap="round"/>
+  <path d="m248 474-34 54 21-5 7 15 16-64M260 474l33 54-19-6-8 14-14-61" fill="#cc819c"/>
+  <ellipse cx="253" cy="468" rx="13" ry="10" fill="#a64e70"/>
+</svg>

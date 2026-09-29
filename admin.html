@@ -17,10 +17,19 @@
   @media (max-width:600px){ .row{grid-template-columns:1fr;} }
   /* Admin-д товч бага зэрэг өөр padding */
   .btn{padding:11px 18px;}
-  .btn.small{padding:6px 12px; font-size:12px;}
-  .stats{display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:16px;}
+  .btn.small{padding:9px 12px; font-size:12px; min-height:44px;}
+  .stats{display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:10px; margin-bottom:16px;}
   @media (max-width:640px){ .stats{grid-template-columns:repeat(2,1fr);} }
   #tableWrap{overflow-x:auto;}
+  .help{font-size:13px; color:var(--muted); margin:6px 0 0;}
+  .table-tools{display:grid; grid-template-columns:minmax(0,1fr) 180px auto; gap:12px; align-items:end; margin-bottom:12px;}
+  .table-tools .btn{align-self:end;}
+  .status[data-tone="error"]{color:#a02745;}
+  .status[data-tone="success"]{color:#28613c;}
+  .newcodes{user-select:all;}
+  .actions .btn{white-space:nowrap;}
+  .table-caption{position:absolute; width:1px; height:1px; padding:0; overflow:hidden; clip-path:inset(50%); white-space:nowrap;}
+  @media (max-width:640px){.table-tools{grid-template-columns:1fr;} .table-tools .btn{justify-self:start;} .stats .stat:last-child{grid-column:1 / -1;} td{overflow-wrap:anywhere;} td.actions{flex-wrap:wrap;} }
   table{width:100%; border-collapse:collapse; font-size:13px;}
   th{text-align:left; font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; padding:8px 10px; border-bottom:2px solid #ffe6dc;}
   td{padding:10px; border-bottom:1px solid #fff0e6; vertical-align:middle;}
@@ -42,6 +51,9 @@
   .badge{display:inline-block; font-size:10px; font-weight:800; padding:3px 9px; border-radius:999px; letter-spacing:.4px; text-transform:uppercase;}
   .badge.free{background:#dcffde; color:#3a8a4a;}
   .badge.used{background:#f3e6ec; color:var(--muted);}
+  .badge.qpay{background:#e3ecff; color:#3050b0;}
+  .badge.mock{background:#fff0ce; color:#8a6a20;}
+  .badge.admin{background:#f3e6f8; color:#7040a0;}
   .status{margin-top:10px; min-height:20px; font-weight:800; font-size:13px; color:var(--coral-deep);}
   .newcodes{background:#fff8ee; border:1px dashed var(--coral-soft); border-radius:12px; padding:12px; margin-top:10px; font-family:ui-monospace,Menlo,monospace; font-size:13px; white-space:pre-wrap; word-break:break-all;}
   .empty{color:var(--muted); text-align:center; padding:30px 10px; font-size:14px;}
@@ -52,19 +64,21 @@
 </style>
 </head>
 <body>
-<div class="wrap">
+<main class="wrap">
 
   <!-- ─── LOCKED ─── -->
   <div id="lockView" class="locked" style="display:none;">
     <div class="card">
-      <h2>🔐 Админ нэвтрэх</h2>
+      <h1>🔐 Админ нэвтрэх</h1>
       <p class="subtitle">Зөвхөн эзэмшигчид зориулав. Нууц үг оруулна уу.</p>
+      <form id="loginForm">
       <div style="margin-bottom:12px;">
-        <label>Нууц үг</label>
-        <input id="pwInput" type="password" placeholder="••••••••" autocomplete="current-password" />
+        <label for="pwInput">Нууц үг</label>
+        <input id="pwInput" name="password" type="password" placeholder="Нууц үгээ оруулна уу" autocomplete="current-password" required aria-describedby="loginStatus" />
       </div>
-      <button class="btn" id="loginBtn" style="width:100%;">Нэвтрэх</button>
-      <div class="status" id="loginStatus"></div>
+      <button class="btn" type="submit" id="loginBtn" style="width:100%;">Нэвтрэх</button>
+      <div class="status" id="loginStatus" role="status" aria-live="polite" aria-atomic="true"></div>
+      </form>
     </div>
   </div>
 
@@ -72,7 +86,7 @@
   <div id="mainView" style="display:none;">
     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:18px;">
       <div>
-        <h1>🔑 Код удирдлага</h1>
+        <h1 id="adminHeading" tabindex="-1">🔑 Код удирдлага</h1>
         <div class="subtitle">Хэрэглэгчид зориулж код үүсгэх, хянах</div>
       </div>
       <div style="display:flex; gap:8px;">
@@ -86,38 +100,50 @@
     </div>
 
     <div class="stats">
-      <div class="stat"><div class="stat-num" id="statTotal">0</div><div class="stat-lbl">Нийт код</div></div>
-      <div class="stat"><div class="stat-num" id="statFree">0</div><div class="stat-lbl">Ашиглагдаагүй</div></div>
-      <div class="stat"><div class="stat-num" id="statUsed">0</div><div class="stat-lbl">Ашиглагдсан</div></div>
-      <div class="stat"><div class="stat-num" id="statToday">0</div><div class="stat-lbl">Өнөөдрийн ашиглалт</div></div>
+      <div class="stat"><div class="stat-num" id="statTotal">—</div><div class="stat-lbl">Нийт код</div></div>
+      <div class="stat"><div class="stat-num" id="statFree">—</div><div class="stat-lbl">Ашиглагдаагүй</div></div>
+      <div class="stat"><div class="stat-num" id="statUsed">—</div><div class="stat-lbl">Ашиглагдсан</div></div>
+      <div class="stat"><div class="stat-num" id="statQpay">—</div><div class="stat-lbl">💳 QPay-ээр</div></div>
+      <div class="stat"><div class="stat-num" id="statToday">—</div><div class="stat-lbl">Өнөөдрийн ашиглалт</div></div>
     </div>
 
     <div class="card">
-      <h3 style="margin:0 0 12px; font-family:'Comfortaa',sans-serif;">➕ Шинэ код үүсгэх</h3>
+      <h2 style="margin:0 0 12px; font:700 18px 'Comfortaa',sans-serif;">➕ Шинэ код үүсгэх</h2>
+      <form id="generateForm">
       <div class="row">
         <div>
-          <label>Тоо</label>
-          <input id="qty" type="number" min="1" max="100" value="1" />
+          <label for="qty">Кодын тоо</label>
+          <input id="qty" type="number" min="1" max="100" step="1" value="1" required inputmode="numeric" aria-describedby="qtyHelp" />
+          <p class="help" id="qtyHelp">1–100 код</p>
         </div>
         <div>
-          <label>Тэмдэглэл (заавал биш)</label>
+          <label for="note">Тэмдэглэл (заавал биш)</label>
           <input id="note" type="text" placeholder="жишээ: Дулмаа — 5000₮ — @dulmaa_ig" />
+          <p class="help">Дараа нь кодоо олоход тусална.</p>
         </div>
       </div>
       <div class="toolbar" style="margin-top:14px;">
-        <button class="btn" id="genBtn">💫 Үүсгэх</button>
-        <button class="btn secondary small" id="refreshBtn">🔄 Шинэчлэх</button>
+        <button class="btn" id="genBtn" type="submit">💫 Код үүсгэх</button>
       </div>
-      <div id="newCodes" class="newcodes" style="display:none;"></div>
-      <div class="status" id="genStatus"></div>
+      </form>
+      <div id="newCodes" class="newcodes" tabindex="0" aria-label="Шинээр үүсгэсэн кодууд" style="display:none;"></div>
+      <button class="btn secondary small" id="copyNewBtn" type="button" style="display:none; margin-top:10px;">📋 Шинэ кодуудыг бүгдийг хуулах</button>
+      <div class="status" id="genStatus" role="status" aria-live="polite" aria-atomic="true"></div>
     </div>
 
     <div class="card">
-      <h3 style="margin:0 0 12px; font-family:'Comfortaa',sans-serif;">📋 Бүх кодууд</h3>
-      <div id="tableWrap"></div>
+      <h2 style="margin:0 0 12px; font:700 18px 'Comfortaa',sans-serif;">📋 Бүх кодууд</h2>
+      <div class="table-tools">
+        <div><label for="codeSearch">Код хайх</label><input id="codeSearch" type="search" placeholder="Код эсвэл тэмдэглэлээр хайх" autocomplete="off" /></div>
+        <div><label for="statusFilter">Төлөв</label><select id="statusFilter"><option value="all">Бүгд</option><option value="free">Ашиглагдаагүй</option><option value="used">Ашиглагдсан</option></select></div>
+        <button class="btn secondary small" id="refreshBtn" type="button">🔄 Шинэчлэх</button>
+      </div>
+      <p class="help" id="resultCount" role="status" aria-live="polite"></p>
+      <div class="status" id="listStatus" role="status" aria-live="polite" aria-atomic="true"></div>
+      <div id="tableWrap" aria-busy="false"></div>
     </div>
   </div>
-</div>
+</main>
 
 <script src="assets/utils.js"></script>
 <script src="assets/config.js"></script>
@@ -126,138 +152,265 @@
 (function(){
   var $ = BolzooUtils.$, esc = BolzooUtils.esc, fmtWhen = BolzooUtils.fmtWhen;
   var lockView = $('lockView'), mainView = $('mainView');
+  var allCodes = [], hasLoaded = false, loadingVersion = 0, loggingIn = false;
   var kind = window.BolzooAPI ? window.BolzooAPI.backendKind : 'localStorage';
   if(kind === 'localStorage'){ $('backendWarn').style.display = 'block'; }
 
   function getPw(){ return sessionStorage.getItem('bolzoo:admin_pw') || ''; }
   function setPw(v){ sessionStorage.setItem('bolzoo:admin_pw', v); }
   function clearPw(){ sessionStorage.removeItem('bolzoo:admin_pw'); }
+  function status(id, message, tone){
+    $(id).textContent = message;
+    $(id).dataset.tone = tone || '';
+  }
+  function setListBusy(busy){
+    $('refreshBtn').disabled = busy;
+    $('refreshBtn').textContent = busy ? 'Уншиж байна…' : '🔄 Шинэчлэх';
+    $('tableWrap').setAttribute('aria-busy', String(busy));
+  }
 
   function showLocked(msg){
+    loadingVersion++;
+    setListBusy(false);
     mainView.style.display = 'none';
     lockView.style.display = 'block';
-    if(msg){ $('loginStatus').textContent = msg; }
+    $('pwInput').value = '';
+    status('loginStatus', msg || '');
+    $('pwInput').focus();
   }
-  function showMain(){
+  function showMain(rows){
     lockView.style.display = 'none';
     mainView.style.display = 'block';
-    loadCodes();
+    $('pwInput').value = '';
+    allCodes = rows;
+    hasLoaded = true;
+    renderFiltered();
+    updateStats(rows);
+    status('listStatus', '');
+    $('adminHeading').focus();
   }
 
   async function tryLogin(pw){
-    $('loginStatus').textContent = '⏳ шалгаж байна…';
+    if(loggingIn) return;
+    if(!pw){ status('loginStatus', 'Нууц үгээ оруулна уу.', 'error'); $('pwInput').focus(); return; }
+    loggingIn = true;
+    $('loginBtn').disabled = true;
+    $('loginBtn').textContent = 'Шалгаж байна…';
+    $('loginForm').setAttribute('aria-busy', 'true');
+    $('pwInput').removeAttribute('aria-invalid');
+    status('loginStatus', 'Нэвтрэх эрхийг шалгаж байна…');
     try{
       // A list call with the pw acts as auth check
-      await BolzooAPI.adminListCodes(pw);
+      var rows = await BolzooAPI.adminListCodes(pw);
       setPw(pw);
-      showMain();
+      showMain(rows);
     }catch(e){
-      $('loginStatus').textContent = '❌ ' + (e.message || 'Нэвтэрч чадсангүй');
+      status('loginStatus', 'Нэвтэрч чадсангүй. ' + (e.message || 'Нууц үгээ шалгаад дахин оролдоно уу.'), 'error');
+      $('pwInput').setAttribute('aria-invalid', 'true');
+      $('pwInput').focus();
+    }finally{
+      loggingIn = false;
+      $('loginBtn').disabled = false;
+      $('loginBtn').textContent = 'Нэвтрэх';
+      $('loginForm').setAttribute('aria-busy', 'false');
     }
   }
 
-  $('loginBtn').addEventListener('click', function(){ tryLogin($('pwInput').value); });
-  $('pwInput').addEventListener('keydown', function(e){ if(e.key==='Enter') tryLogin($('pwInput').value); });
-  $('logoutBtn').addEventListener('click', function(){ clearPw(); showLocked('Гарлаа.'); });
+  $('loginForm').addEventListener('submit', function(e){ e.preventDefault(); tryLogin($('pwInput').value); });
+  $('logoutBtn').addEventListener('click', function(){
+    clearPw();
+    allCodes = [];
+    hasLoaded = false;
+    $('tableWrap').innerHTML = '';
+    $('newCodes').textContent = '';
+    $('newCodes').style.display = 'none';
+    $('copyNewBtn').style.display = 'none';
+    status('genStatus', '');
+    $('codeSearch').value = '';
+    $('statusFilter').value = 'all';
+    showLocked('Амжилттай гарлаа.');
+  });
 
   function isToday(iso){ if(!iso) return false; var d=new Date(iso), n=new Date(); return d.toDateString()===n.toDateString(); }
 
   function renderTable(rows){
     var wrap = $('tableWrap');
-    if(!rows.length){ wrap.innerHTML = '<div class="empty">Одоохондоо код байхгүй байна. Дээрх формоор эхнийхээ үүсгээрэй.</div>'; return; }
-    var html = '<table><thead><tr>'
-      + '<th>Код</th>'
-      + '<th>Төлөв</th>'
-      + '<th>Үүсгэсэн</th>'
-      + '<th>Ашигласан</th>'
-      + '<th>Тэмдэглэл</th>'
-      + '<th></th>'
+    if(!rows.length){ wrap.innerHTML = '<div class="empty">'+(allCodes.length ? 'Тохирох код олдсонгүй. Хайлтын үг эсвэл төлвөө өөрчилнө үү.' : 'Одоогоор код алга. «Код үүсгэх» хэсгээс эхний кодоо үүсгээрэй.')+'</div>'; return; }
+    var html = '<table><caption class="table-caption">Урилга үүсгэх кодууд</caption><thead><tr>'
+      + '<th scope="col">Код</th>'
+      + '<th scope="col">Эх сурвалж</th>'
+      + '<th scope="col">Төлөв</th>'
+      + '<th scope="col">Үүсгэсэн</th>'
+      + '<th scope="col">Ашигласан</th>'
+      + '<th scope="col">Тэмдэглэл</th>'
+      + '<th scope="col">Үйлдэл</th>'
     + '</tr></thead><tbody>';
     rows.forEach(function(r){
+      var src = r.source || 'admin';
+      var srcBadge;
+      if (src === 'self_service')      srcBadge = '<span class="badge qpay">💳 QPay</span>';
+      else if (src === 'self_service_mock') srcBadge = '<span class="badge mock">🧪 Mock</span>';
+      else                              srcBadge = '<span class="badge admin">👤 Гараар</span>';
       html += '<tr class="'+(r.used?'used':'')+'">'
         + '<td class="code-cell" data-label="Код">'+esc(r.code)+'</td>'
-        + '<td data-label="Төлөв">'+(r.used ? '<span class="badge used">Ашигласан</span>' : '<span class="badge free">Хоосон</span>')+'</td>'
+        + '<td data-label="Эх сурвалж">'+srcBadge+'</td>'
+        + '<td data-label="Төлөв">'+(r.used ? '<span class="badge used">Ашиглагдсан</span>' : '<span class="badge free">Ашиглагдаагүй</span>')+'</td>'
         + '<td data-label="Үүсгэсэн">'+esc(fmtWhen(r.created_at))+'</td>'
         + '<td data-label="Ашигласан">'+(r.used ? esc(fmtWhen(r.used_at)) + (r.used_for_invite_id ? '<br><span style="font-size:11px; color:var(--muted); font-family:ui-monospace,Menlo,monospace;">→ '+esc(r.used_for_invite_id)+'</span>' : '') : '—')+'</td>'
         + '<td data-label="Тэмдэглэл">'+esc(r.note || '—')+'</td>'
         + '<td class="actions" style="text-align:right; white-space:nowrap;">'
-          + '<button class="btn secondary small" data-copy="'+esc(r.code)+'">📋</button>'
-          + (r.used ? '' : ' <button class="btn danger small" data-del="'+esc(r.code)+'">🗑️</button>')
+          + '<button class="btn secondary small" type="button" data-copy="'+esc(r.code)+'" aria-label="'+esc(r.code)+' кодыг хуулах">📋 Хуулах</button>'
+          + (r.used ? '' : ' <button class="btn danger small" type="button" data-del="'+esc(r.code)+'" aria-label="'+esc(r.code)+' кодыг устгах">Устгах</button>')
         + '</td>'
       + '</tr>';
     });
     html += '</tbody></table>';
     wrap.innerHTML = html;
   }
+  function renderFiltered(){
+    var query = $('codeSearch').value.trim().toLocaleLowerCase();
+    var filter = $('statusFilter').value;
+    var rows = allCodes.filter(function(r){
+      var matchesStatus = filter === 'all' || (filter === 'used' ? !!r.used : !r.used);
+      return matchesStatus && (String(r.code || '')+' '+String(r.note || '')).toLocaleLowerCase().indexOf(query) !== -1;
+    });
+    renderTable(rows);
+    $('resultCount').textContent = allCodes.length ? 'Нийт '+allCodes.length+' кодоос '+rows.length+' харагдаж байна.' : '';
+  }
+  $('codeSearch').addEventListener('input', renderFiltered);
+  $('statusFilter').addEventListener('change', renderFiltered);
   function updateStats(rows){
     var used = rows.filter(function(r){ return r.used; });
     $('statTotal').textContent = rows.length;
     $('statFree').textContent  = rows.length - used.length;
     $('statUsed').textContent  = used.length;
+    $('statQpay').textContent  = rows.filter(function(r){ return r.source === 'self_service'; }).length;
     $('statToday').textContent = used.filter(function(r){ return isToday(r.used_at); }).length;
   }
 
   async function loadCodes(){
+    var version = ++loadingVersion;
+    var pw = getPw();
+    setListBusy(true);
+    status('listStatus', 'Кодуудыг шинэчилж байна…');
     try{
-      var rows = await BolzooAPI.adminListCodes(getPw());
-      renderTable(rows);
+      var rows = await BolzooAPI.adminListCodes(pw);
+      if(version !== loadingVersion || getPw() !== pw) return;
+      allCodes = rows;
+      hasLoaded = true;
+      renderFiltered();
       updateStats(rows);
+      status('listStatus', 'Кодын жагсаалт шинэчлэгдлээ.', 'success');
     }catch(e){
+      if(version !== loadingVersion || getPw() !== pw) return;
       var msg = e.message || String(e);
       if(/password/i.test(msg)){ clearPw(); showLocked('Сессион дуусжээ. Дахин нэвтэрнэ үү.'); return; }
-      alert('Ачаалахад алдаа: ' + msg);
+      status('listStatus', 'Кодуудыг уншиж чадсангүй. '+(hasLoaded ? 'Өмнөх жагсаалтыг харуулж байна. ' : '')+'«Шинэчлэх» товчоор дахин оролдоно уу. '+msg, 'error');
+    }finally{
+      if(version === loadingVersion || !getPw()) setListBusy(false);
     }
   }
 
-  $('genBtn').addEventListener('click', async function(){
-    var qty = Math.max(1, Math.min(100, Number($('qty').value)||1));
+  $('generateForm').addEventListener('submit', async function(e){
+    e.preventDefault();
+    if($('genBtn').disabled) return;
+    var qty = Number($('qty').value);
+    if(!Number.isInteger(qty) || qty < 1 || qty > 100){ status('genStatus', 'Кодын тоог 1–100 хооронд бүхэл тоогоор оруулна уу.', 'error'); $('qty').focus(); return; }
     var note = $('note').value.trim();
+    var pw = getPw();
     $('genBtn').disabled = true;
-    $('genStatus').textContent = '⏳ Үүсгэж байна…';
+    $('genBtn').textContent = 'Үүсгэж байна…';
+    $('generateForm').setAttribute('aria-busy', 'true');
+    status('genStatus', qty+' код үүсгэж байна…');
     try{
-      var rows = await BolzooAPI.adminCreateCodes(getPw(), qty, note);
+      var rows = await BolzooAPI.adminCreateCodes(pw, qty, note);
+      if(getPw() !== pw) return;
       var box = $('newCodes');
       box.style.display = 'block';
       box.textContent = rows.map(function(r){ return r.code; }).join('\n');
-      $('genStatus').textContent = '✅ '+rows.length+' код үүслээ. Дээрхийг Messenger/Instagram-т хуулна уу.';
+      $('copyNewBtn').style.display = 'inline-block';
+      status('genStatus', rows.length+' код үүслээ. «Шинэ кодуудыг бүгдийг хуулах» товчоор хуулж, хэрэглэгчдээ илгээгээрэй.', 'success');
       $('note').value = '';
-      loadCodes();
+      await loadCodes();
     }catch(e){
-      $('genStatus').textContent = '❌ '+(e.message||e);
+      if(getPw() === pw) status('genStatus', 'Код үүсгэж чадсангүй. '+(e.message||e), 'error');
     }finally{
       $('genBtn').disabled = false;
+      $('genBtn').textContent = '💫 Код үүсгэх';
+      $('generateForm').setAttribute('aria-busy', 'false');
     }
   });
   $('refreshBtn').addEventListener('click', loadCodes);
 
-  document.addEventListener('click', function(e){
+  async function copyText(value){
+    try{
+      if(navigator.clipboard && navigator.clipboard.writeText){ await navigator.clipboard.writeText(value); return; }
+    }catch(e){}
+    var active = document.activeElement;
+    var field = document.createElement('textarea');
+    field.value = value;
+    field.style.position = 'fixed';
+    field.style.opacity = '0';
+    field.setAttribute('aria-label', 'Хуулах код');
+    document.body.appendChild(field);
+    field.select();
+    try{
+      if(!document.execCommand || !document.execCommand('copy')) throw new Error('copy');
+    }finally{
+      field.remove();
+      if(active) active.focus();
+    }
+  }
+  $('copyNewBtn').addEventListener('click', async function(){
+    try{ await copyText($('newCodes').textContent); status('genStatus', 'Шинэ кодууд хуулсан. Хэрэглэгчдээ илгээхэд бэлэн.', 'success'); }
+    catch(e){ status('genStatus', 'Автоматаар хуулж чадсангүй. Дээрх кодуудыг сонгоод гараар хуулна уу.', 'error'); $('newCodes').focus(); }
+  });
+
+  document.addEventListener('click', async function(e){
     var copyBtn = e.target.closest('[data-copy]');
     if(copyBtn){
       var c = copyBtn.getAttribute('data-copy');
-      if(navigator.clipboard){
-        navigator.clipboard.writeText(c).then(function(){
-          var t=copyBtn.textContent; copyBtn.textContent='✅';
-          setTimeout(function(){ copyBtn.textContent=t; }, 1200);
-        });
+      try{
+        await copyText(c);
+        status('listStatus', c+' код хуулсан.', 'success');
+        copyBtn.textContent = '✓ Хуулсан';
+        setTimeout(function(){ copyBtn.textContent = '📋 Хуулах'; }, 1600);
+      }catch(err){
+        status('listStatus', 'Автоматаар хуулж чадсангүй. '+c+' кодыг сонгоод гараар хуулна уу.', 'error');
       }
       return;
     }
     var delBtn = e.target.closest('[data-del]');
     if(delBtn){
       var c2 = delBtn.getAttribute('data-del');
-      if(!confirm('Энэ кодыг устгах уу? ('+c2+')')) return;
-      BolzooAPI.adminDeleteCode(getPw(), c2).then(loadCodes).catch(function(err){
-        alert('Устгаж чадсангүй: '+(err.message||err));
-      });
+      if(delBtn.disabled || !confirm(c2+' кодыг устгах уу? Устгасны дараа энэ кодоор урилга үүсгэх боломжгүй болно.')) return;
+      var pw = getPw();
+      delBtn.disabled = true;
+      delBtn.textContent = 'Устгаж байна…';
+      status('listStatus', c2+' кодыг устгаж байна…');
+      try{
+        await BolzooAPI.adminDeleteCode(pw, c2);
+        if(getPw() !== pw) return;
+        loadingVersion++;
+        setListBusy(false);
+        allCodes = allCodes.filter(function(row){ return row.code !== c2; });
+        renderFiltered();
+        updateStats(allCodes);
+        status('listStatus', c2+' код устгагдлаа.', 'success');
+        $('codeSearch').focus();
+      }catch(err){
+        if(getPw() === pw) status('listStatus', 'Устгаж чадсангүй. Дахин оролдоно уу. '+(err.message||err), 'error');
+      }finally{
+        delBtn.disabled = false;
+        delBtn.textContent = 'Устгах';
+      }
     }
   });
 
   // Bootstrap: check existing session
-  if(getPw()){
-    tryLogin(getPw());
-  } else {
-    showLocked();
-  }
+  var savedPw = getPw();
+  showLocked();
+  if(savedPw) tryLogin(savedPw);
 })();
 </script>
 </body>

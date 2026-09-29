@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+<meta name="referrer" content="no-referrer">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Төлбөр төлөх · Bolzoo 💌</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@500;600;700&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --hot:#ff4d82;
+    --violet:#9d63e6;
+    --line:#f8d7e2;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Nunito', sans-serif;
+    background:linear-gradient(135deg,#fff7f8 0%,#fffaf8 54%,#fff2f8 100%);
+    color:#3e1738;
+    min-height:100vh;
+    padding:24px 16px;
+  }
+  .wrap{
+    max-width:460px;
+    margin:20px auto;
+    padding:28px 26px;
+    background:rgba(255,255,255,.85);
+    border:1px solid rgba(255,214,226,.72);
+    border-radius:20px;
+    box-shadow:0 28px 70px -34px rgba(105,39,78,.35);
+    backdrop-filter:blur(14px);
+  }
+  h1{
+    font-family:'Comfortaa', sans-serif;
+    font-weight:700;
+    font-size:24px;
+    margin:0 0 8px;
+    color:#4b173f;
+  }
+  .subtitle{color:#816e82; margin:0 0 22px; font-size:14px; font-weight:700; line-height:1.5;}
+  .price{
+    position:relative;
+    padding:18px 20px;
+    margin:0 0 22px;
+    background:
+      radial-gradient(circle at 100% 0%, rgba(255,196,215,.6) 0 88px, transparent 96px),
+      linear-gradient(135deg,#fff8fb 0%,#ffeaf1 55%,#fff6f9 100%);
+    border:1px solid rgba(255,133,168,.5);
+    border-radius:18px;
+    box-shadow:0 20px 44px -30px rgba(105,39,78,.4);
+    overflow:hidden;
+    text-align:center;
+  }
+  .price-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:8px;
+    margin:0 0 12px;
+  }
+  .price-tag{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:5px 10px;
+    border-radius:999px;
+    background:#fff;
+    border:1px solid rgba(255,112,157,.4);
+    color:#c74747;
+    font-size:11px;
+    font-weight:900;
+    text-transform:uppercase;
+    letter-spacing:.03em;
+  }
+  .price-limit{color:#8b6b83; font-size:11px; font-weight:800; letter-spacing:.02em;}
+  .price-row{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:14px;
+    flex-wrap:wrap;
+    margin:0 0 10px;
+  }
+  .price-old-block,
+  .price-new-block{display:flex; flex-direction:column; align-items:center; gap:2px;}
+  .price-old-label,
+  .price-new-label{color:#8b6b83; font-size:10px; font-weight:900; text-transform:uppercase; letter-spacing:.06em;}
+  .price-old{color:#a48a9e; font-family:'Comfortaa',sans-serif; font-size:20px; font-weight:700; text-decoration:line-through; text-decoration-thickness:2px; text-decoration-color:#c74747;}
+  .price-arrow{color:#c136a0; font-size:22px; font-weight:900; line-height:1;}
+  .price .amt{font-family:'Comfortaa',sans-serif; font-size:36px; font-weight:700; color:var(--hot); line-height:1; margin:0;}
+  .price .amt small{font-size:18px; margin-left:2px;}
+  .price-badge{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    padding:6px 12px;
+    border-radius:999px;
+    background:linear-gradient(135deg,#ff4d82,#c136a0);
+    color:#fff;
+    font-family:'Comfortaa',sans-serif;
+    font-size:14px;
+    font-weight:700;
+    letter-spacing:.02em;
+    box-shadow:0 10px 20px -12px rgba(255,77,130,.8);
+  }
+  .price .lbl{margin:0; padding:8px 12px; border-radius:10px; background:#fff; border:1px dashed rgba(255,145,176,.5); color:#6a4062; font-size:12px; font-weight:800; line-height:1.4; letter-spacing:.03em;}
+  @media (max-width:520px){
+    .price-row{gap:10px;}
+    .price-arrow{transform:rotate(90deg); font-size:18px;}
+    .price-old{font-size:18px;}
+    .price .amt{font-size:30px;}
+  }
+  .btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    width:100%;
+    min-height:54px;
+    padding:14px 22px;
+    border:0;
+    border-radius:12px;
+    background:linear-gradient(100deg,#ff4f86,#ff5f93 54%,#ff4d82);
+    color:#fff;
+    font-family:'Nunito', sans-serif;
+    font-size:15px;
+    font-weight:900;
+    cursor:pointer;
+    text-decoration:none;
+    box-shadow:0 16px 30px -18px rgba(247,106,142,.72);
+  }
+  .btn:disabled{opacity:.6; cursor:not-allowed;}
+  .btn.secondary{background:#fff; color:#6a4062; border:1px solid rgba(248,215,226,.9); box-shadow:none;}
+  .qr-shell{
+    text-align:center;
+    padding:24px;
+    margin:0 0 16px;
+    background:#fff;
+    border:1px solid #efd4de;
+    border-radius:14px;
+  }
+  .qr-box{
+    width:240px;
+    height:240px;
+    margin:0 auto 14px;
+    display:grid;
+    place-items:center;
+    background:#fff;
+    border:1px solid #f4d7e0;
+    border-radius:12px;
+    color:#a44f6d;
+    font-size:13px;
+    font-weight:900;
+    line-height:1.4;
+    padding:0;
+    overflow:hidden;
+  }
+  .qr-box.loading{background:repeating-linear-gradient(45deg, #ffe7ee 0 10px, #fff 10px 20px);}
+  .qr-box img{width:100%; height:100%; object-fit:contain; border:0; border-radius:0; background:#fff; display:block;}
+  .qr-box iframe{width:100%; height:100%; border:0;}
+  .qr-hint{font-size:13px; color:#7d687d; font-weight:700; line-height:1.5; margin:0;}
+  .transfer-note{font-size:12px; color:#6b5267; font-weight:800; line-height:1.45; margin:10px 0 0;}
+  .transfer-note strong{color:#4b173f; font-weight:900;}
+  .memo-row{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    justify-content:space-between;
+    margin:12px 0 0;
+    padding:10px 12px;
+    background:#fff;
+    border:1px dashed #d4a53b;
+    border-radius:10px;
+  }
+  .memo-row .memo-lbl{font-size:10px; color:#6b5216; font-weight:900; letter-spacing:.05em; text-transform:uppercase; margin:0 0 2px;}
+  .memo-row .memo-val{font-family:ui-monospace, Menlo, monospace; font-size:14px; font-weight:900; color:#4b173f; word-break:break-all; user-select:all;}
+  .memo-row .memo-copy{
+    flex-shrink:0;
+    background:var(--hot);
+    color:#fff;
+    border:0;
+    padding:10px 14px;
+    border-radius:8px;
+    font-family:'Nunito', sans-serif;
+    font-size:12px;
+    font-weight:900;
+    cursor:pointer;
+    min-height:40px;
+  }
+  .memo-row .memo-copy.copied{background:#3a8a4a;}
+  .banks{margin-top:14px; display:grid; grid-template-columns:repeat(4,1fr); gap:10px;}
+  .bank-link{display:flex; flex-direction:column; align-items:center; gap:4px; padding:8px 4px; border:1px solid #efd4de; border-radius:10px; background:#fff; text-decoration:none; color:#4b173f; font-size:10px; font-weight:800; line-height:1.15; text-align:center; transition:transform .1s, box-shadow .1s; cursor:pointer;}
+  .bank-link:hover{transform:translateY(-1px); box-shadow:0 6px 12px -8px rgba(90,42,70,.4);}
+  .bank-link.primary{grid-column:1/-1; flex-direction:row; justify-content:center; padding:12px 16px; border:2px solid #6e4dc8; background:linear-gradient(135deg,#f8f4ff,#efe6ff); color:#3d2270; font-size:14px;}
+  .bank-link.primary img{width:36px; height:36px;}
+  .bank-link img{width:32px; height:32px; border-radius:8px; object-fit:cover; background:#f7f0f5;}
+  .banks-title{margin:16px 0 10px; font-size:12px; color:#6d536b; font-weight:900; letter-spacing:.05em; text-align:center;}
+  .bank-hint{margin-top:12px; padding:10px 14px; background:#fff8e1; border:1px dashed #d4a53b; border-radius:10px; font-size:12px; color:#6b5216; font-weight:800; text-align:center; line-height:1.4;}
+  .banks-toggle{margin-top:10px; text-align:center; font-size:12px; color:var(--hot); font-weight:900; cursor:pointer; text-decoration:underline; background:none; border:0; padding:6px;}
+  @media (max-width:520px){
+    .banks{grid-template-columns:repeat(3,1fr); gap:8px;}
+    .bank-link{font-size:9px;}
+    .bank-link img{width:28px; height:28px;}
+    .bank-link.primary{font-size:13px;}
+  }
+  .status-row{text-align:center; margin:8px 0 18px;}
+  .pill{display:inline-block; padding:6px 16px; border-radius:999px; font-size:12px; font-weight:900; letter-spacing:.03em;}
+  .pill.pending{background:#fff1d9; color:#c88318;}
+  .pill.succeeded{background:#d9f5df; color:#2e8b3e;}
+  .pill.failed, .pill.canceled{background:#ffdcdc; color:#c74747;}
+  .pill.new, .pill.requires_action, .pill.processing, .pill.requires_payment_method, .pill.requires_capture{background:#fff1d9; color:#c88318;}
+  .code-box{
+    padding:22px 20px;
+    margin:0 0 18px;
+    background:linear-gradient(135deg,#fff6f9,#ffe8f0);
+    border:2px dashed var(--hot);
+    border-radius:14px;
+    text-align:center;
+  }
+  .code-box .warn{
+    display:block;
+    background:#fff2e6;
+    border:1px solid #ffb87a;
+    color:#a3531a;
+    font-size:11px;
+    font-weight:900;
+    padding:8px 12px;
+    border-radius:8px;
+    margin:0 0 14px;
+    letter-spacing:.03em;
+    line-height:1.4;
+  }
+  .code-box .lbl{font-size:12px; color:#6d536b; font-weight:900; margin:0 0 8px; letter-spacing:.05em;}
+  .code-box .val{
+    font-family:ui-monospace, Menlo, monospace;
+    font-size:28px;
+    font-weight:900;
+    color:#4b173f;
+    letter-spacing:3px;
+    padding:14px 8px;
+    background:#fff;
+    border:1px solid #ffcbd9;
+    border-radius:10px;
+    margin:0 0 14px;
+    user-select:all;
+    cursor:text;
+  }
+  .btn-copy{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    width:100%;
+    padding:14px 20px;
+    background:#fff;
+    color:var(--hot);
+    border:2px solid var(--hot);
+    border-radius:10px;
+    font-family:'Nunito', sans-serif;
+    font-size:14px;
+    font-weight:900;
+    cursor:pointer;
+    transition:all .15s;
+  }
+  .btn-copy:hover{background:var(--hot); color:#fff;}
+  .btn-copy.copied{background:#3a8a4a; color:#fff; border-color:#3a8a4a;}
+  .copy-feedback{font-size:12px; color:#3a8a4a; font-weight:900; margin-top:8px; min-height:16px;}
+  .dev-note{
+    margin-top:20px;
+    padding:14px 16px;
+    background:#fff8e1;
+    border:1px dashed #d4a53b;
+    border-radius:10px;
+    font-size:12px;
+    color:#6b5216;
+    font-weight:700;
+    text-align:center;
+    line-height:1.5;
+  }
+  .dev-note .dev-btn{
+    margin-top:10px;
+    background:#d4a53b;
+    color:#fff;
+    border:0;
+    padding:10px 16px;
+    border-radius:8px;
+    font-weight:900;
+    font-family:'Nunito', sans-serif;
+    cursor:pointer;
+    font-size:13px;
+  }
+  .dev-note .dev-btn:disabled{opacity:.6;}
+  .footer{text-align:center; margin-top:20px; font-size:13px; color:#7d687d; font-weight:700;}
+  .footer a{color:var(--hot); font-weight:900; text-decoration:none;}
+  .err{background:#ffdcdc; color:#c74747; padding:10px 14px; border-radius:10px; font-size:13px; font-weight:800; margin:0 0 14px;}
+  .action-json{margin-top:12px; padding:10px; background:#f7f0f5; border-radius:8px; font-size:11px; color:#5d3a58; font-family:ui-monospace, Menlo, monospace; word-break:break-all; text-align:left;}
+  [hidden]{display:none !important;}
+  :focus-visible{outline:3px solid #7444a9; outline-offset:4px;}
+  .back-link{display:inline-block; padding:6px 0; margin-bottom:22px; color:#73516b; font-size:13px; font-weight:800; text-decoration:none;}
+  .checkout-steps{display:flex; gap:8px; padding:0; margin:0 0 22px; list-style:none; color:#7b6073; font-size:11px; font-weight:900;}
+  .checkout-steps li{flex:1; padding:9px 4px; border-bottom:3px solid #f3e4eb; text-align:center;}
+  .checkout-steps [aria-current="step"]{color:#9f2854; border-color:#c9346a;}
+  .price .amt{color:#bd2e61;}
+  .price-tag{color:#8b3357; text-transform:none; font-size:12px;}
+  .price-new-label{font-size:12px; text-transform:none; letter-spacing:0;}
+  .checkout-explainer{margin:0 0 18px; padding:0; list-style:none; color:#705166; font-size:13px; line-height:1.6;}
+  .checkout-explainer li{display:flex; gap:8px; margin-top:8px;}
+  .checkout-explainer span{color:#9f2854; font-weight:900;}
+  .status-row{padding:16px; margin:0 0 16px; border-radius:14px; background:#fff9ed; border:1px solid #eedbb7; text-align:left;}
+  .status-row .pill{padding:0; background:none; color:#785312; font-size:14px; letter-spacing:0;}
+  .status-guidance{margin:8px 0 0; font-size:13px; line-height:1.6; color:#745d36;}
+  .payment-actions{display:grid; gap:10px;}
+  .payment-actions .btn-copy{width:100%; min-height:44px; margin:0;}
+  .payment-actions #cancelBtn{border:0; color:#78516c; background:transparent; font-size:12px;}
+  .expiry-hint{font-size:12px; color:#765e6e; margin:0 0 14px; text-align:center; line-height:1.5;}
+  .memo-details{margin-top:16px; text-align:left;}
+  .memo-details summary{cursor:pointer; padding:4px 0; color:#725768; font-size:12px; font-weight:900; line-height:1.5;}
+  .qr-box{width:min(240px,100%); height:auto; aspect-ratio:1;}
+  .qr-shell{padding:18px;}
+  .banks-toggle,.memo-copy,.btn-copy{min-height:44px;}
+  .bank-link{min-height:64px; font-size:11px;}
+  .btn{background:linear-gradient(100deg,#c33265,#b92b60);}
+  .btn-copy{color:#ad2959; border-color:#ad2959;}
+  .footer a,.banks-toggle{color:#ad2959;}
+  .copy-feedback{line-height:1.5;}
+  @media (max-width:380px){
+    body{padding:12px 10px;}
+    .wrap{padding:22px 16px; margin:8px auto;}
+    h1{font-size:22px; line-height:1.4;}
+    .price{padding:16px 12px;}
+    .qr-shell{padding:14px;}
+    .code-box{padding:18px 12px;}
+    .code-box .val{font-size:25px; letter-spacing:.05em;}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none !important;}}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+  <main class="wrap">
+    <a class="back-link" href="create.html" id="backLink">← Урилга үүсгэх хуудас</a>
+    <ol class="checkout-steps" aria-label="Урилга авах алхмууд">
+      <li>1. Урилга бэлдэх</li><li id="paymentStep" aria-current="step">2. Төлбөр төлөх</li><li id="completeStep">3. Линк авах</li>
+    </ol>
+    <h1 id="pageTitle" tabindex="-1">💌 Урилгын эрх авах</h1>
+    <p class="subtitle" id="pageSubtitle">Нэг удаа төлөөд, өөрийн загвартай урилга үүсгэх кодоо аваарай.</p>
+
+    <div class="price" id="priceBlock" aria-label="1 урилга үүсгэх эрхийн үнэ">
+      <div class="price-head">
+        <span class="price-tag">💌 Нэг урилгын үнэ</span>
+        <span class="price-limit">Нэг удаагийн төлбөр</span>
+      </div>
+      <div class="price-row">
+        <div class="price-old-block" id="regularPriceBlock" hidden><span class="price-old-label">Үндсэн үнэ</span><span class="price-old" id="regularPrice"></span></div>
+        <div class="price-new-block">
+          <span class="price-new-label">Төлөх дүн</span>
+          <p class="amt" id="priceAmt">…<small>₮</small></p>
+        </div>
+      </div>
+      <p class="lbl">1 урилга · Хуваалцах линк · Хариу харах эрх</p>
+      <p id="promotionNote" hidden style="margin:12px 0 0;font-size:13px;line-height:1.6;color:#8b3357"></p>
+    </div>
+
+    <div id="errBox" role="alert" class="err" style="display:none;"></div>
+
+    <div id="beforeStart">
+      <ul class="checkout-explainer">
+        <li><span>1.</span> Банкны апп эсвэл QR кодоор төлнө.</li>
+        <li><span>2.</span> Төлбөр баталгаажмагц урилгын код гарна.</li>
+        <li><span>3.</span> Урилгаа үүсгээд линкээ хуваалцана.</li>
+      </ul>
+      <button class="btn" id="startBtn">QPay-ээр төлбөр эхлүүлэх →</button>
+      <p class="footer">Төлбөр хийсэн бол энэ хуудсандаа буцаж ирээрэй.</p>
+    </div>
+
+    <div id="afterStart" style="display:none;">
+      <div class="status-row" role="status" aria-live="polite" aria-atomic="true">
+        <span id="statusPill" class="pill pending">Төлбөр хүлээж байна</span>
+        <p class="status-guidance" id="statusGuidance">Төлбөрийн төлөв автоматаар шинэчлэгдэнэ. Төлсөн бол дахин төлөх шаардлагагүй.</p>
+      </div>
+      <div class="qr-shell" id="paymentMethods">
+        <div class="qr-box loading" id="qrBox">QR хүлээж байна…</div>
+        <p class="qr-hint">Утсаар бол доороос банкаа сонгоно. Компьютероос бол банкны аппаар QR-ыг уншуулаарай.</p>
+        <details class="memo-details">
+        <summary>Гүйлгээний утгыг гараар оруулах хэрэгтэй бол</summary>
+        <p class="transfer-note">Гүйлгээний утга нь ихэнх банкан дээр автоматаар бөглөгдөнө. Хэрэв гараар оруулах шаардлагатай бол:</p>
+        <div class="memo-row">
+          <div style="flex:1; min-width:0;">
+            <p class="memo-lbl">Гүйлгээний утга</p>
+            <div class="memo-val" id="paymentDescription">Bolzoo invite access</div>
+          </div>
+          <button type="button" class="memo-copy" id="copyMemoBtn">📋 Хуулах</button>
+        </div>
+        <div class="copy-feedback" id="memoFeedback" role="status" aria-live="polite"></div>
+        </details>
+        <div id="banksTitle" class="banks-title" style="display:none;">эсвэл банкны аппаа шууд нээх:</div>
+        <div id="banks" class="banks" style="display:none;"></div>
+        <button id="banksToggle" class="banks-toggle" type="button" aria-expanded="false" aria-controls="banks" style="display:none;">Бүх банкыг харах ↓</button>
+        <div id="bankHint" class="bank-hint" style="display:none;"></div>
+        <div id="actionJson" class="action-json" style="display:none;"></div>
+      </div>
+      <p id="expiryHint" class="expiry-hint"></p>
+      <div class="payment-actions">
+      <button class="btn" id="checkBtn" type="button">Төлсөн эсэхийг шалгах</button>
+      <button class="btn-copy" id="cancelBtn" type="button">Нэхэмжлэл цуцлах</button>
+      <button class="btn-copy" id="retryBtn" type="button" hidden>Шинэ нэхэмжлэл үүсгэх</button>
+      </div>
+      <div id="devPanel" class="dev-note" style="display:none;">
+        🧪 <b>Local dev · mock mode</b><br>
+        wire.mn холбогдоогүй байна. Simulate дараад төлбөр амжилттай болсон гэж загварчилна.
+        <br><button class="dev-btn" id="simulateBtn">Simulate төлбөр амжилттай →</button>
+      </div>
+    </div>
+
+    <div id="successPanel" style="display:none;">
+      <div class="code-box">
+        <span class="warn" id="codeWarning">🔐 ӨӨРТӨӨ ХАДГАЛНА УУ · Энэ кодоор урилгын хариугаа харна</span>
+        <p class="lbl">✅ ТАНЫ ЭРХИЙН БОЛОН ХАРИУ ХАРАХ КОД</p>
+        <div class="val" id="codeValue">—</div>
+        <button class="btn-copy" id="copyBtn" type="button">📋 Хариу харах код хуулах</button>
+        <div class="copy-feedback" id="copyFeedback" role="status" aria-live="polite"></div>
+      </div>
+      <a href="#" class="btn" id="continueBtn">Урилга үүсгэх хуудас руу →</a>
+      <p class="footer" id="redirectHint">Кодоо Notes эсвэл өөрийн чатандаа хадгалаад “Урилга үүсгэх” товч дарна уу. Хүлээн авагчид кодоо бүү явуулаарай.</p>
+    </div>
+
+    <p class="footer" id="haveCodeFooter">
+      Аль хэдийн эрхийн код авсан уу? <a href="create.html">Урилга үүсгэх →</a>
+    </p>
+  </main>
+
+<script src="assets/inapp-browser.js"></script>
+<script src="assets/campaign-pricing.js"></script>
+<script>
+(function(){
+  var $ = function(id){ return document.getElementById(id); };
+  var intentId  = null;
+  var pollTimer = null;
+  var mode      = 'unknown';
+  var paymentDescription = 'Bolzoo invite access';
+  var returnToCreate = false;
+  var checkoutToken = null;
+  var checkoutBusy = false;
+  var pollBusy = false;
+  var polling = false;
+  var paymentStatus = null;
+  var expiresAt = null;
+  var activeKey = 'bolzoo:active_checkout';
+  function readAttempt(){ try { return JSON.parse(localStorage.getItem(activeKey)); } catch (_) { return null; } }
+  function saveAttempt(){
+    var state = { token: checkoutToken, id: intentId, from: returnToCreate ? 'create' : '' };
+    try { localStorage.setItem(activeKey, JSON.stringify(state)); } catch (_) {}
+    var u = new URL(location.href);
+    if (intentId) u.searchParams.set('intent', intentId); else u.searchParams.delete('intent');
+    if (returnToCreate) u.searchParams.set('from', 'create');
+    if (checkoutToken) u.hash = 'payment_token=' + checkoutToken; else u.hash = '';
+    history.replaceState(null, '', u.pathname + u.search + u.hash);
+  }
+  function newToken(){
+    var bytes = new Uint8Array(32); crypto.getRandomValues(bytes);
+    return Date.now() + '-' + Array.from(bytes, function(b){ return b.toString(16).padStart(2, '0'); }).join('');
+  }
+  function authHeaders(){ return checkoutToken ? { Authorization: 'Bearer ' + checkoutToken } : {}; }
+  async function paymentFetch(url, options){
+    var controller = new AbortController();
+    var timeout = setTimeout(function(){ controller.abort(); }, 30000);
+    try {
+      var response = await fetch(url, Object.assign({ cache: 'no-store', signal: controller.signal }, options || {}));
+      var text = await response.text();
+      return { ok: response.ok, status: response.status, text: async function(){ return text; } };
+    } finally { clearTimeout(timeout); }
+  }
+  function forgetAttempt(){ try { var saved = readAttempt(); if (!saved || saved.token === checkoutToken) localStorage.removeItem(activeKey); } catch (_) {} }
+
+
+  try{
+    returnToCreate = new URLSearchParams(location.search).get('from') === 'create';
+  }catch(_){}
+
+  if(returnToCreate){
+    $('pageTitle').textContent = '💌 Урилгын линкээ авъя';
+    $('pageSubtitle').textContent = 'Урилгаа бэлдлээ. Төлбөр баталгаажмагц хуваалцах линкийг автоматаар бэлдэнэ.';
+    $('startBtn').textContent = 'QPay-ээр төлөөд линкээ авах →';
+    $('backLink').textContent = '← Урилгаа засах';
+  }else{
+    $('completeStep').textContent = '3. Код авах';
+  }
+
+  var isLocal = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+
+  function setPrice(mnt){
+    if (!mnt || isNaN(mnt)) return;
+    $('priceAmt').innerHTML = Number(mnt).toLocaleString('mn-MN') + '<small>₮</small>';
+  }
+  function setPaymentDescription(text){
+    text = String(text || '').trim();
+    if (!text) return;
+    paymentDescription = text;
+    $('paymentDescription').textContent = text;
+  }
+  // A started invoice owns its amount, even after the promotion closes.
+  function applyCurrentPricing(d){
+    if (d && d.price && !paymentStatus) setPrice(d.price);
+    if (d && d.payment_description && !paymentStatus) setPaymentDescription(d.payment_description);
+    if(paymentStatus) return;
+    var active = !!(d && d.promotion && d.promotion.id === 'newyear100-2026' && d.promotion.active === true);
+    $('regularPriceBlock').hidden = !active || !d.regular_price || d.regular_price <= d.price;
+    $('regularPrice').textContent = d && d.regular_price ? Number(d.regular_price).toLocaleString('en-US') + '₮' : '';
+    $('promotionNote').hidden = !active;
+    $('promotionNote').textContent = active ? '9/23-аас тоолоход шинэ он хүртэл 100 хоног ✨ 9/22–9/23-ны урамшуулал. Улаанбаатарын цагаар 9/24-ний 00:00-д дуусна.' : '';
+  }
+  if(window.BolzooPricing) BolzooPricing.watch(applyCurrentPricing);
+  else fetch('/api/health', {cache:'no-store'}).then(function(r){return r.ok ? r.json() : null;}).then(applyCurrentPricing).catch(function(){});
+
+  function showErr(msg){
+    var box = $('errBox');
+    box.style.display = 'block';
+    box.textContent = '⚠️ ' + msg;
+  }
+  function clearErr(){ $('errBox').style.display = 'none'; }
+  async function readAPIResponse(response){
+    var text = await response.text();
+    if(!text) return {};
+    try { return JSON.parse(text); }
+    catch(_){
+      return { error: text.replace(/\s+/g, ' ').trim().slice(0, 180) || ('HTTP ' + response.status) };
+    }
+  }
+
+  function setStatus(status){
+    var pill = $('statusPill');
+    pill.className = 'pill ' + (status || 'pending');
+    var labels = {
+      pending:                  'Төлбөр хүлээж байна',
+      new:                      'Төлбөр хүлээж байна',
+      requires_action:          'Банкны апп эсвэл QR-оор төлөөрэй',
+      requires_payment_method:  'Төлбөрийн арга хүлээж байна…',
+      processing:               'Төлбөрийг баталгаажуулж байна…',
+      requires_capture:         'Банкны баталгаажуулалтыг хүлээж байна…',
+      succeeded:                '✅ Төлбөр баталгаажлаа',
+      canceled:                 '❌ Цуцлагдсан',
+      failed:                   '❌ Амжилтгүй'
+    };
+    pill.textContent = labels[status] || 'Төлбөрийн төлөвийг шалгаж байна…';
+    var guidance = {
+      processing: 'Банкнаас хариу хүлээж байна. Энэ хуудсаа нээлттэй байлгаарай. Дахин төлөх шаардлагагүй.',
+      requires_capture: 'Банкнаас хариу хүлээж байна. Төлбөрийг дахин хийх шаардлагагүй.',
+      succeeded: 'Таны кодыг бэлдэж байна. Энэ хуудсаа нээлттэй байлгаарай.',
+      canceled: 'Энэ нэхэмжлэлээр төлөх боломжгүй. Төлбөр хийгээгүй бол шинээр үүсгэж болно.',
+      failed: 'Төлбөр амжилтгүй төлөвтэй байна. Данснаас мөнгө гарсан бол дахин төлөлгүй, төлөвөө шалгаарай.'
+    };
+    $('statusGuidance').textContent = guidance[status] || 'Төлөв автоматаар шинэчлэгдэнэ. Төлсөн бол банкны аппнаас энд буцаж ирээд баталгаажихыг хүлээгээрэй.';
+  }
+
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+
+  function safeLink(value){ return typeof value === 'string' && /^(https:\/\/|[a-z][a-z0-9+.-]*:\/\/)/i.test(value) && !/^(javascript|data|file|vbscript):/i.test(value); }
+  var renderedActionKey = null;
+  function renderNextAction(action){
+    var box       = $('qrBox');
+    var json      = $('actionJson');
+    var banksBox  = $('banks');
+    var banksTtl  = $('banksTitle');
+    if (!action){
+      box.textContent = 'QR одоогоор бэлэн болоогүй байна. “Төлсөн эсэхийг шалгах” товчоор дахин шалгаарай.';
+      box.classList.remove('loading');
+      renderedActionKey = null;
+      json.style.display = 'none';
+      banksBox.style.display = 'none';
+      banksTtl.style.display = 'none';
+      $('banksToggle').style.display = 'none';
+      return;
+    }
+    // Idempotent render — don't rewrite DOM on every poll
+    var qr = action.qr || {};
+    var key = JSON.stringify(action);
+    if (key === renderedActionKey) return;
+    renderedActionKey = key;
+
+    var img = qr.image_url || action.image_url || action.qr_image_url || action.qr_code_url || action.qr_url;
+    if (img && /^https:\/\//i.test(img)){
+      box.innerHTML = '<img src="' + esc(img) + '" alt="Төлбөрийн QR код — банкны аппаар уншуулна" />';
+      box.querySelector('img').addEventListener('error', function(){
+        box.textContent = 'QR зураг ачаалсангүй. Доороос банкаа сонгох эсвэл төлөвөө дахин шалгаарай.';
+        renderedActionKey = null;
+      });
+      box.classList.remove('loading');
+      json.style.display = 'none';
+    } else if (typeof action === 'string' && /^https?:\/\//.test(action)){
+      box.innerHTML = '<a href="' + esc(action) + '" target="_blank" rel="noopener" style="color:var(--hot); font-weight:900;">Банкны аппыг нээх →</a>';
+      box.classList.remove('loading');
+      json.style.display = 'none';
+    } else {
+      box.textContent = 'QR хараахан бэлэн болоогүй байна. Төлөвөө дахин шалгана уу.';
+      json.style.display = 'none';
+    }
+
+    var deeplinks = qr.deeplinks || action.deeplinks || [];
+    var toggleBtn = $('banksToggle');
+    if (Array.isArray(deeplinks) && deeplinks.length){
+      // Sort: qPay Wallet first (universal), then major banks, then others
+      var TOP = ['qPay wallet', 'Khan bank', 'Social Pay', 'State bank 3.0', 'Trade and Development bank', 'Xac bank', 'Toki App', 'Monpay'];
+      var indexOfName = function(name){ var i = TOP.indexOf(name); return i < 0 ? 999 : i; };
+      deeplinks = deeplinks.slice().sort(function(a,b){ return indexOfName(a.name) - indexOfName(b.name); });
+
+      var html = '';
+      deeplinks.forEach(function(d, i){
+        if (!d || !safeLink(d.link)) return;
+        var cls = 'bank-link';
+        if (i === 0 && d.name && /qpay/i.test(d.name)) cls += ' primary';
+        if (i >= 7) cls += ' extra';
+        html += '<a class="' + cls + '" href="' + esc(d.link) + '" data-link="' + esc(d.link) + '">';
+        if (d.logo && /^https:\/\//i.test(d.logo)) html += '<img src="' + esc(d.logo) + '" alt="" />';
+        html += '<span>' + esc(d.name || d.description || '') + '</span>';
+        html += '</a>';
+      });
+      banksBox.innerHTML = html;
+      banksBox.style.display = 'grid';
+      banksTtl.style.display = 'block';
+
+      // Hide extras initially if more than 7
+      var extras = banksBox.querySelectorAll('.bank-link.extra');
+      if (extras.length > 0){
+        extras.forEach(function(el){ el.style.display = 'none'; });
+        toggleBtn.style.display = 'inline-block';
+        toggleBtn.textContent = 'Бүх банкыг харах (+' + extras.length + ') ↓';
+        toggleBtn.setAttribute('aria-expanded', 'false');
+      } else {
+        toggleBtn.style.display = 'none';
+      }
+    } else {
+      banksBox.style.display = 'none';
+      banksTtl.style.display = 'none';
+      toggleBtn.style.display = 'none';
+    }
+  }
+
+  // Reliable deeplink open — some mobile browsers block plain <a href="scheme://">
+  function openBank(link){
+    if (!safeLink(link)) return;
+    var hint = $('bankHint');
+    // Try direct navigation (most reliable on user gesture)
+    try { window.location.href = link; } catch(_){}
+    // Fallback via hidden iframe for iOS Safari
+    setTimeout(function(){
+      try {
+        var f = document.createElement('iframe');
+        f.style.cssText = 'position:absolute; left:-9999px; width:1px; height:1px; opacity:0; border:0;';
+        f.src = link;
+        document.body.appendChild(f);
+        setTimeout(function(){ if (f.parentNode) f.parentNode.removeChild(f); }, 1500);
+      } catch(_){}
+    }, 100);
+    // Show fallback hint after delay if still visible (app didn't take over)
+    setTimeout(function(){
+      if (!document.hidden){
+        hint.style.display = 'block';
+        hint.innerHTML = '⏱ Апп нээгдэхгүй бол:<br>1) энэ банк утсанд суулгаагүй байж болно — өөр банкыг туршиж үзээрэй,<br>2) эсвэл QR-ыг банкны апп доторхи "Скан" функцээр уншуулна уу.<br>Гүйлгээний утга автоматаар "' + esc(paymentDescription) + '" гэж бөглөгдөнө.';
+      }
+    }, 1800);
+  }
+
+  async function startCheckout(){
+    if (checkoutBusy) return;
+    checkoutBusy = true;
+    clearErr();
+    $('startBtn').disabled = true;
+    $('startBtn').textContent = '⏳ Үүсгэж байна…';
+    $('beforeStart').setAttribute('aria-busy', 'true');
+    try {
+      // Save the retry key BEFORE any request. A lost response must reuse it.
+      if (!checkoutToken) {
+        var existingAttempt = readAttempt();
+        checkoutToken = existingAttempt && existingAttempt.token || newToken();
+        if (existingAttempt) { intentId = existingAttempt.id || null; if (existingAttempt.from === 'create') returnToCreate = true; }
+      }
+      saveAttempt();
+      var r = await paymentFetch('/api/checkout', {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ checkout_token: checkoutToken, from: returnToCreate ? 'create' : '' })
+      });
+      var data = await readAPIResponse(r);
+      if (!r.ok) {
+        if (data.code === 'checkout_expired') { forgetAttempt(); checkoutToken = null; var expiredURL = new URL(location.href); expiredURL.hash = ''; history.replaceState(null, '', expiredURL.pathname + expiredURL.search); }
+        throw new Error(data.user_error || data.error || ('HTTP ' + r.status));
+      }
+      intentId = data.intent_id;
+      saveAttempt();
+      applyPayment(data);
+      if (!successCode && paymentStatus !== 'canceled') startPolling();
+    } catch(e){
+      $('startBtn').disabled = false;
+      $('startBtn').textContent = 'Дахин оролдох →';
+      showErr(e.name === 'AbortError' || e instanceof TypeError ? 'Холболт тасарлаа. Дахин оролдоход таны эхлүүлсэн нэхэмжлэлийг үргэлжлүүлнэ.' : e.message);
+    } finally { checkoutBusy = false; $('beforeStart').setAttribute('aria-busy', 'false'); }
+  }
+  function applyPayment(data){
+    mode = data.mode || mode;
+    paymentStatus = data.status;
+    $('regularPriceBlock').hidden = true;
+    $('promotionNote').hidden = data.amount !== 9023;
+    $('promotionNote').textContent = data.amount === 9023 ? 'Энэ нэхэмжлэлд 9,023₮-ийн үнэ хадгалагдсан. Нэхэмжлэлийн хүчинтэй хугацаанд төлөөрэй.' : '';
+    expiresAt = data.expires_at || expiresAt;
+    if (data.return_to_create) returnToCreate = true;
+    if (data.amount) setPrice(data.amount);
+    if (data.payment_description) setPaymentDescription(data.payment_description);
+    $('beforeStart').style.display = 'none';
+    $('afterStart').style.display = 'block';
+    $('devPanel').style.display = mode === 'mock' && isLocal ? 'block' : 'none';
+    $('simulateBtn').disabled = false;
+    setStatus(data.status);
+    $('paymentMethods').hidden = data.status === 'canceled' || data.status === 'succeeded';
+    renderNextAction(data.next_action);
+    $('cancelBtn').hidden = data.status === 'canceled' || data.status === 'succeeded';
+    $('retryBtn').hidden = data.status !== 'canceled';
+    if (expiresAt && data.status !== 'succeeded') {
+      var left = Math.ceil((Date.parse(expiresAt) - Date.now()) / 60000);
+      $('expiryHint').textContent = left > 0 ? 'Нэхэмжлэл дуусахад ойролцоогоор ' + left + ' минут.' : 'Нэхэмжлэлийн хугацаа дууссан. Төлсөн бол дахин төлөлгүй төлөвөө шалгана уу.';
+    }
+    if (data.status === 'succeeded' && data.code) {
+      stopPolling(); onSuccess(data.code);
+    } else if (data.status === 'canceled') {
+      stopPolling(); renderNextAction(null);
+      $('expiryHint').textContent = 'Нэхэмжлэл цуцлагдсан. Шаардлагатай бол шинээр үүсгэж болно.';
+    }
+  }
+  function stopPolling(){ polling = false; clearTimeout(pollTimer); }
+  function startPolling(){ stopPolling(); polling = true; checkStatus(); }
+  async function checkStatus(){
+    if (!intentId || pollBusy || successCode) return;
+    clearTimeout(pollTimer);
+    pollBusy = true; $('checkBtn').disabled = true;
+    $('checkBtn').textContent = 'Шалгаж байна…';
+    $('checkBtn').setAttribute('aria-busy', 'true');
+    try {
+      var r = await paymentFetch('/api/payment-status?id=' + encodeURIComponent(intentId), { headers: authHeaders() });
+      var data = await readAPIResponse(r);
+      if (!r.ok) {
+        if (r.status === 403 || r.status === 404) stopPolling();
+        throw new Error(data.user_error || data.error || ('HTTP ' + r.status));
+      }
+      clearErr(); applyPayment(data);
+    } catch(e){ showErr(e.name === 'AbortError' ? 'Төлөв шалгах хугацаа хэтэрлээ. Дахин төлөлгүй шалгана уу.' : e instanceof TypeError ? 'Холболт тасарлаа. Төлсөн бол дахин төлөлгүй, холболтоо шалгаад төлөвөө шинэчлээрэй.' : e.message); }
+    finally {
+      pollBusy = false; $('checkBtn').disabled = false;
+      $('checkBtn').textContent = 'Төлсөн эсэхийг шалгах';
+      $('checkBtn').setAttribute('aria-busy', 'false');
+      if (polling) pollTimer = setTimeout(checkStatus, document.hidden ? 15000 : 3500);
+    }
+  }
+  async function cancelPayment(){
+    if (!intentId || checkoutBusy) return;
+    $('cancelBtn').disabled = true;
+    try {
+      var r = await paymentFetch('/api/cancel-payment', { method: 'POST',
+        headers: Object.assign({'Content-Type':'application/json'}, authHeaders()),
+        body: JSON.stringify({ intent_id: intentId }) });
+      var data = await readAPIResponse(r);
+      if (!r.ok) throw new Error(data.user_error || data.error || 'Цуцалж чадсангүй. Төлөвөө шалгана уу.');
+      clearErr(); applyPayment(data);
+    } catch(e){ showErr(e.message); }
+    finally { $('cancelBtn').disabled = false; }
+  }
+  $('checkBtn').addEventListener('click', checkStatus);
+  $('cancelBtn').addEventListener('click', cancelPayment);
+  $('retryBtn').addEventListener('click', function(){
+    if (paymentStatus !== 'canceled') return;
+    stopPolling(); forgetAttempt(); intentId = null; checkoutToken = null; expiresAt = null;
+    $('afterStart').style.display = 'none'; $('beforeStart').style.display = 'block';
+    startCheckout();
+  });
+
+  var successCode = null;
+  function onSuccess(code){
+    if (successCode) return;
+    successCode = code;
+    forgetAttempt();
+    try { localStorage.setItem('bolzoo:pending_code', code); } catch (_) {}
+    $('beforeStart').style.display   = 'none';
+    $('afterStart').style.display    = 'none';
+    $('priceBlock').style.display    = 'none';
+    $('pageSubtitle').style.display  = 'none';
+    $('haveCodeFooter').style.display = 'none';
+    $('pageTitle').textContent       = '✅ Төлбөр амжилттай!';
+    $('paymentStep').removeAttribute('aria-current');
+    $('completeStep').setAttribute('aria-current', 'step');
+    $('successPanel').style.display  = 'block';
+    $('codeValue').textContent       = code;
+    $('pageTitle').focus({preventScroll:true});
+    var createHref = 'create.html#code=' + encodeURIComponent(code);
+    if(returnToCreate){
+      createHref += '&publish=1';
+      $('codeWarning').textContent = '🔐 ХАРИУ ХАРАХ КОД · Линк бэлэн болоход дахин харуулна';
+      $('continueBtn').textContent = '💌 Урилгын линкээ авах →';
+      $('redirectHint').textContent = 'Урилга руу автоматаар шилжиж, линкийг бэлдэж байна…';
+    }
+    $('continueBtn').href = createHref;
+    if(returnToCreate){
+      setTimeout(function(){ location.replace(createHref); }, 1400);
+    }
+  }
+
+  async function copyCode(){
+    if (!successCode) return;
+    var btn      = $('copyBtn');
+    var feedback = $('copyFeedback');
+    var ok = false;
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText){
+        await navigator.clipboard.writeText(successCode);
+        ok = true;
+      } else {
+        var ta = document.createElement('textarea');
+        ta.value = successCode;
+        ta.style.position = 'fixed';
+        ta.style.opacity  = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        ok = document.execCommand('copy');
+        document.body.removeChild(ta);
+      }
+    } catch(_){}
+    if (ok){
+      btn.classList.add('copied');
+      btn.textContent = '✅ Хуулагдлаа';
+      feedback.textContent = 'Хариу харахдаа ашиглах тул гар утасны Notes-т хадгалаарай.';
+      setTimeout(function(){
+        btn.classList.remove('copied');
+        btn.textContent = '📋 Дахин хуулах';
+      }, 2500);
+    } else {
+      feedback.textContent = '⚠️ Хуулж чадсангүй — эрхийн кодыг гараар тэмдэглэж авна уу';
+    }
+  }
+
+  async function simulate(){
+    if (!intentId) return;
+    $('simulateBtn').disabled = true;
+    try {
+      var r = await paymentFetch('/api/dev-mark-paid', {
+        method: 'POST',
+        headers: Object.assign({'Content-Type':'application/json'}, authHeaders()),
+        body: JSON.stringify({ intent_id: intentId })
+      });
+      var data = await readAPIResponse(r);
+      if (!r.ok) throw new Error(data.user_error || data.error || ('HTTP ' + r.status));
+      checkStatus();
+    } catch(e){
+      $('simulateBtn').disabled = false;
+      showErr('Simulate алдаа: ' + e.message);
+    }
+  }
+
+  $('startBtn').addEventListener('click', startCheckout);
+  $('simulateBtn').addEventListener('click', simulate);
+  $('copyBtn').addEventListener('click', copyCode);
+
+  async function copyMemo(){
+    var btn = $('copyMemoBtn');
+    var text = paymentDescription;
+    var ok = false;
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText){
+        await navigator.clipboard.writeText(text);
+        ok = true;
+      } else {
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.opacity  = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        ok = document.execCommand('copy');
+        document.body.removeChild(ta);
+      }
+    } catch(_){}
+    if (ok){
+      btn.classList.add('copied');
+      btn.textContent = '✅ Хуулагдлаа';
+      $('memoFeedback').textContent = 'Гүйлгээний утгыг хууллаа.';
+      setTimeout(function(){
+        btn.classList.remove('copied');
+        btn.textContent = '📋 Хуулах';
+      }, 2000);
+    }else{
+      $('memoFeedback').textContent = 'Автоматаар хуулж чадсангүй. Дээрх гүйлгээний утгыг сонгоод гараар хуулаарай.';
+    }
+  }
+  $('copyMemoBtn').addEventListener('click', copyMemo);
+
+  // Bank deeplink clicks: intercept and use JS navigation (more reliable on mobile)
+  $('banks').addEventListener('click', function(e){
+    var a = e.target.closest('.bank-link');
+    if (!a) return;
+    e.preventDefault();
+    var link = a.getAttribute('data-link') || a.getAttribute('href');
+    if (link) openBank(link);
+  });
+
+  // Show all banks toggle
+  $('banksToggle').addEventListener('click', function(){
+    var extras = $('banks').querySelectorAll('.bank-link.extra');
+    var showing = extras.length && extras[0].style.display !== 'none';
+    extras.forEach(function(el){ el.style.display = showing ? 'none' : 'flex'; });
+    this.textContent = showing ? ('Бүх банкыг харах (+' + extras.length + ') ↓') : 'Цөөлөх ↑';
+    this.setAttribute('aria-expanded', String(!showing));
+  });
+
+  // Hide bank hint if user returns to page and status changed
+  document.addEventListener('visibilitychange', function(){
+    if (!document.hidden){ $('bankHint').style.display = 'none'; if (intentId && !successCode) checkStatus(); }
+  });
+
+  // Resume from the return URL or a saved attempt, including a lost checkout response.
+  (function initResume(){
+    var q = new URLSearchParams(location.search);
+    var fragment = new URLSearchParams(location.hash.slice(1));
+    var saved = readAttempt();
+    var existing = q.get('intent');
+    checkoutToken = fragment.get('payment_token') || (saved && (!existing || saved.id === existing) ? saved.token : null);
+    intentId = existing || (saved && saved.token === checkoutToken && saved.id) || null;
+    if (saved && saved.token === checkoutToken && saved.from === 'create') returnToCreate = true;
+    if (intentId) {
+      saveAttempt();
+      $('beforeStart').style.display = 'none'; $('afterStart').style.display = 'block';
+      setStatus('pending'); startPolling();
+    } else if (checkoutToken) startCheckout();
+  })();
+})();
+</script>
+</body>
+</html>

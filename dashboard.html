@@ -1,410 +1,427 @@
 <!DOCTYPE html>
 <html lang="mn">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Ирсэн хариунууд 💌</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<meta name="robots" content="noindex, nofollow">
+<title>Урилгын хариу · Bolzoo</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Comfortaa:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@500;600;700&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/styles.css">
-<style>
-  .wrap{max-width:900px; margin:0 auto; padding:32px 20px 60px;}
-  header{display:flex; align-items:flex-start; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:18px;}
-  h1{font-family:'Comfortaa',sans-serif; font-weight:700; font-size:26px; margin:0 0 6px;}
-  .subtitle{margin:0; max-width:520px; line-height:1.5;}
-
-  /* ── 1-2-3 тайлбар зурвас ── */
-  .howto{
-    display:grid; grid-template-columns:repeat(3,1fr); gap:10px;
-    background:#fffdfb; border-radius:16px; padding:14px 16px; margin-bottom:18px;
-    box-shadow:0 12px 30px -18px rgba(247,106,142,.35);
-  }
-  .howto-step{display:flex; align-items:center; gap:10px; font-size:13px; font-weight:800; color:var(--ink); line-height:1.3;}
-  .howto-step span.n{
-    flex:0 0 26px; width:26px; height:26px; border-radius:50%;
-    display:grid; place-items:center; font-size:12px; color:#fff;
-    background:linear-gradient(135deg,var(--coral),var(--coral-deep));
-  }
-  .howto-step.now{color:var(--coral-deep);}
-  @media (max-width:640px){ .howto{grid-template-columns:1fr; gap:8px;} }
-
-  /* ── ID-аар хайх ── */
-  .lookup{margin-bottom:18px;}
-  .lookup h2{font-family:'Comfortaa',sans-serif; font-size:16px; margin:0 0 4px;}
-  .lookup p.hint{margin:0 0 12px; font-size:12.5px; color:var(--muted); line-height:1.5;}
-  .lookup-row{display:flex; gap:10px; flex-wrap:wrap;}
-  .lookup-row input{flex:1 1 240px;}
-  .lookup-status{margin-top:10px; font-size:13px; font-weight:800; min-height:18px;}
-  .lookup-status.ok{color:#3a8a4a;}
-  .lookup-status.err{color:#c05252;}
-
-  .stats{display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:16px;}
-  @media (max-width:520px){
-    .stats{gap:8px;}
-    .stat{padding:14px 8px; text-align:center;}
-    .stat-num{font-size:22px;}
-    .stat-lbl{font-size:10px; letter-spacing:.3px;}
-  }
-  .stat{border-radius:18px; padding:18px 20px; box-shadow:0 12px 30px -18px rgba(247,106,142,.35);}
-  .stat-num{font-size:28px;}
-  .stat-lbl{font-size:12px;}
-
-  /* ── Шүүлтүүр ── */
-  .filters{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;}
-  .chip{
-    border:2px solid var(--coral-soft); background:#fff; color:var(--coral-deep);
-    border-radius:999px; padding:7px 15px; font-family:'Nunito',sans-serif;
-    font-size:12.5px; font-weight:800; cursor:pointer;
-  }
-  .chip.on{background:linear-gradient(135deg,var(--coral),var(--coral-deep)); color:#fff; border-color:transparent;}
-
-  .list{display:flex; flex-direction:column; gap:14px;}
-  .empty{text-align:center; background:#fffdfb; border-radius:20px; padding:40px 20px; box-shadow:0 12px 30px -18px rgba(247,106,142,.35);}
-  .empty h2{font-family:'Comfortaa',sans-serif; margin:0 0 6px;}
-
-  .card{border-radius:20px; padding:18px 20px; box-shadow:0 12px 30px -18px rgba(247,106,142,.35);}
-  .card.has-answer{border:2px solid #b7e9bd; background:linear-gradient(180deg,#fbfff8,#fffdfb);}
-  .card-top{display:grid; grid-template-columns:1fr auto; gap:12px; align-items:start;}
-  @media (max-width:560px){ .card-top{grid-template-columns:1fr;} }
-  .card-title{font-family:'Comfortaa',sans-serif; font-weight:700; font-size:18px; margin:0 0 4px;}
-  .card-meta{font-size:12px; color:var(--muted); line-height:1.6;}
-  .badge{display:inline-block; font-size:11px; font-weight:800; padding:5px 12px; border-radius:999px; letter-spacing:.4px;}
-  .badge.pending{background:#f3e6ec; color:var(--muted);}
-  .badge.opened{background:#fff1cf; color:#b47f16;}
-  .badge.responded{background:#dcffde; color:#3a8a4a;}
-
-  /* ── Хариу — гол блок ── */
-  .answer{margin-top:14px; border-radius:16px; overflow:hidden; border:1px solid #cdeed2;}
-  .answer-head{
-    background:linear-gradient(135deg,#dcffde,#c7f5cf); color:#2f7a41;
-    font-family:'Comfortaa',sans-serif; font-weight:700; font-size:15px;
-    padding:12px 16px; display:flex; align-items:center; gap:8px; flex-wrap:wrap;
-  }
-  .answer-body{background:#fbfff9; padding:14px 16px;}
-  .answer-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:12px;}
-  @media (max-width:420px){ .answer-grid{grid-template-columns:1fr;} }
-  .a-item{background:#fff; border:1px solid #e6f5e8; border-radius:12px; padding:10px 12px;}
-  .a-lbl{display:block; font-size:11px; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; margin-bottom:3px;}
-  .a-val{display:block; font-size:15px; font-weight:800; color:var(--ink); word-break:break-word;}
-  .answer-foot{margin-top:12px; font-size:12px; color:var(--muted); font-weight:700;}
-
-  /* ── Хариугүй тохиолдол ── */
-  .waiting{
-    margin-top:14px; background:#fff8f4; border:1px dashed var(--coral-soft);
-    border-radius:14px; padding:14px 16px; font-size:13px; line-height:1.55; color:var(--muted);
-  }
-  .waiting b{color:var(--coral-deep); display:block; margin-bottom:3px; font-size:14px;}
-
-  .card-actions{display:flex; gap:8px; flex-wrap:wrap; align-items:center;}
-  @media (min-width:561px){ .card-actions{flex-direction:column; align-items:flex-end;} }
-  .backend-warn{background:#fff1cf; color:#8a6a20; padding:12px 16px; border-radius:12px; margin-bottom:18px; font-size:13px; font-weight:700; line-height:1.55;}
-  .id-mono{font-family:ui-monospace, Menlo, monospace; font-size:12px; color:var(--muted);}
-</style>
+<link rel="stylesheet" href="assets/dashboard.css">
 </head>
 <body>
-  <div class="wrap">
-    <header>
-      <div>
-        <h1>💌 Ирсэн хариунууд</h1>
-        <p class="subtitle">Таны илгээсэн урилга, цэцэг + захидал бүр нээгдсэн эсэх, хүлээн авагч ямар өдөр, цагийг сонгосон нь энд харагдана.</p>
-      </div>
-      <div style="display:flex; gap:8px; flex-wrap:wrap;">
-        <a class="btn secondary" href="create.html">＋ Шинэ урилга</a>
-        <button class="btn secondary" id="refresh">🔄 Шинэчлэх</button>
-      </div>
+<a class="skip-link" href="#mainContent">Хариунууд руу очих</a>
+<div class="dashboard-wrap">
+  <nav class="dashboard-nav" aria-label="Үндсэн цэс"><a class="dashboard-brand" href="create.html" aria-label="Bolzoo эхлэл"><span aria-hidden="true">✿</span> bolzoo</a><a class="home-link" href="ideas.html">Хамтдаа · Болзооны санаа ↗</a><a class="home-link" href="create.html">Нүүр хуудас ↗</a></nav>
+  <main id="mainContent">
+    <header class="dashboard-header">
+      <div><p class="dashboard-eyebrow">BOLZOO · МИНИЙ УРИЛГУУД</p><div class="h-title"><h1>Урилгын хариу</h1><span class="private-pill">🔒 Зөвхөн танд</span></div><p class="subtitle">Ирсэн хариу, дараагийн алхам.</p></div>
+      <a class="btn" href="create.html">+ Шинэ урилга</a>
     </header>
-
-    <div class="howto">
-      <div class="howto-step"><span class="n">1</span>Урилга үүсгэнэ</div>
-      <div class="howto-step"><span class="n">2</span>Линкээ илгээнэ</div>
-      <div class="howto-step now"><span class="n">3</span>Хариу энэ хуудсанд ирнэ</div>
+    <section class="demo-banner" id="demoBanner" hidden><strong>Энэ бол жишээ хариунууд.</strong> Доорх нэрс, өдөр цаг, хариунууд нь харагдацтай танилцах зориулалттай.<a href="dashboard.html">Өөрийн урилгууд руу →</a></section>
+    <div class="backend-warn" id="backendWarn" hidden>Энэ төхөөрөмжид хадгалсан урилгуудыг харуулж байна. Өөр төхөөрөмжөөс хариу хүлээн авах, кодоор сэргээх холболт одоогоор боломжгүй.</div>
+    <div class="stats" role="group" aria-label="Урилгын төлөвөөр шүүх">
+      <button class="stat" type="button" data-filter="new" aria-pressed="false"><span class="stat-lbl">Шинэ хариу</span><span class="stat-num" id="statNew">—</span></button>
+      <button class="stat" type="button" data-filter="waiting" aria-pressed="false"><span class="stat-lbl">Хүлээж буй</span><span class="stat-num" id="statWaiting">—</span></button>
+      <button class="stat" type="button" data-filter="all" aria-pressed="true"><span class="stat-lbl">Бүгд</span><span class="stat-num" id="statTotal">—</span></button>
     </div>
-
-    <div class="backend-warn" id="backendWarn" style="display:none;">
-      ⚠️ Supabase backend тохируулаагүй тул зөвхөн энэ browser дээрх урилгууд харагдана. Backend тохируулбал бүх төхөөрөмжөөс харах, хариу цуглуулах боломжтой болно (assets/config.js).
+    <div id="newResponseNotice" class="new-response-notice" role="status" aria-live="polite" hidden><span id="newResponseText"></span><button type="button" id="viewNewResponse">Харах →</button></div>
+    <div class="workspace-toolbar">
+      <div class="search-field"><label for="inviteSearch">Хэний урилгыг хайж байна?</label><input id="inviteSearch" type="search" placeholder="Нэрээр хайх…" maxlength="60" autocomplete="off"><button class="clear-search" id="clearSearch" type="button" aria-label="Хайлтыг арилгах" hidden>×</button></div>
+      <div class="sync-group"><div class="toolbar-actions"><button class="recover-shortcut" type="button" data-open-recovery>Өмнөх урилгаа олох</button><button class="btn secondary" id="refresh" type="button">↻ Шалгах</button></div><p class="sync-status" id="syncStatus" role="status" aria-live="polite">Урилгуудыг ачаалж байна…</p></div>
     </div>
-
-    <section class="card lookup">
-      <h2>🔎 Урилгаа ID эсвэл линкээр нь хайх</h2>
-      <p class="hint">
-        Энэ хуудас нь <b>энэ browser-с</b> үүсгэсэн урилгуудыг сануулж харуулдаг.
-        Өөр утас/компьютерээс үүсгэсэн, эсвэл түүх нь арилсан бол урилгын линкээ доор буулгаад нэмээрэй —
-        нэг л удаа нэмбэл цаашид жагсаалтад үлдэнэ.
-        Ингэж нэмсэн урилгыг зөвхөн жагсаалтаас хасаж болно — бүрмөсөн устгахын тулд
-        уг урилгыг үүсгэсэн browser-ээсээ орно уу.
-      </p>
-      <div class="lookup-row">
-        <input id="lookupInput" type="text" placeholder="https://…/greet.html?id=abc123  эсвэл  abc123" autocomplete="off" />
-        <button class="btn" id="lookupBtn">Хайх</button>
+    <div class="page-feedback" id="pageFeedback" role="status" aria-live="polite" hidden></div>
+    <div class="load-error" id="loadError" role="alert" hidden><p id="loadErrorText"></p><button class="btn secondary" id="retryLoadBtn" type="button">Дахин шалгах</button></div>
+    <div class="list-heading"><h2 id="listTitle">Таны урилгууд</h2><p id="listCount" role="status" aria-live="polite"></p><span id="statResponded" hidden></span></div>
+    <div class="list" id="list" aria-busy="true"><div class="loading-state"><span aria-hidden="true">✿</span>Урилгуудыг ачаалж байна…</div></div>
+    <template id="emptyTemplate"><section class="empty" id="empty"><span class="empty-icon" aria-hidden="true">✉</span><h2>Урилгынхаа хариуг олъё</h2><p>Энэ төхөөрөмжид урилга хараахан холбогдоогүй байна. Өмнө нь урилга илгээсэн бол хадгалсан <strong>LOV-XXXXXX</strong> кодоороо хариуг нь хараарай. Дахин төлөхгүй.</p><div class="empty-actions"><button class="btn" type="button" id="emptyRecoverBtn" data-open-recovery>Кодоор хариу харах</button><a class="btn secondary" href="create.html">Анхны урилгаа бүтээх</a></div><a class="demo-link" href="dashboard.html?demo=responses">Хариу хэрхэн харагдахыг жишээгээр үзэх →</a></section></template>
+    <details class="recover-box" id="recoverBox">
+      <summary><span aria-hidden="true">⌕</span>Өмнөх урилгынхаа хариуг хайж байна уу?</summary>
+      <div class="recover-body"><p class="hint">Өөр утас, хөтөч ашиглаж байгаа бол урилга үүсгэх үед авсан кодоо оруулаарай. Урилга болон ирсэн хариу нь энэ жагсаалтад нэмэгдэнэ.</p>
+        <form class="recover-form" id="recoverForm" autocomplete="off" novalidate><div class="recover-field"><label for="recoverCode">Таны хариу харах код</label><input id="recoverCode" type="text" placeholder="LOV-XXXXXX" maxlength="32" spellcheck="false" autocapitalize="characters" aria-describedby="recoverCodeHelp recoverStatus"></div><button class="btn" id="recoverBtn" type="submit">Хариуг харах →</button></form>
+        <p class="hint" id="recoverCodeHelp" style="margin-top:10px;margin-bottom:0">Төлбөрийн дараа авсан LOV-оор эхэлсэн код. Урилгын линкээс өөр.</p><div class="recover-status" id="recoverStatus" role="status" aria-live="polite"></div>
+        <details class="access-guide"><summary>Кодоо хаанаас олох вэ?</summary><p>Урилга үүсгэсний дараах дэлгэц, хадгалсан зураг эсвэл өөртөө илгээсэн зурвасаа шалгаарай. Урилга үүсгэсэн төхөөрөмж дээрээ энэ хуудсыг нээж болно. Тэндээс «Хадгалах, бусад» хэсгийн хувийн линкээ хуулж авна.</p></details>
       </div>
-      <div class="lookup-status" id="lookupStatus"></div>
-    </section>
-
-    <div class="stats">
-      <div class="stat"><div class="stat-num" id="statTotal">0</div><div class="stat-lbl">Нийт урилга</div></div>
-      <div class="stat"><div class="stat-num" id="statOpened">0</div><div class="stat-lbl">Нээж үзсэн</div></div>
-      <div class="stat"><div class="stat-num" id="statResponded">0</div><div class="stat-lbl">Хариу ирсэн</div></div>
-    </div>
-
-    <div class="filters" id="filters">
-      <button class="chip on" data-filter="all">Бүгд <span data-count="all">0</span></button>
-      <button class="chip" data-filter="responded">✅ Хариу ирсэн <span data-count="responded">0</span></button>
-      <button class="chip" data-filter="waiting">⏳ Хариу хүлээж буй <span data-count="waiting">0</span></button>
-    </div>
-
-    <div class="list" id="list"></div>
-  </div>
-
+    </details>
+    <p class="privacy-note"><span aria-hidden="true">♧</span>Хариу харах код, хувийн линкээ зөвхөн өөртөө хадгалаарай.</p>
+  </main>
+  <footer class="dashboard-footer"><span>✿ bolzoo · Сэтгэлээс, чамд.</span><span>Цаг: Улаанбаатар · UTC+8</span></footer>
+</div>
 <script src="assets/utils.js"></script>
 <script src="assets/config.js"></script>
 <script src="assets/api.js"></script>
-<script src="assets/bolzoo-garden.js"></script>
+<script src="assets/date-plan-api.js"></script>
+<script src="assets/responses.js"></script>
+<script src="assets/vendor/qrcode.js"></script>
+<script src="assets/qr.js"></script>
 <script>
 (function(){
-  var $ = BolzooUtils.$, esc = BolzooUtils.esc, fmtWhen = BolzooUtils.fmtWhen;
-  var invites = [];
-  var filter = 'all';
-
-  var kind = window.BolzooAPI ? window.BolzooAPI.backendKind : 'localStorage';
-  if(kind === 'localStorage'){
-    $('backendWarn').style.display = 'block';
+  'use strict';
+  var $ = function(id){ return document.getElementById(id); };
+  var R = window.BolzooResponses;
+  if(!window.BolzooUtils || !R || !window.BolzooAPI){
+    $('loadErrorText').textContent = 'Хуудсыг бүрэн ачаалж чадсангүй. Холболтоо шалгаад дахин нээгээрэй.';
+    $('loadError').hidden = false;
+    $('retryLoadBtn').addEventListener('click', function(){ location.reload(); });
+    $('list').innerHTML = '';
+    $('list').setAttribute('aria-busy','false');
+    return;
   }
+  var esc = window.BolzooUtils.esc;
+  var list = $('list');
+  var demoKind = new URLSearchParams(location.search).get('demo');
+  var DEMO_MODE = demoKind === 'responses' || demoKind === 'apology';
+  var allInvites = [], activeFilter = 'all', query = '', loadPromise = null, hasLoaded = false;
+  var lastChecked = '', lastSnapshot = '', recoveredId = '', sessionCodes = Object.create(null);
+  var PlanAPI=window.BolzooDatePlanAPI,planCache=Object.create(null),planQueue=[],planRunning=0,planSequence=Object.create(null);
+  var openResponses=Object.create(null),retainedNew=Object.create(null),seenResponses=Object.create(null),noticeId='';
+  var focusedInvite=new URLSearchParams(location.search).get('invite'),focusHandled=false;
+  if(!/^[A-Za-z0-9_-]{8,64}$/.test(focusedInvite||''))focusedInvite='';
+  try{var storedSeen=JSON.parse(localStorage.getItem('bolzoo:responses:seen:v1')||'{}');if(storedSeen&&typeof storedSeen==='object'&&!Array.isArray(storedSeen))Object.keys(storedSeen).forEach(function(id){if(typeof storedSeen[id]==='string'&&/^[0-9a-f]{16}$/.test(storedSeen[id]))seenResponses[id]=storedSeen[id];});}catch(_){}
+  if(DEMO_MODE){ document.body.classList.add('demo-mode'); $('demoBanner').hidden = false; document.querySelector('.private-pill').textContent = 'Жишээ'; }
+  $('backendWarn').hidden = BolzooAPI.backendKind !== 'localStorage' || DEMO_MODE;
 
-  function isFlower(cfg){ return (cfg || {}).mode === 'flower'; }
-  function invitePage(cfg){ return isFlower(cfg) ? 'greet.html' : 'bolzoo.html'; }
-  function inviteUrl(cfg, id){
-    return new URL(invitePage(cfg), window.location.href).href + '?id=' + encodeURIComponent(id);
+  function inviteUrl(id){ return new URL('bolzoo.html',location.href).href + '?id=' + encodeURIComponent(id); }
+  function previewUrl(inv){
+    var binary = encodeURIComponent(JSON.stringify(inv.config || {})).replace(/%([0-9A-F]{2})/g,function(_,hex){return String.fromCharCode(parseInt(hex,16));});
+    return new URL('bolzoo.html',location.href).href + '?preview=1#c=' + encodeURIComponent(btoa(binary));
   }
-  function val(v){ return (v === undefined || v === null || v === '') ? '—' : v; }
-
-  function statusBadge(inv){
-    if(inv.responded_at) return '<span class="badge responded">✅ Хариу ирсэн</span>';
-    if(inv.opened_at)    return '<span class="badge opened">👀 Нээсэн, хариу өгөөгүй</span>';
-    return '<span class="badge pending">⏳ Хараахан нээгээгүй</span>';
+  function isExpired(inv){
+    var cfg=inv.config || {}, expiry=Date.parse(cfg.expiresAt);
+    return cfg.experienceType === 'apology' && isFinite(expiry) && expiry <= Date.now();
   }
-
-  function answerBlock(inv){
-    var flower = isFlower(inv.config);
-    if(!inv.response){
-      if(inv.opened_at){
-        return '<div class="waiting"><b>Хариу хараахан ирээгүй байна</b>'
-          + (flower
-              ? 'Мэндчилгээг ' + esc(fmtWhen(inv.opened_at)) + '-д нээж үзсэн байна. Түр хүлээгээрэй 💗'
-              : 'Урилгыг ' + esc(fmtWhen(inv.opened_at)) + '-д нээж үзсэн ч болзооны өдрөө сонгоогүй байна. Түр хүлээгээрэй 💗')
-          + '</div>';
-      }
-      return '<div class="waiting"><b>' + (flower ? 'Мэндчилгээ хараахан нээгдээгүй' : 'Урилга хараахан нээгдээгүй') + '</b>'
-        + 'Линкийг илгээсэн эсэхээ шалгаад, дахин нэг сануулаарай 💌</div>';
+  function currentCode(inv){ return inv.recovery_code || sessionCodes[inv.id] || ''; }
+  function isNew(inv){var version=R.responseVersion(inv);return !!version&&seenResponses[inv.id]!==version;}
+  function markSeen(inv){
+    var version=R.responseVersion(inv);if(!version)return;
+    if(activeFilter==='new')retainedNew[inv.id]=true;
+    seenResponses[inv.id]=version;
+    if(!DEMO_MODE)try{localStorage.setItem('bolzoo:responses:seen:v1',JSON.stringify(seenResponses));}catch(_){}
+    if(noticeId===inv.id){noticeId='';$('newResponseNotice').hidden=true;}
+  }
+  function planUrl(inv){return 'date-plan.html?invite='+encodeURIComponent(inv.id)+((inv.config||{}).missionIdeaId?'&idea='+encodeURIComponent(inv.config.missionIdeaId):'');}
+  function calendarFor(inv){
+    if((inv.config||{}).experienceType==='apology')return R.createCalendar(inv);
+    var cache=planCache[inv.id];
+    if(cache&&cache.status==='ready')return R.createPlanCalendar(cache.plan);
+    return cache&&cache.status==='missing'?R.createCalendar(inv):null;
+  }
+  function planSummary(inv){
+    if((inv.config||{}).experienceType==='apology')return '';
+    var cache=planCache[inv.id],view=cache&&cache.status==='ready'?R.planPresentation(cache.plan):null;
+    if(!cache||cache.status==='missing'||cache.status==='forbidden')return '';
+    if(!view)return '<p class="plan-summary pending">Хамтын төлөвлөгөө: '+(cache.status==='pending'?'шалгаж байна…':'шинэчилж чадсангүй. Төлөвлөгөөг нээж шалгаарай.')+'</p>';
+    var html='<div class="plan-summary '+(view.bothAccepted?'agreed':'pending')+'"><p><span>Хамтын төлөвлөгөө</span><strong>'+esc(view.label)+'</strong></p>';
+    if(view.explanation)html+='<p class="plan-explanation">'+esc(view.explanation)+'</p>';
+    if(view.bothAccepted&&view.location)html+='<p class="plan-location">Тохирсон газар: '+esc(view.location)+'</p>';
+    return html+'</div>';
+  }
+  function detail(label, value){ return '<div class="response-detail"><dt>'+esc(label)+'</dt><dd>'+esc(value)+'</dd></div>'; }
+  function readiness(value){
+    var percent=R.readiness(value);
+    if(percent === null) return '';
+    return '<div class="readiness-progress"><div class="readiness-progress-head"><span>Өөрийнх нь сонгосон бэлэн байдал</span><strong>'+percent+'%</strong></div><div class="readiness-progress-track" role="meter" aria-label="Хүлээн авагчийн сонгосон бэлэн байдал" aria-valuemin="0" aria-valuemax="100" aria-valuenow="'+percent+'"><span class="readiness-progress-fill" style="width:'+percent+'%"></span></div><p class="readiness-progress-note">Хүлээн авагч өөрөө сонгосон утга. Уучилсан гэсэн дүгнэлт биш.</p></div>';
+  }
+  function responsePanel(inv, state){
+    var r=inv.response || {}, cfg=inv.config || {}, a=R.appointment(inv);
+    var html='<div class="response-panel '+state.key+'"><p class="response-description">'+esc(state.description)+'</p>';
+    if(state.hasResponse && (state.accepted || state.key === 'later' || (state.key === 'meet' && (cfg.apologyDateOffer || a.date || a.time)))){
+      html+='<dl class="response-details">'+detail(cfg.experienceType==='apology'?'Уулзах өдөр':'Урилгад анх сонгосон өдөр',a.date || 'Хараахан сонгоогүй')+detail(cfg.experienceType==='apology'?'Цаг · Улаанбаатар':'Урилгад анх сонгосон цаг · УБ',a.time || 'Хараахан сонгоогүй');
+      if(r.kind) html+=detail('Болзооны төрөл',r.kind);
+      if(r.choice && r.choice !== r.kind) html+=detail('Сонгосон санал',r.choice);
+      if(r.ticketNo) html+=detail('Урилгын лавлагаа',r.ticketNo);
+      var place=String(cfg.locationName || '').trim(), placeUrl=R.safeWebUrl(cfg.locationUrl);
+      if(place || placeUrl) html+='<div class="response-detail"><dt>Санал болгосон газар</dt><dd>'+(placeUrl?'<a href="'+esc(placeUrl)+'" target="_blank" rel="noopener noreferrer">'+esc(place || 'Газрын зураг')+' ↗</a>':esc(place))+'</dd></div>';
+      html+='</dl>';
+      if(state.key === 'later') html+='<p class="appointment-note">Энэ бол өөр өдөр уулзах санал. Өдөр, цагаа хоорондоо тохироорой.</p>';
     }
-    var r = inv.response;
-    if(r.type === 'flower' || flower){
-      var cfgF = inv.config || {};
-      var fname = (window.BolzooGarden ? BolzooGarden.flower(cfgF.flower).name : (cfgF.flower || '—'));
-      var pname = (window.BolzooGarden ? BolzooGarden.paper(cfgF.paper).name : (cfgF.paper || '—'));
-      return '<div class="answer">'
-        + '<div class="answer-head">💗 Цэцгийг хүлээж авлаа!</div>'
-        + '<div class="answer-body">'
-          + '<div class="answer-grid">'
-            + '<div class="a-item"><span class="a-lbl">🌸 Илгээсэн цэцэг</span><span class="a-val">' + esc(fname) + '</span></div>'
-            + '<div class="a-item"><span class="a-lbl">📄 Захидлын цаас</span><span class="a-val">' + esc(pname) + '</span></div>'
-            + '<div class="a-item" style="grid-column:1/-1;"><span class="a-lbl">✍️ Хариу үг</span><span class="a-val">' + esc(r.note ? r.note : '(үг бичээгүй)') + '</span></div>'
-          + '</div>'
-          + '<div class="answer-foot">Хариу ирсэн: ' + esc(fmtWhen(inv.responded_at)) + '</div>'
-        + '</div>'
-      + '</div>';
+    if(calendarFor(inv)) html+='<button class="btn secondary calendar-button" type="button" data-calendar="'+esc(inv.id)+'" data-focus-key="calendar">＋ Календарьт нэмэх</button><p class="appointment-note">'+(planCache[inv.id]&&planCache[inv.id].status==='ready'?'Хоёр талын тохирсон төлөвлөгөөний өдөр, цагийг нэмнэ. ':'Урилгад сонгосон өдөр, цагийг нэмнэ. ')+'Календарьт 1 цагаар нэмнэ; үргэлжлэх хугацааг өөрчилж болно.</p>';
+    if(cfg.experienceType === 'apology' && state.hasResponse) html+=readiness(r.readinessPercent);
+    if(state.hasResponse) html+='<p class="appointment-note">Хариу ирсэн: '+esc(R.formatTimestamp(inv.responded_at))+'</p>';
+    if(isExpired(inv) && state.hasResponse) html+='<p class="appointment-note">Урилгын линкний хугацаа дууссан. Ирсэн хариуг эндээс харж болно.</p>';
+    return html+'</div>';
+  }
+  function timeline(inv,state){
+    var opened=!!inv.opened_at || state.hasResponse;
+    return '<ol class="invite-timeline" aria-label="Урилгын явц"><li class="complete"><strong>Урилга үүссэн</strong><time>'+esc(R.formatTimestamp(inv.created_at))+'</time></li><li'+(opened?' class="complete"':'')+'><strong>Линк нээгдсэн</strong><time>'+esc(inv.opened_at?R.formatTimestamp(inv.opened_at):(state.hasResponse?'Цаг бүртгэгдээгүй':'Одоогоор бүртгэлгүй'))+'</time></li><li'+(state.hasResponse?' class="complete"':'')+'><strong>Хариу ирсэн</strong><time>'+esc(state.hasResponse?R.formatTimestamp(inv.responded_at):(state.key==='expired'?'Хугацаа дууссан':'Хүлээж байна'))+'</time></li></ol>';
+  }
+  function historyHtml(inv){
+    var entries=Array.isArray(inv.response_history)?inv.response_history:[];
+    if(!entries.length) return '';
+    return '<details class="card-history" data-panel="history"><summary data-focus-key="history">Өмнөх хариунууд · '+entries.length+'</summary>'+entries.slice().reverse().map(function(entry){
+      var previous={config:inv.config,response:entry.response,responded_at:entry.responded_at};
+      var state=R.classify(previous), appointment=R.appointment(previous), percent=R.readiness((entry.response||{}).readinessPercent);
+      return '<div class="history-item">'+esc(state.label)+(appointment.date?' · '+esc(appointment.date):'')+(appointment.time?' · '+esc(appointment.time):'')+(inv.config && inv.config.experienceType==='apology' && percent!==null?' · '+percent+'%':'')+'<time>'+esc(R.formatTimestamp(entry.responded_at))+'</time></div>';
+    }).join('')+'</details>';
+  }
+  function cardHtml(inv){
+    var cfg=inv.config || {},state=R.classify(inv),name=String(cfg.recipientName || 'Таны урилга'),code=currentCode(inv),appointment=R.appointment(inv);
+    var cache=planCache[inv.id],plan=cache&&cache.status==='ready'?R.planPresentation(cache.plan):null;
+    var html='<div class="card-heading"><div class="recipient-block"><span class="recipient-avatar" aria-hidden="true">'+esc(Array.from(name)[0])+'</span><div><h3 class="card-title">'+esc(name)+'</h3><div class="card-meta">'+(cfg.experienceType==='apology'?'Эвлэрлийн захиа':'Болзооны урилга')+(state.hasResponse?' · '+esc(R.formatTimestamp(inv.responded_at)):'')+'</div></div></div>';
+    if(isNew(inv))html+='<button type="button" class="new-badge" data-open-response="'+esc(inv.id)+'" aria-label="'+esc(name)+'-ийн шинэ хариуг нээх">Шинэ хариу</button>';
+    html+='</div><p class="response-title '+state.key+'"><span aria-hidden="true">'+state.icon+'</span>'+esc(state.label)+'</p>';
+    if(plan&&plan.bothAccepted&&plan.scheduled)html+='<p class="response-appointment plan-date">Тохирсон өдөр: '+esc(plan.dateISO.replace(/-/g,'.')+' · '+plan.time+' · УБ')+'</p>';
+    else if((state.accepted||state.key==='later')&&!plan)html+='<p class="response-appointment">'+(state.key==='later'?'Санал болгосон: ':'Урилгад сонгосон: ')+esc([appointment.date,appointment.time].filter(Boolean).join(' · ')||'Өдөр, цагаа хамт тохирно')+(appointment.time?' · УБ':'')+'</p>';
+    else if(state.waiting)html+='<p class="response-appointment">Хариу ирэхэд энд автоматаар шинэчлэгдэнэ.</p>';
+    html+=planSummary(inv);
+    html+='<div class="card-bottom">';
+    var primaryCopy=false;
+    if(DEMO_MODE)html+='<span class="demo-card-pill">Жишээ хариу · Бодит урилга биш</span>';
+    else if(cfg.experienceType!=='apology'&&(plan||state.accepted||state.key==='later')){
+      var action=plan?(plan.state==='proposed'?'Шинэ төлөвлөгөөг харах':plan.state==='ended'?'Болзооны дурсамж':'Болзооны төлөвлөгөөг нээх'):state.key==='later'?'Шинэ өдрөө тохирох':appointment.scheduled?'Болзоогоо төлөвлөх':'Өдөр, цагаа тохирох';
+      html+='<a class="btn" href="'+esc(planUrl(inv))+'" data-primary-action data-mark-seen="'+esc(inv.id)+'" data-focus-key="plan">'+action+' →</a>';
+    }else if(state.waiting&&!isExpired(inv)){
+      primaryCopy=true;html+='<button class="btn" type="button" data-primary-action data-copy="'+esc(inviteUrl(inv.id))+'" data-focus-key="copy" aria-label="Урилгын линк хуулах">Линк хуулах ↗</button>';
+    }else if(state.key==='unknown')html+='<button class="btn" type="button" data-primary-action data-refresh-response="'+esc(inv.id)+'" data-focus-key="check">Хариуг дахин шалгах ↻</button>';
+    else html+='<button class="btn secondary" type="button" data-primary-action data-open-response="'+esc(inv.id)+'" data-focus-key="response">Хариуны дэлгэрэнгүй</button>';
+    html+='</div><details class="card-response" data-panel="response"'+(openResponses[inv.id]?' open':'')+'><summary data-view-response="'+esc(inv.id)+'" data-focus-key="details">Хариу, урилгын явц</summary>'+responsePanel(inv,state)+timeline(inv,state)+historyHtml(inv)+'</details>';
+    if(DEMO_MODE)return html;
+    html+='<details class="card-options" data-panel="options"><summary data-focus-key="options">Хадгалах, бусад</summary><div class="private-tools">';
+    if(!isExpired(inv)){
+      if(!primaryCopy)html+='<button class="btn secondary" type="button" data-copy="'+esc(inviteUrl(inv.id))+'" data-focus-key="copy" aria-label="Урилгын линк хуулах">Линк хуулах ↗</button>';
+      html+='<button class="btn secondary" type="button" data-qr="'+esc(inv.id)+'" data-focus-key="qr" aria-label="'+esc(name)+'-ийн урилгын QR кодыг PNG зургаар татах">QR татах ↓</button><a class="btn secondary" href="'+esc(previewUrl(inv))+'" target="_blank" rel="noopener noreferrer" data-focus-key="preview" aria-label="'+esc(name)+'-ийн урилгыг жишээгээр харах">Урилгыг харах</a>';
     }
-    return '<div class="answer">'
-      + '<div class="answer-head">🎉 Тийм гэж хариулсан!</div>'
-      + '<div class="answer-body">'
-        + '<div class="answer-grid">'
-          + '<div class="a-item"><span class="a-lbl">📅 Сонгосон өдөр</span><span class="a-val">' + esc(val(r.date)) + '</span></div>'
-          + '<div class="a-item"><span class="a-lbl">🕐 Сонгосон цаг</span><span class="a-val">' + esc(val(r.time)) + '</span></div>'
-          + '<div class="a-item"><span class="a-lbl">💝 Болзооны төрөл</span><span class="a-val">' + esc(val(r.kind)) + '</span></div>'
-          + '<div class="a-item"><span class="a-lbl">🎫 Ticket дугаар</span><span class="a-val">' + esc(val(r.ticketNo)) + '</span></div>'
-        + '</div>'
-        + '<div class="answer-foot">Хариу ирсэн: ' + esc(fmtWhen(inv.responded_at)) + '</div>'
-      + '</div>'
-    + '</div>';
+    html+='<p>Миний хариу харах код, хувийн линк. Зөвхөн өөртөө хадгална. Нөгөө хүнд илгээх урилгын линкээс өөр.</p>';
+    if(code)html+='<code>'+esc(code)+'</code><button class="btn secondary" type="button" data-copy-code="'+esc(code)+'" data-focus-key="code">Код хуулах</button>';
+    if(typeof BolzooAPI.getOwnerToken==='function'&&BolzooAPI.getOwnerToken(inv.id))html+='<button class="btn secondary" type="button" data-copy-owner="'+esc(inv.id)+'" data-focus-key="owner">Миний хариу харах хувийн линк</button>';
+    html+='<button class="btn danger" type="button" data-del="'+esc(inv.id)+'" data-focus-key="delete">Урилгыг устгах</button></div></details>';
+    return html;
   }
-
-  function emptyBox(){
-    if(!invites.length){
-      return '<div class="empty">'
-        + '<h2>Одоохондоо урилга алга 💌</h2>'
-        + '<p class="subtitle">Эхний урилгаа үүсгээд линкээ илгээвэл хариу нь яг энд харагдана.</p>'
-        + '<a class="btn" href="create.html" style="margin-top:10px;">＋ Шинэ урилга үүсгэх</a>'
-      + '</div>';
-    }
-    if(filter === 'responded'){
-      return '<div class="empty"><h2>Хариу ирсэн урилга алга ⏳</h2>'
-        + '<p class="subtitle">Хүлээн авагч болзооны өдрөө сонгомогц энд шууд харагдана.</p></div>';
-    }
-    return '<div class="empty"><h2>Хүлээгдэж буй урилга алга ✅</h2>'
-      + '<p class="subtitle">Бүх урилгад чинь хариу ирсэн байна!</p></div>';
-  }
-
-  function matches(inv){
-    if(filter === 'responded') return !!inv.responded_at;
-    if(filter === 'waiting')   return !inv.responded_at;
-    return true;
-  }
-
-  function render(){
-    var main = $('list');
-    var shown = invites.filter(matches);
-    if(!shown.length){ main.innerHTML = emptyBox(); return; }
-    main.innerHTML = shown.map(function(inv){
-      var cfg = inv.config || {};
-      return '<div class="card' + (inv.response ? ' has-answer' : '') + '">'
-        + '<div class="card-top">'
-          + '<div>'
-            + '<h3 class="card-title">' + esc(cfg.recipientName || '(нэргүй)') + '-д илгээсэн '
-              + (isFlower(cfg) ? 'цэцэг + захидал 🌸' : 'урилга 💌') + '</h3>'
-            + '<div class="card-meta">'
-              + (cfg.senderName ? 'Илгээгч: <b>' + esc(cfg.senderName) + '</b><br>' : '')
-              + 'Үүсгэсэн: ' + esc(fmtWhen(inv.created_at))
-              + '<br>ID: <span class="id-mono">' + esc(inv.id) + '</span>'
-            + '</div>'
-            + '<div style="margin-top:8px;">' + statusBadge(inv) + '</div>'
-          + '</div>'
-          + '<div class="card-actions">'
-            + '<a class="btn small secondary" href="' + esc(inviteUrl(cfg, inv.id)) + '" target="_blank">🔗 ' + (isFlower(cfg) ? 'Мэндчилгээг' : 'Урилгыг') + ' нээх</a>'
-            + '<button class="btn small secondary" data-copy="' + esc(inviteUrl(cfg, inv.id)) + '">📋 Линк хуулах</button>'
-            + (BolzooAPI.getOwnerToken(inv.id)
-                ? '<button class="btn small danger" data-del="' + esc(inv.id) + '">🗑️ Бүрмөсөн устгах</button>'
-                : '<button class="btn small secondary" data-forget="' + esc(inv.id) + '">✖️ Жагсаалтаас хасах</button>')
-          + '</div>'
-        + '</div>'
-        + answerBlock(inv)
-      + '</div>';
-    }).join('');
-  }
-
   function updateStats(){
-    var opened    = invites.filter(function(i){ return !!i.opened_at; }).length;
-    var responded = invites.filter(function(i){ return !!i.responded_at; }).length;
-    $('statTotal').textContent = invites.length;
-    $('statOpened').textContent = opened;
-    $('statResponded').textContent = responded;
-    $('filters').querySelector('[data-count="all"]').textContent = invites.length;
-    $('filters').querySelector('[data-count="responded"]').textContent = responded;
-    $('filters').querySelector('[data-count="waiting"]').textContent = invites.length - responded;
+    $('statTotal').textContent=allInvites.length;
+    $('statNew').textContent=allInvites.filter(isNew).length;
+    $('statWaiting').textContent=allInvites.filter(function(inv){return R.classify(inv).waiting;}).length;
+    $('statResponded').textContent=allInvites.filter(function(inv){return R.classify(inv).hasResponse;}).length;
   }
-
-  async function load(){
-    $('refresh').disabled = true;
+  function render(){
+    var visible=allInvites.filter(function(inv){var state=R.classify(inv);return (activeFilter==='all'||(activeFilter==='waiting'?state.waiting:activeFilter==='new'?isNew(inv)||retainedNew[inv.id]:state.hasResponse)) && String((inv.config||{}).recipientName||'').toLocaleLowerCase().includes(query);});
+    $('listTitle').textContent=activeFilter==='waiting'?'Хариу хүлээж буй урилгууд':activeFilter==='new'?'Энэ browser дээрх шинэ хариунууд':activeFilter==='responded'?'Ирсэн хариунууд':'Таны урилгууд';
+    $('listCount').textContent=allInvites.length?visible.length+' / '+allInvites.length+' урилга':'';
+    $('clearSearch').hidden=!query;
+    $('inviteSearch').closest('.search-field').hidden=allInvites.length<2&&!query;
+    document.querySelectorAll('[data-filter]').forEach(function(button){button.setAttribute('aria-pressed',String(button.dataset.filter===activeFilter));});
+    if(!allInvites.length){ list.replaceChildren($('emptyTemplate').content.cloneNode(true)); return; }
+    if(!visible.length){list.innerHTML='<section class="empty"><span class="empty-icon" aria-hidden="true">⌕</span><h2>'+(query?'Энэ нэрээр урилга олдсонгүй':activeFilter==='new'?'Шинэ хариу алга':activeFilter==='responded'?'Хариу хараахан ирээгүй байна':'Хүлээгдэж буй урилга алга')+'</h2><p>'+(query?'Нэрээ шалгаад дахин хайх эсвэл бүх урилгаа хараарай.':'Бүх урилгаа харах бол доорх товчийг дараарай.')+'</p><button class="btn secondary" type="button" data-clear-filter>Бүх урилгаа харах</button></section>';return;}
+    var existing=new Map(); Array.from(list.children).forEach(function(el){if(el.dataset.inviteId)existing.set(el.dataset.inviteId,el);else el.remove();});
+    visible.forEach(function(inv,index){
+      var el=existing.get(inv.id) || document.createElement('article'), html=cardHtml(inv);
+      var focused=el.contains(document.activeElement)?document.activeElement.getAttribute('data-focus-key'):null;
+      var opened=Array.from(el.querySelectorAll('details[open][data-panel]')).map(function(d){return d.dataset.panel;}).filter(function(panel){return panel!=='response';});
+      el.className='invite-card'+(inv.id===recoveredId?' recovered':'');el.dataset.inviteId=inv.id;el.id='invite-'+inv.id;el.tabIndex=-1;
+      if(el._renderedHtml!==html){el.innerHTML=html;el._renderedHtml=html;opened.forEach(function(panel){var d=el.querySelector('[data-panel="'+panel+'"]');if(d)d.open=true;});}
+      if(list.children[index]!==el)list.insertBefore(el,list.children[index]||null);
+      if(focused){var target=el.querySelector('[data-focus-key="'+focused+'"]');if(target)target.focus({preventScroll:true});}
+      existing.delete(inv.id);
+    });
+    existing.forEach(function(el){el.remove();});
+    observePlans();
+  }
+  function setFilter(value){ activeFilter=value;retainedNew=Object.create(null);render(); }
+  function clearFilters(){ query='';$('inviteSearch').value='';setFilter('all'); }
+  function showFeedback(message,bad){$('pageFeedback').textContent=message;$('pageFeedback').classList.toggle('bad',!!bad);$('pageFeedback').hidden=false;}
+  function withTimeout(promise){var timer;return Promise.race([promise,new Promise(function(_,reject){timer=setTimeout(function(){reject(new Error('timeout'));},15000);})]).finally(function(){clearTimeout(timer);});}
+  function newest(inv){return Date.parse(inv.responded_at)||Date.parse(inv.opened_at)||Date.parse(inv.created_at)||0;}
+  function openResponse(id,scroll){
+    var inv=allInvites.find(function(item){return item.id===id;});if(!inv)return;
+    openResponses[id]=true;markSeen(inv);render();updateStats();
+    var card=$('invite-'+id);if(card){if(scroll)card.scrollIntoView({behavior:'smooth',block:'center'});card.focus({preventScroll:true});}
+  }
+  function focusOwnedInvite(){
+    if(!focusedInvite||focusHandled)return;
+    var inv=allInvites.find(function(item){return item.id===focusedInvite;});
+    if(!inv){focusHandled=true;showFeedback('Энэ урилга энэ browser дээр хараахан холбогдоогүй байна. Өмнөх урилгаа олох товчоор хувийн кодоо оруулаарай.',false);return;}
+    focusHandled=true;activeFilter='all';query='';$('inviteSearch').value='';recoveredId=inv.id;openResponse(inv.id,true);
+  }
+  var planObserver=typeof IntersectionObserver==='function'?new IntersectionObserver(function(entries){entries.forEach(function(entry){if(entry.isIntersecting)queuePlan(entry.target.dataset.inviteId);});},{rootMargin:'180px'}):null;
+  function observePlans(){
+    if(!PlanAPI||DEMO_MODE)return;
+    var cards=Array.from(list.querySelectorAll('[data-invite-id]'));
+    if(planObserver)cards.forEach(function(card){planObserver.observe(card);var bounds=card.getBoundingClientRect();if(bounds.bottom>0&&bounds.top<window.innerHeight+180)queuePlan(card.dataset.inviteId);});
+    else cards.slice(0,6).forEach(function(card){queuePlan(card.dataset.inviteId);});
+  }
+  function queuePlan(id){
+    var inv=allInvites.find(function(item){return item.id===id;}),cache=planCache[id];
+    if(!PlanAPI||!inv||(inv.config||{}).experienceType==='apology'||cache&&(cache.status==='pending'||Date.now()-cache.checkedAt<25000))return;
+    try{if(typeof BolzooAPI.getOwnerToken!=='function'||!BolzooAPI.getOwnerToken(id))return;}catch(_){return;}
+    if(cache&&cache.status==='ready'){
+      var card=$('invite-'+id),summary=card&&card.querySelector('.plan-summary');
+      if(summary){summary.className='plan-summary pending';summary.textContent='Хамтын төлөвлөгөө: шинэчилж байна…';card._renderedHtml=null;}
+      var calendar=card&&card.querySelector('[data-calendar]');if(calendar)calendar.disabled=true;
+    }
+    planCache[id]={status:'pending',checkedAt:Date.now()};planQueue.push(id);drainPlans();
+  }
+  function planResult(id,result){
+    if(!result||result.invite_id!==id||!Number.isInteger(result.version)||result.version<1||!R.planPresentation(result))throw new Error('invalid_plan');
+    var safe={};['id','invite_id','state','title','scheduled_at','location','revision','version','accepted'].forEach(function(key){safe[key]=result[key];});
+    return {status:'ready',plan:safe,checkedAt:Date.now()};
+  }
+  function planError(error){return {status:error.status===404&&error.code==='plan_not_found'?'missing':error.status===403?'forbidden':'error',checkedAt:Date.now()};}
+  function drainPlans(){
+    while(planRunning<2&&planQueue.length){
+      (function(id){
+        planRunning++;var sequence=(planSequence[id]||0)+1;planSequence[id]=sequence;
+        Promise.resolve().then(function(){return withTimeout(PlanAPI.get(id));}).then(function(result){
+          if(planSequence[id]===sequence)planCache[id]=planResult(id,result);
+        }).catch(function(error){
+          if(planSequence[id]===sequence)planCache[id]=planError(error);
+        }).finally(function(){planRunning--;if(allInvites.some(function(item){return item.id===id;}))render();drainPlans();});
+      }(planQueue.shift()));
+    }
+  }
+  async function downloadCalendar(invite,button){
+    if(button.disabled)return;button.disabled=true;
     try{
-      var invs = await BolzooAPI.listMyInvites();
-      // Хариу ирсэн нь эхэндээ, дараа нь шинэ үүссэн нь
-      invs.sort(function(a,b){
-        var ar = a.responded_at ? 1 : 0, br = b.responded_at ? 1 : 0;
-        if(ar !== br) return br - ar;
-        return (b.created_at||'').localeCompare(a.created_at||'');
-      });
-      invites = invs;
-      render();
-      updateStats();
-    }catch(e){
-      alert('Ачаалахад алдаа: '+(e.message||e));
-    }finally{
-      $('refresh').disabled = false;
-    }
-  }
-
-  /* ---------- ID / линкээр хайх ---------- */
-  function parseId(raw){
-    var s = (raw||'').trim();
-    if(!s) return '';
-    var m = s.match(/[?&]id=([^&#\s]+)/);
-    if(m) return decodeURIComponent(m[1]);
-    if(/^[A-Za-z0-9_-]+$/.test(s)) return s;
-    return '';
-  }
-  async function lookup(){
-    var st = $('lookupStatus');
-    var id = parseId($('lookupInput').value);
-    if(!id){
-      st.className = 'lookup-status err';
-      st.textContent = '❌ ID олдсонгүй. Урилгын бүтэн линк эсвэл ID-г буулгана уу.';
-      return;
-    }
-    st.className = 'lookup-status';
-    st.textContent = '⏳ Хайж байна…';
-    $('lookupBtn').disabled = true;
-    try{
-      await BolzooAPI.trackInvite(id);
-      st.className = 'lookup-status ok';
-      st.textContent = '✅ Нэмэгдлээ. Доорх жагсаалтаас хараарай.';
-      $('lookupInput').value = '';
-      filter = 'all';
-      setChip('all');
-      await load();
-    }catch(e){
-      st.className = 'lookup-status err';
-      st.textContent = '❌ ' + (e.message || 'Олдсонгүй');
-    }finally{
-      $('lookupBtn').disabled = false;
-    }
-  }
-  function setChip(f){
-    var chips = $('filters').querySelectorAll('.chip');
-    for(var i=0;i<chips.length;i++){
-      chips[i].classList.toggle('on', chips[i].getAttribute('data-filter') === f);
-    }
-  }
-  $('lookupBtn').addEventListener('click', lookup);
-  $('lookupInput').addEventListener('keydown', function(e){ if(e.key === 'Enter') lookup(); });
-
-  $('filters').addEventListener('click', function(e){
-    var chip = e.target.closest('.chip');
-    if(!chip) return;
-    filter = chip.getAttribute('data-filter');
-    setChip(filter);
-    render();
-  });
-
-  document.addEventListener('click', function(e){
-    var copyBtn = e.target.closest('[data-copy]');
-    if(copyBtn){
-      var url = copyBtn.getAttribute('data-copy');
-      if(navigator.clipboard){
-        navigator.clipboard.writeText(url).then(function(){
-          var t=copyBtn.textContent; copyBtn.textContent='✅ Хуулсан';
-          setTimeout(function(){ copyBtn.textContent=t; }, 1500);
-        });
+      if(PlanAPI&&(invite.config||{}).experienceType!=='apology'){
+        var id=invite.id,sequence=(planSequence[id]||0)+1;planSequence[id]=sequence;planCache[id]={status:'pending',checkedAt:Date.now()};
+        try{planCache[id]=planResult(id,await withTimeout(PlanAPI.get(id)));}catch(error){planCache[id]=planError(error);}
+        render();
       }
+      var ics=calendarFor(invite);
+      if(!ics){showFeedback('Одоогийн төлөвлөгөөний өдөр, цагийг баталгаажуулж чадсангүй. Төлөвлөгөөг нээгээд шалгаарай.',true);return;}
+      var blob=new Blob([ics],{type:'text/calendar;charset=utf-8'}),downloadUrl=URL.createObjectURL(blob),link=document.createElement('a');
+      link.href=downloadUrl;link.download='bolzoo-date.ics';document.body.appendChild(link);link.click();link.remove();setTimeout(function(){URL.revokeObjectURL(downloadUrl);},1000);
+      showFeedback('Календарийн файлыг нээгээд «Нэмэх» эсвэл «Хадгалах» үйлдлээр баталгаажуулаарай.',false);
+    }catch(_){showFeedback('Календарийн файл татаж чадсангүй. Дээрх өдөр, цагийг календарьтаа гараар нэмээрэй.',true);}
+    finally{button.disabled=false;}
+  }
+  var demos=makeDemos();
+  document.querySelectorAll('[data-filter]').forEach(function(button){button.disabled=true;});
+  $('inviteSearch').disabled=true;
+  function load(){
+    if(loadPromise)return loadPromise;
+    $('refresh').disabled=true;$('refresh').textContent='Шалгаж байна…';$('retryLoadBtn').disabled=true;list.setAttribute('aria-busy','true');
+    loadPromise=Promise.resolve().then(async function(){
+      try{
+        var invs=DEMO_MODE?demos:await withTimeout(BolzooAPI.listMyInvites());
+        if(!Array.isArray(invs))throw new Error('invalid_response');
+        invs=invs.filter(function(inv){return inv && typeof inv.id==='string';}).slice().sort(function(a,b){return newest(b)-newest(a);});
+        if(hasLoaded){
+          var positions=Object.create(null);allInvites.forEach(function(inv,index){positions[inv.id]=index;});
+          invs.sort(function(a,b){return (positions[a.id]===undefined?Infinity:positions[a.id])-(positions[b.id]===undefined?Infinity:positions[b.id]);});
+          var changed=invs.find(function(inv){var previous=allInvites.find(function(item){return item.id===inv.id;});return isNew(inv)&&(!previous||R.responseVersion(previous)!==R.responseVersion(inv));});
+          if(changed){noticeId=changed.id;$('newResponseText').textContent=String((changed.config||{}).recipientName||'Таны урилга')+' — шинэ хариу ирлээ.';$('newResponseNotice').hidden=false;}
+          Object.keys(planCache).forEach(function(id){if(planCache[id].status!=='pending')planCache[id].checkedAt=0;});
+        }else if(invs.length===1&&!focusedInvite){openResponses[invs[0].id]=true;markSeen(invs[0]);}
+        var snapshot=JSON.stringify(invs)+':'+invs.map(function(inv){return R.classify(inv).key+':'+isExpired(inv);}).join(',');
+        allInvites=invs;
+        if(snapshot!==lastSnapshot || !hasLoaded){render();updateStats();lastSnapshot=snapshot;}
+        else observePlans();
+        hasLoaded=true;document.querySelectorAll('[data-filter]').forEach(function(button){button.disabled=false;});$('inviteSearch').disabled=false;lastChecked=new Date().toLocaleTimeString('en-GB',{timeZone:'Asia/Ulaanbaatar',hour:'2-digit',minute:'2-digit',hourCycle:'h23'});
+        $('syncStatus').textContent=DEMO_MODE?'Жишээ хариунууд':'Автоматаар шалгана · Сүүлд '+lastChecked+' · 30 сек тутам';$('loadError').hidden=true;
+        focusOwnedInvite();
+        return true;
+      }catch(error){
+        $('loadErrorText').textContent=hasLoaded?'Шинэ хариуг шалгаж чадсангүй. Сүүлд ачаалсан мэдээллийг харуулж байна. Холболтоо шалгаад дахин оролдоорой.':'Урилгуудыг ачаалж чадсангүй. Холболтоо шалгаад дахин оролдоорой. Таны урилга устсан гэсэн үг биш.';
+        $('loadError').hidden=false;if(!hasLoaded)list.replaceChildren();$('syncStatus').textContent=hasLoaded?'Сүүлд шалгасан '+lastChecked+' · Шинэчлэлт түр саатсан':'Холболтыг дахин шалгана уу';return false;
+      }finally{$('refresh').disabled=false;$('refresh').textContent='↻ Шалгах';$('retryLoadBtn').disabled=false;list.setAttribute('aria-busy','false');loadPromise=null;}
+    });
+    return loadPromise;
+  }
+  async function reloadAfterMutation(){if(loadPromise)await loadPromise;return load();}
+  async function copyText(value,button,message){
+    var copied=false;
+    try{if(navigator.clipboard && navigator.clipboard.writeText){await navigator.clipboard.writeText(value);copied=true;}}catch(_){}
+    if(!copied){var field=document.createElement('textarea');field.value=value;field.style.cssText='position:fixed;left:-9999px;top:0;';document.body.appendChild(field);field.select();try{copied=document.execCommand('copy');}catch(_){}field.remove();button.focus();}
+    if(copied){var previous=button.textContent;button.textContent='✓ Хууллаа';setTimeout(function(){if(button.isConnected)button.textContent=previous;},1600);showFeedback(message,false);}
+    else showFeedback('Автоматаар хуулж чадсангүй. Үүнийг сонгож гараар хуулаарай: '+value,true);
+  }
+  function openRecovery(){ $('recoverBox').open=true;$('recoverBox').scrollIntoView({behavior:'smooth',block:'center'});$('recoverCode').focus({preventScroll:true}); }
+  function setRecoverStatus(message,tone){$('recoverStatus').textContent=message||'';$('recoverStatus').className='recover-status'+(tone?' '+tone:'');}
+  function validOwnership(id,token){return /^[A-Za-z0-9_-]{8,64}$/.test(String(id||'')) && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(token||''));}
+  function rememberOwnership(data){
+    BolzooAPI.rememberOwnedInvite(data.id,data.owner_token);
+    if(typeof BolzooAPI.getOwnerToken==='function' && BolzooAPI.getOwnerToken(data.id)!==data.owner_token)throw new Error('storage_unavailable');
+  }
+  async function recoverAndLoad(code){
+    if(DEMO_MODE || $('recoverBtn').disabled)return;
+    var normalized=String(code||'').trim().toUpperCase().replace(/\s+/g,'');
+    if(!/^LOV-[A-HJ-NP-Z2-9]{6}$/.test(normalized)){setRecoverStatus('LOV-XXXXXX хэлбэртэй кодоо бүтнээр нь оруулаарай. Урилгын линк эсвэл ID тохирохгүй.','bad');$('recoverCode').setAttribute('aria-invalid','true');$('recoverCode').focus();return;}
+    $('recoverCode').removeAttribute('aria-invalid');$('recoverBtn').disabled=true;setRecoverStatus('Кодыг шалгаж байна…');
+    try{
+      var data=await withTimeout(BolzooAPI.recoverInvite(normalized));
+      if(!data || !validOwnership(data.id,data.owner_token))throw new Error('invalid_response');
+      rememberOwnership(data);sessionCodes[data.id]=normalized;recoveredId=data.id;activeFilter='all';query='';$('inviteSearch').value='';
+      var refreshed=await reloadAfterMutation();
+      if(refreshed && allInvites.some(function(inv){return inv.id===data.id;})){
+        render();setRecoverStatus('Урилгыг сэргээлээ. Тодруулсан картаас хариуг нь хараарай.','ok');showFeedback('Урилгыг сэргээлээ. Тодруулсан картаас хамгийн сүүлийн хариуг хараарай.',false);$('recoverCode').value='';
+        openResponse(data.id,true);
+      }else{setRecoverStatus('Код зөв байна. Хариуг ачаалж чадсангүй. Дээрх «Хариуг шалгах» товчоор дахин оролдоорой.','bad');}
+    }catch(error){
+      var reason=error.reason;
+      var message=error.message==='storage_unavailable'?'Код зөв боловч энэ төхөөрөмжид хадгалж чадсангүй. Хөтчийн хадгалалтыг зөвшөөрөөд дахин оролдоорой.':reason==='not_used_yet'?'Энэ кодоор урилга үүсгээгүй байна. Урилгаа бэлдээд энэ кодоор линкээ аваарай.':reason==='invite_missing'?'Энэ кодтой урилга олдсонгүй. Урилга устгагдсан эсэхийг үүсгэсэн төхөөрөмжөөсөө шалгаарай.':reason==='not_found'||reason==='invalid_format'?'Код олдсонгүй. LOV-оор эхэлсэн кодоо дахин шалгаарай.':'Кодыг шалгаж чадсангүй. Интернэт холболтоо шалгаад дахин оролдоорой.';
+      setRecoverStatus(message,'bad');if(reason==='not_found'||reason==='invalid_format')$('recoverCode').setAttribute('aria-invalid','true');
+    }finally{$('recoverBtn').disabled=false;}
+  }
+  document.addEventListener('click',function(event){
+    var summary=event.target.closest('summary[data-view-response]');
+    if(summary){
+      event.preventDefault();var responseId=summary.dataset.viewResponse,record=allInvites.find(function(inv){return inv.id===responseId;});if(!record)return;
+      openResponses[responseId]=!openResponses[responseId];if(openResponses[responseId])markSeen(record);render();updateStats();
+      var replacement=$('invite-'+responseId).querySelector('[data-focus-key="details"]');if(replacement)replacement.focus({preventScroll:true});return;
+    }
+    var target=event.target.closest('button,a');if(!target)return;
+    if(target.hasAttribute('data-open-response')){openResponse(target.dataset.openResponse,false);return;}
+    if(target.hasAttribute('data-mark-seen')){var seen=allInvites.find(function(inv){return inv.id===target.dataset.markSeen;});if(seen){markSeen(seen);updateStats();var badge=target.closest('article').querySelector('.new-badge');if(badge)badge.remove();}}
+    if(target.hasAttribute('data-refresh-response')){load();return;}
+    if(target.hasAttribute('data-filter')){setFilter(target.dataset.filter);return;}
+    if(target.hasAttribute('data-open-recovery')){openRecovery();return;}
+    if(target.hasAttribute('data-clear-filter')){clearFilters();return;}
+    if(target.hasAttribute('data-copy')){copyText(target.dataset.copy,target,'Урилгын линкийг хууллаа. Хүлээн авагчийнхаа чат руу илгээгээрэй.');return;}
+    if(target.hasAttribute('data-qr')){
+      var qrInvite=allInvites.find(function(inv){return inv.id===target.dataset.qr;});
+      if(DEMO_MODE || !qrInvite || isExpired(qrInvite)){showFeedback('Энэ урилгын QR кодыг татах боломжгүй байна. Урилгуудаа шинэчлээд дахин оролдоорой.',true);return;}
+      try{window.BolzooQR.download(inviteUrl(qrInvite.id));showFeedback('QR зургийг татаж эхэллээ. Хүлээн авагчдаа илгээх эсвэл хэвлэж болно.',false);}
+      catch(_){showFeedback('QR зургийг татаж чадсангүй. Хуудсаа дахин ачаалаад «QR татах» товчоор оролдоорой.',true);}
       return;
     }
-    var forgetBtn = e.target.closest('[data-forget]');
-    if(forgetBtn){
-      var fid = forgetBtn.getAttribute('data-forget');
-      if(!confirm('Зөвхөн энэ жагсаалтаас хасах уу?\n\nУрилга өөрөө устахгүй — илгээсэн линк хэвээр ажиллана. Дараа нь ID-аар нь дахин нэмж болно.')) return;
-      BolzooAPI.forgetInvite(fid);
-      load();
-      return;
+    if(target.hasAttribute('data-copy-code')){copyText(target.dataset.copyCode,target,'Хариу харах кодыг хууллаа. Зөвхөн өөртөө хадгалаарай.');return;}
+    if(target.hasAttribute('data-copy-owner')){
+      var id=target.dataset.copyOwner,token=BolzooAPI.getOwnerToken(id);if(!token){showFeedback('Хариу харах эрх олдсонгүй. LOV кодоороо дахин сэргээгээрэй.',true);return;}
+      var url=new URL('dashboard.html',location.href);url.hash='recover='+encodeURIComponent(id)+'~'+encodeURIComponent(token);copyText(url.href,target,'Хариу харах хувийн линкийг хууллаа. Зөвхөн өөртөө хадгалаарай.');return;
     }
-    var delBtn = e.target.closest('[data-del]');
-    if(delBtn){
-      var id = delBtn.getAttribute('data-del');
-      if(!confirm('Энэ урилгыг БҮРМӨСӨН устгах уу?\n\nИлгээсэн линк ажиллахаа болино, ирсэн хариу нь ч устана. Буцаах боломжгүй.')) return;
-      BolzooAPI.deleteInvite(id).then(load).catch(function(err){
-        alert('Устгаж чадсангүй: '+(err.message||err));
-      });
+    if(target.hasAttribute('data-calendar')){
+      var invite=allInvites.find(function(inv){return inv.id===target.dataset.calendar;});if(invite)downloadCalendar(invite,target);return;
+    }
+    if(target.hasAttribute('data-del')){
+      if(!confirm('Энэ урилга болон хариуг бүрмөсөн устгах уу? Илгээсэн линк ажиллахаа болино. Буцаах боломжгүй.'))return;
+      var deleteId=target.dataset.del;target.disabled=true;target.textContent='Устгаж байна…';
+      BolzooAPI.deleteInvite(deleteId).then(function(){allInvites=allInvites.filter(function(inv){return inv.id!==deleteId;});lastSnapshot='';render();updateStats();showFeedback('Урилгыг устгалаа.',false);return reloadAfterMutation();}).catch(function(){target.disabled=false;target.textContent='Урилгыг устгах';showFeedback('Урилгыг устгаж чадсангүй. Дахин оролдоорой.',true);});
     }
   });
-
-  $('refresh').addEventListener('click', load);
-
-  // Линкээр шууд ирсэн бол (dashboard.html?id=xxx) тухайн урилгыг автоматаар нэмнэ
-  (function(){
-    var q = new URLSearchParams(window.location.search).get('id');
-    if(q){ $('lookupInput').value = q; lookup(); return; }
-    load();
-  })();
-
-  // 30 секунд тутам шинэ хариу ирсэн эсэхийг шалгана
-  setInterval(load, 30000);
+  $('inviteSearch').addEventListener('input',function(){query=this.value.trim().toLocaleLowerCase();render();});
+  $('clearSearch').addEventListener('click',function(){query='';$('inviteSearch').value='';render();$('inviteSearch').focus();});
+  $('viewNewResponse').addEventListener('click',function(){var id=noticeId;clearFilters();openResponse(id,true);});
+  window.addEventListener('storage',function(event){
+    if(event.key!=='bolzoo:responses:seen:v1')return;
+    try{var value=JSON.parse(event.newValue||'{}');if(!value||typeof value!=='object'||Array.isArray(value))return;Object.keys(value).forEach(function(id){if(/^[0-9a-f]{16}$/.test(value[id]))seenResponses[id]=value[id];});render();updateStats();}catch(_){}
+  });
+  $('recoverForm').addEventListener('submit',function(event){event.preventDefault();recoverAndLoad($('recoverCode').value);});
+  $('recoverCode').addEventListener('input',function(){this.removeAttribute('aria-invalid');});
+  $('refresh').addEventListener('click',function(){load();});$('retryLoadBtn').addEventListener('click',function(){load();});
+  var hashOwnership=null;
+  if(!DEMO_MODE){
+    var hash=String(location.hash||''),match=hash.match(/[#&]recover=([^&~]+)~([^&]+)/);
+    if(hash.indexOf('recover=')!==-1){
+      try{history.replaceState(null,'',location.pathname+location.search);}catch(_){}
+      $('recoverBox').open=true;
+      try{
+        if(!match)throw new Error('bad_link');var recovered={id:decodeURIComponent(match[1]),owner_token:decodeURIComponent(match[2])};if(!validOwnership(recovered.id,recovered.owner_token))throw new Error('bad_link');rememberOwnership(recovered);hashOwnership=recovered.id;recoveredId=recovered.id;setRecoverStatus('Хувийн линкийг шалгаж байна…');
+      }catch(error){setRecoverStatus(error.message==='storage_unavailable'?'Хөтчийн хадгалалтад хандаж чадсангүй. Хадгалалтыг зөвшөөрөөд дахин оролдоорой.':'Сэргээх линк дутуу эсвэл буруу байна. LOV кодоороо хариугаа сэргээгээрэй.','bad');}
+    }
+    if(new URLSearchParams(location.search).get('recover')==='1')openRecovery();
+  }
+  load().then(function(ok){if(hashOwnership){var found=allInvites.some(function(inv){return inv.id===hashOwnership;});setRecoverStatus(ok&&found?'Урилгыг сэргээлээ. Тодруулсан картаас хариуг нь хараарай.':'Энэ линкээр урилгыг ачаалж чадсангүй. LOV кодоороо дахин оролдоорой.',ok&&found?'ok':'bad');}});
+  if(!DEMO_MODE){setInterval(function(){if(!document.hidden)load();},30000);document.addEventListener('visibilitychange',function(){if(!document.hidden)load();});window.addEventListener('online',function(){load();});}
+  function makeDemos(){
+    var now=Date.now(),date=new Date(now+3*86400000+8*3600000).toISOString().slice(0,10);
+    function sample(id,name,response,offset,opened){return{id:id,config:{recipientName:name,senderName:'Тэмүүлэн',locationName:'Дуртай кофе шоп',theme:'coral',askTemplate:'letter'},response:response,created_at:new Date(now-2*86400000).toISOString(),opened_at:opened?new Date(now-86400000).toISOString():null,responded_at:response?new Date(now-offset*60000).toISOString():null};}
+    var apology=sample('demo-apology','Саруул',{type:'apology',status:'needs_space',readinessPercent:30},60,true);apology.config.experienceType='apology';apology.response_history=[{response:{type:'apology',status:'read'},responded_at:new Date(now-2*3600000).toISOString()}];
+    if(demoKind==='apology')return[apology];
+    return[sample('demo-accepted','Номин',{answer:'yes',dateISO:date,time:'18:30',kind:'Кофе & яриа'},5,true),sample('demo-later','Энхжин',{answer:'later',dateISO:date,time:'19:00'},15,true),sample('demo-declined','Ану',{answer:'no'},40,true),apology,sample('demo-waiting','Билгүүн',null,0,true),sample('demo-unopened','Мишээл',null,0,false)];
+  }
 })();
 </script>
 </body>
