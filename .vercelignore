@@ -2,6 +2,8 @@ server.js
 data
 output
 scripts
+tools
+reports
 sql
 bolzoo-email-apps-script.js
 .admin-pw

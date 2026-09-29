@@ -847,6 +847,8 @@ const server = http.createServer(async (req, res) => {
   try {
     const url = new URL(req.url, `http://${req.headers.host}`);
     if (url.pathname === '/api/date-plan') return await datePlanHandler(req, res);
+    // Disabled unless explicitly configured; local mock payments are not sales evidence.
+    if (url.pathname === '/api/learning-overview') return await require('./api/learning-overview')(req, res);
     if (req.method === 'OPTIONS') return send(res, 204, '');
     if (url.pathname.startsWith('/rest/v1/rpc/')) return await handleRPC(req, res, url);
     if (url.pathname === '/rest/v1/invites' || url.pathname.startsWith('/rest/v1/invites/')) return await handleInvites(req, res, url);

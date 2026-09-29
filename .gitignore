@@ -16,6 +16,7 @@ skills-lock.json
 sql/set-admin-password.sql
 
 # Source snapshot exclusions
+reports/
 .env*
 !.env.example
 .dev.vars*

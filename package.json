@@ -6,7 +6,9 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
-    "test": "node --test test/*.test.js"
+    "test": "node --test test/*.test.js tools/moch-learning/*.test.mjs",
+    "review:demo": "node tools/moch-learning/run-review.mjs tools/moch-learning/examples/demo-snapshot.json",
+    "review:bolzoo": "node tools/moch-learning/read-overview.mjs"
   },
   "engines": {
     "node": ">=18"

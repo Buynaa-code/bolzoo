@@ -2,6 +2,8 @@
 
 # bolzoo 💌
 
+МӨЧ-ийн хэмжилтийн эхний суурь: [MOCH_LEARNING.md](docs/MOCH_LEARNING.md). Тусгаарласан хувилбарт бэлтгэсэн; live сайттай холбогдоогүй.
+
 Personalised Mongolian date invitation and relationship-repair web app.
 
 The floral welcome in `create.html` includes an interactive sample letter and
