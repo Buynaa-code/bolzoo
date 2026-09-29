@@ -122,7 +122,7 @@ test('direct payment router fails closed for missing, duplicate and unlisted ope
   assert.equal(f.payments.size, 0);
 });
 
-test('production package keeps nine API functions and explicit legacy endpoint rewrites without swallowing health or assets', () => {
+test('production package keeps ten API functions including the private learning reader and explicit legacy rewrites', () => {
   const ignored = new Set(fs.readFileSync(path.join(root, '.vercelignore'), 'utf8').split(/\r?\n/).filter(line => line && !line.startsWith('#')));
   const routes = ['checkout', 'payment-status', 'wire-webhook', 'cancel-payment', 'dev-mark-paid'];
   for (const route of routes) {
@@ -131,7 +131,8 @@ test('production package keeps nine API functions and explicit legacy endpoint r
     assert.deepEqual(config.rewrites.find(rule => rule.source === '/api/' + route), { source: '/api/' + route, destination: '/api/payment?payment_route=' + route });
   }
   const deployed = fs.readdirSync(path.join(root, 'api')).filter(file => file.endsWith('.js') && !ignored.has('api/' + file));
-  assert.equal(deployed.length, 9); assert.ok(deployed.includes('payment.js')); assert.ok(deployed.includes('health.js'));
+  assert.equal(deployed.length, 10); assert.ok(deployed.includes('payment.js')); assert.ok(deployed.includes('health.js'));
+  assert.ok(deployed.includes('learning-overview.js'));
   assert.equal(config.env.NODEJS_HELPERS, '0'); assert.equal(config.build.env.NODEJS_HELPERS, '0');
   assert.equal(config.rewrites.some(rule => rule.source.startsWith('/assets') || rule.source === '/api/health' || rule.source === '/api/:path*'), false);
   assert.deepEqual(config.rewrites.find(rule => rule.source === '/'), { source: '/', destination: '/create' });

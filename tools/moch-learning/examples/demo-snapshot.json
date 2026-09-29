@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "source": {
+    "product": "bolzoo",
+    "environment": "demo",
+    "readAt": "2026-09-29T00:00:00Z",
+    "period": { "from": "2026-09-21T16:00:00Z", "to": "2026-09-28T16:00:00Z" }
+  },
+  "money": {
+    "recordedCount": 12,
+    "recordedAmountMnt": 118800,
+    "providerVerifiedAmountMnt": null,
+    "verifiedRefundAmountMnt": null,
+    "variableCostMnt": null
+  },
+  "fulfillment": { "paidWithoutLinkCount": 1 },
+  "funnel": {
+    "basis": "creator_started_cohort",
+    "startedCount": 100,
+    "previewCount": 65,
+    "checkoutCount": 30,
+    "paidCount": 12,
+    "publishedCount": 11,
+    "sourceComplete": true
+  }
+}
