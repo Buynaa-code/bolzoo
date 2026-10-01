@@ -81,6 +81,11 @@ they answered based on what they saw). The dashboard shows an "✏️ Засах
 both conditions hold: no response yet, and the `owner_token` is on this device.
 Editing keeps the same link.
 
+`create.html` switches to the same edit state the moment a link is created: change
+anything in the form and a "Өөрчлөлтийг хадгалах" button appears; undo the change and
+it disappears. The mode picker is locked from then on — `greet.html` does not redirect
+by mode, so changing a sent flower link to another mode would break it. "＋ Шинэ" starts over.
+
 ## Losing the invite list
 
 `dashboard.html` reads `bolzoo:my` from **localStorage**, so switching phones or clearing

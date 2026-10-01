@@ -98,6 +98,8 @@
   .mode-ic{font-size:22px; line-height:1;}
   .mode strong{display:block; font-size:15px; margin-bottom:2px;}
   .mode small{color:var(--muted); font-size:12.5px; line-height:1.45; display:block;}
+  /* Линк гарсны дараа төрлийг солихгүй: greet/bolzoo/argadah өөр хуудас тул илгээсэн линк эвдэрнэ */
+  body.locked .mode:not(.on){opacity:.4; cursor:not-allowed; transform:none;}
 
   /* ---------- fields ---------- */
   .field{margin:0 0 18px;}
@@ -210,19 +212,50 @@
   .btn:disabled{opacity:.45; cursor:not-allowed; transform:none;}
   .btn.ghost{background:#fff; color:var(--accent); border:1.5px solid #ffd2e0;}
   .btn.sm{padding:9px 15px; font-size:13px;}
-  .actions{display:flex; gap:10px; margin-top:20px; flex-wrap:wrap;}
-  .actions .btn:last-child{flex:1; min-width:180px;}
-  .status{min-height:20px; margin:12px 0 0; font-size:13px; font-weight:800; color:var(--muted);}
-
-  /* ---------- result ---------- */
-  .result{display:none; margin-top:16px; padding:16px; border-radius:14px; background:#f8fdf9; border:1px solid #cbe8d3;}
-  .result.on{display:block;}
-  .link-box{
-    font-family:ui-monospace,Menlo,Consolas,monospace; font-size:12.5px;
-    word-break:break-all; background:#fff; border:1px solid #dceee1;
-    border-radius:10px; padding:11px 12px; margin-bottom:10px;
+  .btn.block{width:100%; padding:15px 22px; font-size:15px;}
+  .text-btn{
+    border:0; background:none; cursor:pointer; padding:4px 2px;
+    font-family:inherit; font-size:13px; font-weight:800; color:var(--muted); text-decoration:none;
   }
-  .result-actions{display:flex; gap:8px; flex-wrap:wrap;}
+  .text-btn:hover{color:var(--accent);}
+  [hidden]{display:none !important;}
+
+  /* ---------- send: нэг үндсэн товч, бусад нь чимээгүй ---------- */
+  .compose{display:flex; flex-direction:column; align-items:center; gap:8px;}
+  .status{margin:0; font-size:13px; font-weight:800; color:var(--muted); text-align:center;}
+  .status:empty{display:none;}
+  .compose + .status{margin-top:10px;}
+  .result{text-align:center;}
+  .compose:not([hidden]) ~ .result{margin-top:18px; padding-top:18px; border-top:1px solid var(--line);}
+  .result-title{margin:0; font-size:17px; font-weight:800;}
+  .result-title::before{
+    content:"✓"; display:inline-grid; place-items:center; vertical-align:2px;
+    width:22px; height:22px; margin-right:8px; border-radius:50%;
+    background:#e3f5e8; color:#3f9457; font-size:13px;
+  }
+  .result-sub{margin:3px 0 16px; font-size:12.5px; color:var(--muted);}
+  .link-field{
+    display:flex; align-items:center; gap:8px; overflow:hidden;
+    padding:5px 5px 5px 16px; border:1px solid var(--line); border-radius:999px; background:#fffdfe;
+  }
+  /* Багтахгүй бол ЭХЭНД нь "…" тавина (rtl), ?id=… төгсгөл үргэлж харагдана —
+     линкүүдийг ялгах гол нь тэр. Доторх &lrm; нь цэг таслалыг байранд нь барина. */
+  .link-url{
+    flex:1; min-width:0; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;
+    direction:rtl; text-align:left; font-size:13px; font-weight:700; user-select:all;
+  }
+  .lk-host{color:#b09aa8;}
+  .lk-path{color:var(--ink);}
+  .copy-btn{
+    flex-shrink:0; border:0; cursor:pointer; padding:9px 16px; border-radius:999px;
+    font-family:inherit; font-size:13px; font-weight:800;
+    background:var(--accent-soft); color:var(--accent); transition:background .15s, color .15s;
+  }
+  .copy-btn.done{background:#e3f5e8; color:#3f9457;}
+  #shareLink{margin-top:10px;}
+  /* Хадгалаагүй өөрчлөлттэй үед "хадгалах" л үндсэн товч байна */
+  .compose:not([hidden]) ~ .result #shareLink{background:#fff; color:var(--accent); border:1.5px solid #ffd2e0;}
+  .result-links{display:flex; justify-content:center; flex-wrap:wrap; gap:4px 20px; margin-top:12px;}
 
   /* ---------- preview ---------- */
   .side{position:sticky; top:20px;}
@@ -358,6 +391,7 @@
             </span>
           </button>
         </div>
+        <p class="hint" id="modeLock" hidden>Линк гарсан тул төрлийг солихгүй. Өөр төрлөөр бол доороос «＋ Шинэ» дарна уу.</p>
       </section>
 
       <section class="card gate" id="codeGate">
@@ -496,20 +530,25 @@
         </details>
       </section>
 
-      <section class="card">
-        <div class="actions">
-          <button class="btn ghost" id="resetForm" type="button">Цэвэрлэх</button>
-          <button class="btn" id="generate" disabled>Линк үүсгэх →</button>
+      <section class="card" id="sendCard">
+        <div class="compose" id="compose">
+          <button class="btn block" id="generate" type="button">Линк үүсгэх</button>
+          <button class="text-btn" id="resetForm" type="button">Цэвэрлэх</button>
         </div>
-        <div class="status" id="status"></div>
+        <p class="status" id="status" role="status" aria-live="polite"></p>
 
-        <div class="result" id="result">
-          <div class="link-box" id="linkBox"></div>
-          <div class="result-actions">
-            <button class="btn sm" id="copyLink" type="button">Линк хуулах</button>
-            <button class="btn sm ghost" id="openLink" type="button">Нээж үзэх</button>
-            <button class="btn sm ghost" id="shareLink" type="button">Хуваалцах</button>
-            <a class="btn sm ghost" id="goAnswers" href="dashboard.html">Хариу харах →</a>
+        <div class="result" id="result" hidden>
+          <p class="result-title" id="resultTitle">Линк бэлэн</p>
+          <p class="result-sub">Засвар хийвэл линк нь хэвээрээ үлдэнэ.</p>
+          <div class="link-field">
+            <span class="link-url" id="linkBox">&lrm;<span class="lk-host"></span><span class="lk-path"></span>&lrm;</span>
+            <button class="copy-btn" id="copyLink" type="button">Хуулах</button>
+          </div>
+          <button class="btn block" id="shareLink" type="button" hidden>Илгээх</button>
+          <div class="result-links">
+            <a class="text-btn" id="openLink" href="#" target="_blank" rel="noopener">Нээж үзэх</a>
+            <a class="text-btn" id="goAnswers" href="dashboard.html">Хариу харах</a>
+            <button class="text-btn" id="newInvite" type="button">＋ Шинэ</button>
           </div>
         </div>
       </section>
@@ -570,7 +609,9 @@
   $('modes').addEventListener('click', function(e){
     var btn = e.target.closest('.mode');
     if(!btn) return;
-    setMode(btn.getAttribute('data-mode'));
+    var next = btn.getAttribute('data-mode');
+    if(editId && next !== mode){ $('modeLock').hidden = false; return; }
+    setMode(next);
     setStatus('');
     updatePreview();
   });
@@ -798,6 +839,7 @@
   }
   function updatePreview(){
     $('preview').src = previewUrl(collectConfig());
+    syncDirty();
   }
   function settlePreview(){
     try{
@@ -855,7 +897,6 @@
     if(state){ gate.classList.add(state); st.classList.add(state); }
     st.textContent = msg || '';
     codeIsValid = (state === 'ok');
-    $('generate').disabled = !codeIsValid;
   }
   async function checkCode(){
     var code = normalizeCode($('accessCode').value);
@@ -882,99 +923,158 @@
   $('accessCode').addEventListener('blur', checkCode);
 
   /* ---------- generate ---------- */
+  // Товчийг идэвхгүй болгож "яагаад?" гэж эргэлзүүлэхгүй — дарахад дутуу талбар руу нь аваачна
+  function fail(msg, fieldId){
+    setStatus('⚠️ ' + msg);
+    var el = $(fieldId);
+    el.scrollIntoView({ behavior:'smooth', block:'center' });
+    el.focus({ preventScroll:true });
+    return false;
+  }
   function validate(cfg){
     // Засварлаж байгаа үед код дахин шаардахгүй — тэр аль хэдийн ашиглагдсан
-    if(!editId && !codeIsValid){ setStatus('⚠️ Хүчинтэй код оруулна уу'); return false; }
+    if(!editId && !codeIsValid) return fail('Хүчинтэй код оруулна уу', 'accessCode');
     if(!cfg.recipientName){
-      setStatus(cfg.mode === 'sorry'
-        ? '⚠️ Хэнд уучлал гуйхаа бөглөнө үү'
-        : '⚠️ Хүлээн авагчийн нэрийг бөглөнө үү');
-      return false;
+      return fail(cfg.mode === 'sorry' ? 'Хэнд уучлал гуйхаа бөглөнө үү' : 'Хүлээн авагчийн нэрийг бөглөнө үү',
+                  'recipientName');
     }
     if(cfg.mode === 'date' || cfg.mode === 'sorry'){
       if(!cfg.responseEmail || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(cfg.responseEmail)){
-        setStatus('⚠️ Зөв имэйл хаяг оруулна уу'); return false;
+        return fail('Зөв имэйл хаяг оруулна уу', 'responseEmail');
       }
     }
     return true;
   }
-  function showLink(url, msg){
-    $('linkBox').textContent = url;
-    $('result').classList.add('on');
+
+  /* ---------- линк гарсны дараах төлөв ----------
+   * Линк гармагц хуудас засварын горимд шилжинэ: формоо өөрчилбөл л "хадгалах"
+   * товч гарч ирнэ, линк нь хэвээрээ. Нэг үсгийн алдаа кодыг дахин шатаахгүй.
+   */
+  var currentUrl = '';
+  var savedJson = null;    // сүүлд хадгалсан config — үүнтэй зөрвөл "хадгалах" товч харагдана
+
+  function enterEdit(id, cfg){
+    editId = id;
+    savedJson = JSON.stringify(cfg);
+    document.body.classList.add('locked');
+    $('codeGate').style.display = 'none';
+    $('resetForm').hidden = true;
+    $('generate').textContent = 'Өөрчлөлтийг хадгалах';
+    syncDirty();
+  }
+  function syncDirty(){
+    if(!editId || savedJson === null) return;
+    $('compose').hidden = (JSON.stringify(collectConfig()) === savedJson);
+  }
+  function showLink(url, title){
+    currentUrl = url;
+    // https:// нь утгагүй урт; домэйн нь товчлогдож ?id=… хэсэг үргэлж харагдана
+    var bare = url.replace(/^https?:\/\//, '');
+    var cut = bare.indexOf('/') + 1;
+    $('linkBox').querySelector('.lk-host').textContent = bare.slice(0, cut);
+    $('linkBox').querySelector('.lk-path').textContent = bare.slice(cut);
+    $('openLink').href = url;
     var m = url.match(/[?&]id=([^&#]+)/);
     $('goAnswers').href = m ? ('dashboard.html?id=' + m[1]) : 'dashboard.html';
+    $('resultTitle').textContent = title || 'Линк бэлэн';
+    $('shareLink').hidden = !navigator.share;
+    $('result').hidden = false;
     var steps = document.querySelectorAll('.steps b');
     if(steps[2]) steps[2].classList.add('on');
-    setStatus(msg || '✅ Линк бэлэн!');
   }
 
   $('generate').addEventListener('click', async function(){
+    var btn = $('generate');
+    // Кодоо paste хийгээд шууд дарвал debounce-тай шалгалт амжаагүй байж болно
+    if(!editId && !codeIsValid && $('accessCode').value){ lastCheckedCode = ''; await checkCode(); }
     var cfg = collectConfig();
     if(!validate(cfg)) return;
-    $('generate').disabled = true;
-
-    if(editId){
-      setStatus('⏳ Засварыг хадгалж байна…');
-      try{
-        await BolzooAPI.updateInvite(editId, cfg);
-        showLink(shortUrl(cfg.mode, editId), '✅ Хадгаллаа — линк хэвээрээ, агуулга нь шинэчлэгдлээ');
-      }catch(e){
-        var m = e.message || String(e);
-        setStatus(/Already answered/i.test(m) ? '❌ Хариу ирсэн тул засах боломжгүй' : '❌ Алдаа: ' + m);
-      }finally{
-        $('generate').disabled = false;
-      }
-      return;
-    }
-
-    var code = normalizeCode($('accessCode').value);
-    setStatus('⏳ Хадгалж байна…');
+    btn.disabled = true;
+    btn.textContent = 'Хадгалж байна…';
+    setStatus('');
     try{
-      var res = await BolzooAPI.createInvite(cfg, code);
-      showLink(shortUrl(cfg.mode, res.id), '✅ Бэлэн боллоо! Алдаа гарсан бол «Миний урилгууд»-аас засаж болно.');
-      setCodeUI('bad', '⚠️ Энэ код ашиглагдлаа. Дараагийнхад шинэ код авна уу.');
-      $('accessCode').value = '';
-      lastCheckedCode = '';
+      if(editId){
+        await BolzooAPI.updateInvite(editId, cfg);
+        enterEdit(editId, cfg);
+        showLink(shortUrl(cfg.mode, editId), 'Хадгаллаа');
+      } else {
+        var res = await BolzooAPI.createInvite(cfg, normalizeCode($('accessCode').value));
+        $('accessCode').value = '';
+        lastCheckedCode = '';
+        setCodeUI('', '');
+        enterEdit(res.id, cfg);
+        showLink(shortUrl(cfg.mode, res.id));
+        $('result').scrollIntoView({ behavior:'smooth', block:'nearest' });
+      }
     }catch(e){
       var msg = e.message || String(e);
-      if(/already used/i.test(msg))            setCodeUI('bad', '❌ Энэ код нэгэнт ашиглагдсан');
-      else if(/Invalid access code/i.test(msg)) setCodeUI('bad', '❌ Ийм код олдсонгүй');
-      setStatus('❌ Алдаа: ' + msg);
-      $('generate').disabled = !codeIsValid;
+      if(/Already answered/i.test(msg)){
+        msg = 'Хариу ирсэн тул засах боломжгүй';
+      } else if(/already used/i.test(msg)){
+        msg = 'Энэ код нэгэнт ашиглагдсан'; setCodeUI('bad', '❌ ' + msg);
+      } else if(/Invalid access code/i.test(msg)){
+        msg = 'Ийм код олдсонгүй'; setCodeUI('bad', '❌ ' + msg);
+      }
+      setStatus('❌ ' + msg);
+    }finally{
+      btn.disabled = false;
+      btn.textContent = editId ? 'Өөрчлөлтийг хадгалах' : 'Линк үүсгэх';
     }
   });
 
   /* ---------- link actions ---------- */
-  $('copyLink').addEventListener('click', function(){
-    var text = $('linkBox').textContent;
-    if(navigator.clipboard && navigator.clipboard.writeText){
-      navigator.clipboard.writeText(text).then(function(){ setStatus('📋 Хуулагдлаа — одоо Messenger/Instagram-д paste хий'); });
-    } else {
+  function copyText(text){
+    function legacy(){
       var t = document.createElement('textarea');
-      t.value = text; document.body.appendChild(t); t.select();
-      document.execCommand('copy'); t.remove();
-      setStatus('📋 Хуулагдлаа');
+      t.value = text; t.setAttribute('readonly', '');
+      t.style.position = 'fixed'; t.style.opacity = '0';
+      document.body.appendChild(t); t.select();
+      var ok = false;
+      try{ ok = document.execCommand('copy'); }catch(e){}
+      t.remove();
+      return ok ? Promise.resolve() : Promise.reject();
     }
+    if(navigator.clipboard && window.isSecureContext){
+      return navigator.clipboard.writeText(text).catch(legacy);
+    }
+    return legacy();
+  }
+  var copyTimer = null;
+  $('copyLink').addEventListener('click', function(){
+    var btn = $('copyLink');
+    copyText(currentUrl).then(function(){
+      btn.textContent = 'Хуулагдлаа ✓';
+      btn.classList.add('done');
+    }, function(){
+      // Хуулж чадаагүй бол линкийг тэмдэглээд гараар хуулуулна.
+      // &lrm; тэмдэгтүүдийг оруулахгүй — URL-ийн төгсгөлд наалдаж id-г эвдэнэ.
+      var box = $('linkBox'), range = document.createRange();
+      range.setStartBefore(box.querySelector('.lk-host'));
+      range.setEndAfter(box.querySelector('.lk-path'));
+      window.getSelection().removeAllRanges();
+      window.getSelection().addRange(range);
+      btn.textContent = 'Гараар хуулна уу';
+    }).then(function(){
+      clearTimeout(copyTimer);
+      copyTimer = setTimeout(function(){ btn.textContent = 'Хуулах'; btn.classList.remove('done'); }, 2200);
+    });
   });
-  $('openLink').addEventListener('click', function(){
-    window.open($('linkBox').textContent, '_blank');
-  });
+  // navigator.share байхгүй төхөөрөмжид энэ товч нуугдана — "Хуулах" л үлдэнэ
+  var SHARE_TEXT = { flower:'чамд цэцэг ирлээ 🌸', date:'чамд болзооны урилга ирлээ 💌', sorry:'чамд нэг захидал байна 🥺' };
   $('shareLink').addEventListener('click', function(){
-    var url = $('linkBox').textContent.trim();
-    if(!url){ setStatus('⚠️ Эхлээд линк үүсгэнэ үү'); return; }
     var name = $('recipientName').value.trim();
-    var text = (name ? name + ' минь, ' : '')
-      + (mode === 'flower' ? 'чамд цэцэг ирлээ 🌸' : 'чамд болзооны урилга ирлээ 💌');
-    if(navigator.share){
-      navigator.share({ title:'Bolzoo', text:text, url:url }).catch(function(){});
-    } else {
-      window.location.href = 'mailto:?subject=' + encodeURIComponent('Bolzoo 💌')
-        + '&body=' + encodeURIComponent(text + '\n\n' + url);
-    }
+    var text = (name ? name + ' минь, ' : '') + (SHARE_TEXT[mode] || SHARE_TEXT.date);
+    navigator.share({ title:'Bolzoo', text:text, url:currentUrl }).catch(function(){});
+  });
+  $('newInvite').addEventListener('click', function(){
+    // Dashboard-аас ?edit=…-ээр орсон бол хаягаас нь ч авч хаяна
+    if(window.location.search) history.replaceState(null, '', window.location.pathname);
+    resetForm();
+    window.scrollTo({ top:0, behavior:'smooth' });
   });
 
   /* ---------- reset ---------- */
-  $('resetForm').addEventListener('click', function(){
+  function resetForm(){
     ['accessCode','recipientName','senderName','letterText','responseEmail','videoId','customNote','locationName','locationUrl','specialLetter',
      'sorryReason','sorryLetter','promiseInput']
       .forEach(function(id){ $(id).value = ''; });
@@ -988,10 +1088,21 @@
     setCodeUI('', '');
     $('videoBox').style.display = 'none';
     $('videoErr').style.display = 'none';
-    $('result').classList.remove('on');
+
+    editId = null; savedJson = null; currentUrl = '';
+    document.body.classList.remove('locked');
+    $('modeLock').hidden = true;
+    $('codeGate').style.display = '';
+    $('resetForm').hidden = false;
+    $('generate').textContent = 'Линк үүсгэх';
+    $('compose').hidden = false;
+    $('result').hidden = true;
+    var steps = document.querySelectorAll('.steps b');
+    if(steps[2]) steps[2].classList.remove('on');
     setStatus('');
     updatePreview();
-  });
+  }
+  $('resetForm').addEventListener('click', resetForm);
 
   /* ---------- Засварлах горим (?edit=<id>) ----------
    * Нэг код = нэг урилга тул нэг үсгийн алдаа кодыг шатаадаг байсан.
@@ -1050,13 +1161,9 @@
       var rec = await BolzooAPI.getInvite(id);
       if(!rec) throw new Error('Урилга олдсонгүй');
       if(rec.responded_at) throw new Error('Хариу ирсэн тул засах боломжгүй');
-      editId = id;
       fillForm(rec.config || {});
-      $('codeGate').style.display = 'none';
-      $('resetForm').style.display = 'none';
-      $('generate').disabled = false;
-      $('generate').textContent = '💾 Засварыг хадгалах';
-      showLink(shortUrl(mode, id), '');
+      enterEdit(id, collectConfig());
+      showLink(shortUrl(mode, id));
       setStatus('');
     }catch(e){
       setStatus('❌ ' + (e.message || e));
