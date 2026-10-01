@@ -101,7 +101,8 @@
     ctx.strokeStyle = '#ffd8e2'; ctx.beginPath(); ctx.moveTo(66, 306); ctx.lineTo(466, 306); ctx.stroke();
     infoRow(340, '🕐', 'Цаг', d.time, '', '');
     ctx.strokeStyle = '#ffd8e2'; ctx.beginPath(); ctx.moveTo(66, 394); ctx.lineTo(466, 394); ctx.stroke();
-    infoRow(424, '📍', 'Байршил', d.locationName || 'Уулзах газар', d.locationAddress || 'Улаанбаатар', '');
+    // Газар тохироогүй бол хуурамч байршил зохиохгүй — "Тохирно" гэж үнэнээр нь
+    infoRow(424, '📍', 'Байршил', d.locationName || 'Тохирно', d.locationAddress || '', '');
 
     ctx.save();
     drawSoftShadow(ctx, 'rgba(116,45,88,.13)', 24, 12);

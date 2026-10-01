@@ -98,6 +98,8 @@
   .mode-ic{font-size:22px; line-height:1;}
   .mode strong{display:block; font-size:15px; margin-bottom:2px;}
   .mode small{color:var(--muted); font-size:12.5px; line-height:1.45; display:block;}
+  /* Линк гарсны дараа төрлийг солихгүй: greet/bolzoo/argadah өөр хуудас тул илгээсэн линк эвдэрнэ */
+  body.locked .mode:not(.on){opacity:.4; cursor:not-allowed; transform:none;}
 
   /* ---------- fields ---------- */
   .field{margin:0 0 18px;}
@@ -210,19 +212,50 @@
   .btn:disabled{opacity:.45; cursor:not-allowed; transform:none;}
   .btn.ghost{background:#fff; color:var(--accent); border:1.5px solid #ffd2e0;}
   .btn.sm{padding:9px 15px; font-size:13px;}
-  .actions{display:flex; gap:10px; margin-top:20px; flex-wrap:wrap;}
-  .actions .btn:last-child{flex:1; min-width:180px;}
-  .status{min-height:20px; margin:12px 0 0; font-size:13px; font-weight:800; color:var(--muted);}
-
-  /* ---------- result ---------- */
-  .result{display:none; margin-top:16px; padding:16px; border-radius:14px; background:#f8fdf9; border:1px solid #cbe8d3;}
-  .result.on{display:block;}
-  .link-box{
-    font-family:ui-monospace,Menlo,Consolas,monospace; font-size:12.5px;
-    word-break:break-all; background:#fff; border:1px solid #dceee1;
-    border-radius:10px; padding:11px 12px; margin-bottom:10px;
+  .btn.block{width:100%; padding:15px 22px; font-size:15px;}
+  .text-btn{
+    border:0; background:none; cursor:pointer; padding:4px 2px;
+    font-family:inherit; font-size:13px; font-weight:800; color:var(--muted); text-decoration:none;
   }
-  .result-actions{display:flex; gap:8px; flex-wrap:wrap;}
+  .text-btn:hover{color:var(--accent);}
+  [hidden]{display:none !important;}
+
+  /* ---------- send: нэг үндсэн товч, бусад нь чимээгүй ---------- */
+  .compose{display:flex; flex-direction:column; align-items:center; gap:8px;}
+  .status{margin:0; font-size:13px; font-weight:800; color:var(--muted); text-align:center;}
+  .status:empty{display:none;}
+  .compose + .status{margin-top:10px;}
+  .result{text-align:center;}
+  .compose:not([hidden]) ~ .result{margin-top:18px; padding-top:18px; border-top:1px solid var(--line);}
+  .result-title{margin:0; font-size:17px; font-weight:800;}
+  .result-title::before{
+    content:"✓"; display:inline-grid; place-items:center; vertical-align:2px;
+    width:22px; height:22px; margin-right:8px; border-radius:50%;
+    background:#e3f5e8; color:#3f9457; font-size:13px;
+  }
+  .result-sub{margin:3px 0 16px; font-size:12.5px; color:var(--muted);}
+  .link-field{
+    display:flex; align-items:center; gap:8px; overflow:hidden;
+    padding:5px 5px 5px 16px; border:1px solid var(--line); border-radius:999px; background:#fffdfe;
+  }
+  /* Багтахгүй бол ЭХЭНД нь "…" тавина (rtl), ?id=… төгсгөл үргэлж харагдана —
+     линкүүдийг ялгах гол нь тэр. Доторх &lrm; нь цэг таслалыг байранд нь барина. */
+  .link-url{
+    flex:1; min-width:0; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;
+    direction:rtl; text-align:left; font-size:13px; font-weight:700; user-select:all;
+  }
+  .lk-host{color:#b09aa8;}
+  .lk-path{color:var(--ink);}
+  .copy-btn{
+    flex-shrink:0; border:0; cursor:pointer; padding:9px 16px; border-radius:999px;
+    font-family:inherit; font-size:13px; font-weight:800;
+    background:var(--accent-soft); color:var(--accent); transition:background .15s, color .15s;
+  }
+  .copy-btn.done{background:#e3f5e8; color:#3f9457;}
+  #shareLink{margin-top:10px;}
+  /* Хадгалаагүй өөрчлөлттэй үед "хадгалах" л үндсэн товч байна */
+  .compose:not([hidden]) ~ .result #shareLink{background:#fff; color:var(--accent); border:1.5px solid #ffd2e0;}
+  .result-links{display:flex; justify-content:center; flex-wrap:wrap; gap:4px 20px; margin-top:12px;}
 
   /* ---------- preview ---------- */
   .side{position:sticky; top:20px;}
@@ -246,9 +279,60 @@
   .side-head h2{margin:0;}
   .backend{margin-top:14px; font-size:11.5px; font-weight:700; color:var(--muted); text-align:center; line-height:1.45;}
 
-  /* ---------- mode visibility ---------- */
-  body[data-mode="flower"] .only-date{display:none;}
-  body[data-mode="date"] .only-flower{display:none;}
+  /* ---------- mode visibility ----------
+     Горим бүр өөрийн хэсгүүдтэй. Шинэ горим нэмэхэд энд нэг мөр нэмнэ. */
+  body[data-mode="flower"] .only-date,
+  body[data-mode="flower"] .only-sorry{display:none;}
+  body[data-mode="date"] .only-flower,
+  body[data-mode="date"] .only-sorry{display:none;}
+  body[data-mode="sorry"] .only-flower,
+  body[data-mode="sorry"] .only-date{display:none;}
+  body[data-mode="flower"] .not-flower{display:none;}
+
+  /* ---------- аргадах: цаасны текстур / стикер / амлалт ---------- */
+  .textures{display:grid; grid-template-columns:repeat(4,1fr); gap:10px;}
+  .texture, .sticker-opt{
+    position:relative; padding:0; cursor:pointer; overflow:hidden;
+    border:1px solid var(--line); border-radius:12px; background:#fff;
+    font-family:inherit; transition:transform .15s, border-color .15s;
+  }
+  .texture:hover, .sticker-opt:hover{transform:translateY(-2px);}
+  .texture.on, .sticker-opt.on{border:2px solid var(--accent); background:#fff8fa;}
+  .tex-swatch{
+    height:52px; padding:0 10px; display:flex; flex-direction:column;
+    justify-content:center; gap:5px; border-bottom:1px solid var(--line);
+  }
+  .tex-swatch i{height:3px; border-radius:2px; background:currentColor; opacity:.45;}
+  .tex-swatch i:nth-child(1){width:68%;} .tex-swatch i:nth-child(2){width:92%;} .tex-swatch i:nth-child(3){width:50%;}
+  .tex-name, .stk-name{display:block; padding:6px 4px; font-size:11px; font-weight:800; color:var(--muted); line-height:1.2;}
+  .stickers{display:grid; grid-template-columns:repeat(4,1fr); gap:10px;}
+  .stk-art{
+    height:70px; display:flex; align-items:center; justify-content:center;
+    padding:6px; overflow:hidden; border-bottom:1px solid var(--line);
+  }
+  /* max-height хувиар өгвөл flex дотор тойрог хамаарал үүсэх тул тогтмол пикселээр */
+  .stk-art img{max-height:58px; max-width:100%; width:auto; object-fit:contain;}
+  .stk-art svg{width:52px; height:52px;}
+  .stk-none{color:#c9a9bb; font-size:22px; font-weight:800;}
+  .chips{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:10px;}
+  .chip{
+    padding:8px 13px; cursor:pointer; border:1px solid var(--line); border-radius:999px;
+    background:#fff; font-family:inherit; font-size:12.5px; font-weight:800; color:var(--muted);
+  }
+  .chip.on{border-color:var(--accent); color:var(--accent); background:#fff8fa;}
+  .chip.on::before{content:"✓ ";}
+  .promise-add{display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px;}
+  .picked{list-style:none; margin:10px 0 0; padding:0;}
+  .picked li{
+    display:grid; grid-template-columns:minmax(0,1fr) 30px; gap:8px; align-items:center;
+    margin-bottom:7px; padding:9px 10px 9px 13px;
+    border:1px dashed var(--accent); border-radius:11px; background:#fff8fa;
+    font-size:13px; font-weight:800; line-height:1.35;
+  }
+  .picked button{
+    width:30px; height:30px; cursor:pointer; border:0; border-radius:50%;
+    background:#ffe6ee; color:var(--accent); font-size:14px; font-weight:900; line-height:1;
+  }
 
   @media (max-width:960px){
     .wrap{grid-template-columns:minmax(0,1fr);}
@@ -259,6 +343,8 @@
   @media (max-width:520px){
     .row2{grid-template-columns:1fr;}
     .flowers,.papers{grid-template-columns:repeat(2,1fr);}
+    .textures,.stickers{grid-template-columns:repeat(3,1fr);}
+    .promise-add{grid-template-columns:1fr;}
     h1{font-size:22px;}
   }
 </style>
@@ -267,6 +353,7 @@
   <header class="top">
     <div class="brand"><span>💌</span>Bolzoo</div>
     <a class="top-link" href="dashboard.html">Ирсэн хариунууд →</a>
+    <a class="top-link" href="unelgee.html">Үнэ →</a>
   </header>
 
   <div class="wrap">
@@ -296,7 +383,15 @@
               <small>Хүлээн авагч өдөр, цаг, төрлөө сонгож хариу өгнө.</small>
             </span>
           </button>
+          <button type="button" class="mode" data-mode="sorry">
+            <span class="mode-ic">🥺</span>
+            <span>
+              <strong>Аргадах захидал</strong>
+              <small>Гомдоосон бол уучлал гуйж эвлэрээрэй.</small>
+            </span>
+          </button>
         </div>
+        <p class="hint" id="modeLock" hidden>Линк гарсан тул төрлийг солихгүй. Өөр төрлөөр бол доороос «＋ Шинэ» дарна уу.</p>
       </section>
 
       <section class="card gate" id="codeGate">
@@ -339,13 +434,52 @@
         </div>
       </section>
 
+      <!-- ============ АРГАДАХ ЗАХИДАЛ ============ -->
+      <section class="card only-sorry">
+        <h2>Уучлалын захидал</h2>
+        <div class="field">
+          <label for="sorryReason">Юун дээр буруудсан бэ <span class="opt">(заавал биш)</span></label>
+          <input id="sorryReason" type="text" maxlength="80" placeholder="жишээ: Чиний төрсөн өдрийг мартсан" />
+          <p class="hint">Буруугаа хүлээсэн богино өгүүлбэр — захидлын дээр тодоор харагдана.</p>
+        </div>
+        <div class="field">
+          <label for="sorryLetter">Захидлын бичвэр <span class="opt">(гар бичмэл фонтоор харагдана)</span></label>
+          <textarea id="sorryLetter" class="hand" maxlength="600" placeholder="Би чамайг гомдоосон гэдгээ мэдэж байна…"></textarea>
+          <p class="hint">Хоосон орхивол найрсаг үлгэр текст автоматаар тавигдана 🥺 <span id="letterCount"></span></p>
+        </div>
+      </section>
+
+      <section class="card only-sorry">
+        <h2>Захидлын цаас</h2>
+        <div class="textures" id="textureGrid"></div>
+        <p class="hint" style="margin-top:9px;">Захидал ямар цаасан дээр бичигдсэн харагдахыг сонгоно уу.</p>
+      </section>
+
+      <section class="card only-sorry">
+        <h2>Муурын зураг</h2>
+        <div class="stickers" id="stickerGrid"></div>
+        <p class="hint" style="margin-top:9px;">Захидлын дээр гарч ирэх зураг.</p>
+      </section>
+
+      <section class="card only-sorry">
+        <h2>Амлалтууд <span class="opt">(заавал биш)</span></h2>
+        <div class="chips" id="promiseChips"></div>
+        <div class="promise-add">
+          <input id="promiseInput" type="text" maxlength="70" placeholder="өөрийн амлалт бичих…" />
+          <button class="btn ghost" id="promiseAdd" type="button">＋ Нэмэх</button>
+        </div>
+        <ul class="picked" id="promisePicked"></ul>
+        <p class="hint" id="promiseEmpty">Амлалт нэмбэл тусдаа «купон» хуудас болж харагдана 🎟</p>
+      </section>
+
       <!-- ============ БОЛЗООНЫ УРИЛГА ============ -->
-      <section class="card only-date">
-        <h2>Урилгын тохиргоо</h2>
+      <!-- Имэйл, дуу, тема — болзоо болон аргадах хоёуланд нь хэрэгтэй -->
+      <section class="card not-flower">
+        <h2>Хариу ба хэлбэр</h2>
         <div class="field">
           <label for="responseEmail">Хариу хүлээн авах имэйл <em>*</em></label>
           <input id="responseEmail" type="email" placeholder="you@gmail.com" />
-          <p class="hint">Хүлээн авагчийн сонголт энэ хаяг руу мэдэгдэнэ.</p>
+          <p class="hint" id="hintEmail">Хүлээн авагчийн сонголт энэ хаяг руу мэдэгдэнэ.</p>
         </div>
         <div class="field">
           <label for="videoId">YouTube дуу <span class="opt">(заавал биш)</span></label>
@@ -369,7 +503,10 @@
             <div class="theme" data-theme="aurora" title="Aurora"></div>
           </div>
         </div>
+      </section>
 
+      <section class="card only-date">
+        <h2>Урилгын нэмэлт</h2>
         <details>
           <summary>Нэмэлт мэдээлэл</summary>
           <div class="field">
@@ -393,20 +530,25 @@
         </details>
       </section>
 
-      <section class="card">
-        <div class="actions">
-          <button class="btn ghost" id="resetForm" type="button">Цэвэрлэх</button>
-          <button class="btn" id="generate" disabled>Линк үүсгэх →</button>
+      <section class="card" id="sendCard">
+        <div class="compose" id="compose">
+          <button class="btn block" id="generate" type="button">Линк үүсгэх</button>
+          <button class="text-btn" id="resetForm" type="button">Цэвэрлэх</button>
         </div>
-        <div class="status" id="status"></div>
+        <p class="status" id="status" role="status" aria-live="polite"></p>
 
-        <div class="result" id="result">
-          <div class="link-box" id="linkBox"></div>
-          <div class="result-actions">
-            <button class="btn sm" id="copyLink" type="button">Линк хуулах</button>
-            <button class="btn sm ghost" id="openLink" type="button">Нээж үзэх</button>
-            <button class="btn sm ghost" id="shareLink" type="button">Хуваалцах</button>
-            <a class="btn sm ghost" id="goAnswers" href="dashboard.html">Хариу харах →</a>
+        <div class="result" id="result" hidden>
+          <p class="result-title" id="resultTitle">Линк бэлэн</p>
+          <p class="result-sub">Засвар хийвэл линк нь хэвээрээ үлдэнэ.</p>
+          <div class="link-field">
+            <span class="link-url" id="linkBox">&lrm;<span class="lk-host"></span><span class="lk-path"></span>&lrm;</span>
+            <button class="copy-btn" id="copyLink" type="button">Хуулах</button>
+          </div>
+          <button class="btn block" id="shareLink" type="button" hidden>Илгээх</button>
+          <div class="result-links">
+            <a class="text-btn" id="openLink" href="#" target="_blank" rel="noopener">Нээж үзэх</a>
+            <a class="text-btn" id="goAnswers" href="dashboard.html">Хариу харах</a>
+            <button class="text-btn" id="newInvite" type="button">＋ Шинэ</button>
           </div>
         </div>
       </section>
@@ -433,16 +575,27 @@
 <script src="assets/config.js"></script>
 <script src="assets/api.js"></script>
 <script src="assets/bolzoo-garden.js"></script>
+<script src="assets/bolzoo-cat.js"></script>
+<script src="assets/bolzoo-paper.js"></script>
+<script src="assets/bolzoo-sticker.js"></script>
 <script>
 (function(){
   "use strict";
   var $ = BolzooUtils.$;
+  var esc = BolzooUtils.esc;
   var G = BolzooGarden;
 
-  var mode = 'flower';           // 'flower' | 'date'
+  var mode = 'flower';           // 'flower' | 'date' | 'sorry'
+  var editId = null;             // ?edit=<id> үед — шинээр үүсгэхгүй, засна
+  // Автомат имэйл тохируулсан эсэх (assets/config.js → emailWebhookUrl).
+  // Тохируулаагүй бол "имэйлээр ирнэ" гэж амлахгүй.
+  var AUTO_EMAIL = !!(window.BolzooAPI && BolzooAPI.hasEmailWebhook);
   var currentTheme = 'coral';
   var currentFlower = G.FLOWERS[0].id;
-  var currentPaper = G.PAPERS[0].id;
+  var currentPaper = G.PAPERS[0].id;     // цэцгийн захидлын цаас (bolzoo-garden)
+  var sorryPaper = 'cream';              // аргадах захидлын текстур (bolzoo-paper)
+  var sorrySticker = 'roses';
+  var promises = [];
 
   /* ---------- backend badge ---------- */
   (function(){
@@ -456,10 +609,9 @@
   $('modes').addEventListener('click', function(e){
     var btn = e.target.closest('.mode');
     if(!btn) return;
-    mode = btn.getAttribute('data-mode');
-    document.body.setAttribute('data-mode', mode);
-    var kids = $('modes').children;
-    for(var i = 0; i < kids.length; i++){ kids[i].classList.toggle('on', kids[i] === btn); }
+    var next = btn.getAttribute('data-mode');
+    if(editId && next !== mode){ $('modeLock').hidden = false; return; }
+    setMode(next);
     setStatus('');
     updatePreview();
   });
@@ -509,6 +661,118 @@
     updatePreview();
   });
 
+  /* ---------- сонгогдсоныг тэмдэглэх (аргадахын цаас / стикер) ---------- */
+  function markSelected(hostId, attr, value){
+    var kids = $(hostId).children;
+    for(var i = 0; i < kids.length; i++){
+      kids[i].classList.toggle('on', kids[i].getAttribute(attr) === value);
+    }
+  }
+
+  /* ---------- аргадах: цаасны текстур ---------- */
+  (function(){
+    var host = $('textureGrid');
+    host.innerHTML = BolzooPaper.LIST.map(function(p){
+      // Гурван "бэхний мөр" — цагаан цааснуудыг бэхнийх нь өнгөөр ялгаж харуулна
+      return '<button type="button" class="texture' + (p.id === sorryPaper ? ' on' : '')
+        + '" data-paper="' + p.id + '" title="' + esc(p.label) + '">'
+        + '<div class="tex-swatch"><i></i><i></i><i></i></div>'
+        + '<span class="tex-name">' + p.emoji + ' ' + esc(p.label) + '</span></button>';
+    }).join('');
+    // background нь давхар хашилттай data-URI агуулдаг тул зөвхөн JS-ээр тавина
+    BolzooPaper.LIST.forEach(function(p){
+      BolzooPaper.apply(host.querySelector('[data-paper="' + p.id + '"] .tex-swatch'), p.id);
+    });
+    host.addEventListener('click', function(e){
+      var el = e.target.closest('.texture');
+      if(!el) return;
+      sorryPaper = el.getAttribute('data-paper');
+      markSelected('textureGrid', 'data-paper', sorryPaper);
+      updatePreview();
+    });
+  })();
+
+  /* ---------- аргадах: муурын зураг ---------- */
+  (function(){
+    var host = $('stickerGrid');
+    host.innerHTML = BolzooSticker.LIST.map(function(s){
+      return '<button type="button" class="sticker-opt' + (s.id === sorrySticker ? ' on' : '')
+        + '" data-sticker="' + s.id + '" title="' + esc(s.label) + '">'
+        + '<div class="stk-art">' + BolzooSticker.thumbHtml(s.id) + '</div>'
+        + '<span class="stk-name">' + s.emoji + ' ' + esc(s.label) + '</span></button>';
+    }).join('');
+    host.addEventListener('click', function(e){
+      var el = e.target.closest('.sticker-opt');
+      if(!el) return;
+      sorrySticker = el.getAttribute('data-sticker');
+      markSelected('stickerGrid', 'data-sticker', sorrySticker);
+      updatePreview();
+    });
+  })();
+
+  /* ---------- аргадах: амлалтууд ---------- */
+  var PROMISE_PRESETS = [
+    'Дараагийн болзоог би бүтнээр төлөвлөнө',
+    'Кино чиний сонголтоор',
+    'Оройн хоолыг би хийнэ',
+    'Дуртай амттанг чинь авчирна',
+    'Утсаа тавьж, чамайг сонсоно',
+    'Дахиж ийм зүйл давтахгүй'
+  ];
+  var MAX_PROMISES = 5;
+
+  function renderPromises(){
+    $('promiseChips').innerHTML = PROMISE_PRESETS.map(function(p, i){
+      return '<button type="button" class="chip' + (promises.indexOf(p) !== -1 ? ' on' : '')
+        + '" data-preset="' + i + '">' + esc(p) + '</button>';
+    }).join('');
+    $('promisePicked').innerHTML = promises.map(function(p, i){
+      return '<li><span>' + esc(p) + '</span>'
+        + '<button type="button" data-del="' + i + '" aria-label="Хасах">✕</button></li>';
+    }).join('');
+    $('promiseEmpty').style.display = promises.length ? 'none' : 'block';
+  }
+  function addPromise(text){
+    text = String(text || '').trim();
+    if(!text) return;
+    if(promises.length >= MAX_PROMISES){ setStatus('⚠️ Хамгийн ихдээ ' + MAX_PROMISES + ' амлалт'); return; }
+    if(promises.indexOf(text) !== -1) return;
+    promises.push(text);
+    renderPromises(); updatePreview();
+  }
+  function removePromise(i){ promises.splice(i, 1); renderPromises(); updatePreview(); }
+
+  $('promiseChips').addEventListener('click', function(e){
+    var t = e.target.closest('.chip'); if(!t) return;
+    var text = PROMISE_PRESETS[Number(t.getAttribute('data-preset'))];
+    var at = promises.indexOf(text);
+    if(at !== -1) removePromise(at); else addPromise(text);
+  });
+  $('promisePicked').addEventListener('click', function(e){
+    var t = e.target.closest('[data-del]'); if(!t) return;
+    removePromise(Number(t.getAttribute('data-del')));
+  });
+  $('promiseAdd').addEventListener('click', function(){
+    addPromise($('promiseInput').value); $('promiseInput').value = '';
+  });
+  $('promiseInput').addEventListener('keydown', function(e){
+    if(e.key === 'Enter'){ e.preventDefault(); addPromise($('promiseInput').value); $('promiseInput').value = ''; }
+  });
+  renderPromises();
+
+  /* Захидлын үлдсэн тэмдэгтийн тоо */
+  function updateLetterCount(){
+    var el = $('sorryLetter');
+    $('letterCount').textContent = '(' + el.value.length + '/600)';
+  }
+  $('sorryLetter').addEventListener('input', updateLetterCount);
+  updateLetterCount();
+
+  /* Имэйл тохируулаагүй бол "имэйлээр ирнэ" гэж амлахгүй */
+  if(!AUTO_EMAIL){
+    $('hintEmail').textContent = 'Хариу нь «Миний урилгууд» хуудсанд шууд харагдана.';
+  }
+
   /* ---------- config ---------- */
   function collectConfig(){
     var base = {
@@ -522,9 +786,20 @@
       base.specialLetter = $('letterText').value.trim();
       return base;
     }
+
     base.responseEmail = $('responseEmail').value.trim();
     base.videoId       = $('videoId').value.trim();
     base.theme         = currentTheme;
+
+    if(mode === 'sorry'){
+      base.sorryReason = $('sorryReason').value.trim();
+      base.sorryLetter = $('sorryLetter').value.trim();
+      base.paper       = sorryPaper;
+      base.sticker     = sorrySticker;
+      base.promises    = promises.slice();
+      return base;
+    }
+
     base.customNote    = $('customNote').value.trim();
     base.locationName  = $('locationName').value.trim();
     base.locationUrl   = $('locationUrl').value.trim();
@@ -534,10 +809,16 @@
 
   function encodeConfig(cfg){
     var clean = {};
-    for(var k in cfg){ if(cfg[k]) clean[k] = cfg[k]; }
+    for(var k in cfg){
+      var v = cfg[k];
+      // Хоосон массивыг оруулахгүй (хоосон [] нь truthy тул тусад нь шалгана)
+      if(Array.isArray(v)){ if(v.length) clean[k] = v; }
+      else if(v){ clean[k] = v; }
+    }
     return encodeURIComponent(btoa(unescape(encodeURIComponent(JSON.stringify(clean)))));
   }
-  function targetPage(m){ return (m === 'flower') ? 'greet.html' : 'bolzoo.html'; }
+  var MODE_PAGES = { flower:'greet.html', sorry:'argadah.html', date:'bolzoo.html' };
+  function targetPage(m){ return MODE_PAGES[m] || 'bolzoo.html'; }
 
   var previewSeq = 0;
   function previewUrl(cfg){
@@ -558,6 +839,7 @@
   }
   function updatePreview(){
     $('preview').src = previewUrl(collectConfig());
+    syncDirty();
   }
   function settlePreview(){
     try{
@@ -578,7 +860,8 @@
   });
   $('refreshPreview').addEventListener('click', updatePreview);
 
-  ['recipientName','senderName','letterText','responseEmail','videoId','customNote','locationName','locationUrl','specialLetter']
+  ['recipientName','senderName','letterText','responseEmail','videoId','customNote','locationName','locationUrl','specialLetter',
+   'sorryReason','sorryLetter']
     .forEach(function(id){ $(id).addEventListener('input', schedulePreview); });
 
   /* ---------- YouTube helper ---------- */
@@ -614,7 +897,6 @@
     if(state){ gate.classList.add(state); st.classList.add(state); }
     st.textContent = msg || '';
     codeIsValid = (state === 'ok');
-    $('generate').disabled = !codeIsValid;
   }
   async function checkCode(){
     var code = normalizeCode($('accessCode').value);
@@ -641,93 +923,255 @@
   $('accessCode').addEventListener('blur', checkCode);
 
   /* ---------- generate ---------- */
+  // Товчийг идэвхгүй болгож "яагаад?" гэж эргэлзүүлэхгүй — дарахад дутуу талбар руу нь аваачна
+  function fail(msg, fieldId){
+    setStatus('⚠️ ' + msg);
+    var el = $(fieldId);
+    el.scrollIntoView({ behavior:'smooth', block:'center' });
+    el.focus({ preventScroll:true });
+    return false;
+  }
   function validate(cfg){
-    if(!codeIsValid){ setStatus('⚠️ Хүчинтэй код оруулна уу'); return false; }
-    if(!cfg.recipientName){ setStatus('⚠️ Хүлээн авагчийн нэрийг бөглөнө үү'); return false; }
-    if(cfg.mode === 'date'){
+    // Засварлаж байгаа үед код дахин шаардахгүй — тэр аль хэдийн ашиглагдсан
+    if(!editId && !codeIsValid) return fail('Хүчинтэй код оруулна уу', 'accessCode');
+    if(!cfg.recipientName){
+      return fail(cfg.mode === 'sorry' ? 'Хэнд уучлал гуйхаа бөглөнө үү' : 'Хүлээн авагчийн нэрийг бөглөнө үү',
+                  'recipientName');
+    }
+    if(cfg.mode === 'date' || cfg.mode === 'sorry'){
       if(!cfg.responseEmail || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(cfg.responseEmail)){
-        setStatus('⚠️ Зөв имэйл хаяг оруулна уу'); return false;
+        return fail('Зөв имэйл хаяг оруулна уу', 'responseEmail');
       }
     }
     return true;
   }
-  function showLink(url, msg){
-    $('linkBox').textContent = url;
-    $('result').classList.add('on');
+
+  /* ---------- линк гарсны дараах төлөв ----------
+   * Линк гармагц хуудас засварын горимд шилжинэ: формоо өөрчилбөл л "хадгалах"
+   * товч гарч ирнэ, линк нь хэвээрээ. Нэг үсгийн алдаа кодыг дахин шатаахгүй.
+   */
+  var currentUrl = '';
+  var savedJson = null;    // сүүлд хадгалсан config — үүнтэй зөрвөл "хадгалах" товч харагдана
+
+  function enterEdit(id, cfg){
+    editId = id;
+    savedJson = JSON.stringify(cfg);
+    document.body.classList.add('locked');
+    $('codeGate').style.display = 'none';
+    $('resetForm').hidden = true;
+    $('generate').textContent = 'Өөрчлөлтийг хадгалах';
+    syncDirty();
+  }
+  function syncDirty(){
+    if(!editId || savedJson === null) return;
+    $('compose').hidden = (JSON.stringify(collectConfig()) === savedJson);
+  }
+  function showLink(url, title){
+    currentUrl = url;
+    // https:// нь утгагүй урт; домэйн нь товчлогдож ?id=… хэсэг үргэлж харагдана
+    var bare = url.replace(/^https?:\/\//, '');
+    var cut = bare.indexOf('/') + 1;
+    $('linkBox').querySelector('.lk-host').textContent = bare.slice(0, cut);
+    $('linkBox').querySelector('.lk-path').textContent = bare.slice(cut);
+    $('openLink').href = url;
     var m = url.match(/[?&]id=([^&#]+)/);
     $('goAnswers').href = m ? ('dashboard.html?id=' + m[1]) : 'dashboard.html';
+    $('resultTitle').textContent = title || 'Линк бэлэн';
+    $('shareLink').hidden = !navigator.share;
+    $('result').hidden = false;
     var steps = document.querySelectorAll('.steps b');
     if(steps[2]) steps[2].classList.add('on');
-    setStatus(msg || '✅ Линк бэлэн!');
   }
 
   $('generate').addEventListener('click', async function(){
+    var btn = $('generate');
+    // Кодоо paste хийгээд шууд дарвал debounce-тай шалгалт амжаагүй байж болно
+    if(!editId && !codeIsValid && $('accessCode').value){ lastCheckedCode = ''; await checkCode(); }
     var cfg = collectConfig();
     if(!validate(cfg)) return;
-    var code = normalizeCode($('accessCode').value);
-    $('generate').disabled = true;
-    setStatus('⏳ Хадгалж байна…');
+    btn.disabled = true;
+    btn.textContent = 'Хадгалж байна…';
+    setStatus('');
     try{
-      var res = await BolzooAPI.createInvite(cfg, code);
-      showLink(shortUrl(cfg.mode, res.id), '✅ Бэлэн боллоо — линкээ илгээгээрэй (' + res.id + ')');
-      setCodeUI('bad', '⚠️ Энэ код ашиглагдлаа. Дараагийнхад шинэ код авна уу.');
-      $('accessCode').value = '';
-      lastCheckedCode = '';
+      if(editId){
+        await BolzooAPI.updateInvite(editId, cfg);
+        enterEdit(editId, cfg);
+        showLink(shortUrl(cfg.mode, editId), 'Хадгаллаа');
+      } else {
+        var res = await BolzooAPI.createInvite(cfg, normalizeCode($('accessCode').value));
+        $('accessCode').value = '';
+        lastCheckedCode = '';
+        setCodeUI('', '');
+        enterEdit(res.id, cfg);
+        showLink(shortUrl(cfg.mode, res.id));
+        $('result').scrollIntoView({ behavior:'smooth', block:'nearest' });
+      }
     }catch(e){
       var msg = e.message || String(e);
-      if(/already used/i.test(msg))            setCodeUI('bad', '❌ Энэ код нэгэнт ашиглагдсан');
-      else if(/Invalid access code/i.test(msg)) setCodeUI('bad', '❌ Ийм код олдсонгүй');
-      setStatus('❌ Алдаа: ' + msg);
-      $('generate').disabled = !codeIsValid;
+      if(/Already answered/i.test(msg)){
+        msg = 'Хариу ирсэн тул засах боломжгүй';
+      } else if(/already used/i.test(msg)){
+        msg = 'Энэ код нэгэнт ашиглагдсан'; setCodeUI('bad', '❌ ' + msg);
+      } else if(/Invalid access code/i.test(msg)){
+        msg = 'Ийм код олдсонгүй'; setCodeUI('bad', '❌ ' + msg);
+      }
+      setStatus('❌ ' + msg);
+    }finally{
+      btn.disabled = false;
+      btn.textContent = editId ? 'Өөрчлөлтийг хадгалах' : 'Линк үүсгэх';
     }
   });
 
   /* ---------- link actions ---------- */
-  $('copyLink').addEventListener('click', function(){
-    var text = $('linkBox').textContent;
-    if(navigator.clipboard && navigator.clipboard.writeText){
-      navigator.clipboard.writeText(text).then(function(){ setStatus('📋 Хуулагдлаа — одоо Messenger/Instagram-д paste хий'); });
-    } else {
+  function copyText(text){
+    function legacy(){
       var t = document.createElement('textarea');
-      t.value = text; document.body.appendChild(t); t.select();
-      document.execCommand('copy'); t.remove();
-      setStatus('📋 Хуулагдлаа');
+      t.value = text; t.setAttribute('readonly', '');
+      t.style.position = 'fixed'; t.style.opacity = '0';
+      document.body.appendChild(t); t.select();
+      var ok = false;
+      try{ ok = document.execCommand('copy'); }catch(e){}
+      t.remove();
+      return ok ? Promise.resolve() : Promise.reject();
     }
+    if(navigator.clipboard && window.isSecureContext){
+      return navigator.clipboard.writeText(text).catch(legacy);
+    }
+    return legacy();
+  }
+  var copyTimer = null;
+  $('copyLink').addEventListener('click', function(){
+    var btn = $('copyLink');
+    copyText(currentUrl).then(function(){
+      btn.textContent = 'Хуулагдлаа ✓';
+      btn.classList.add('done');
+    }, function(){
+      // Хуулж чадаагүй бол линкийг тэмдэглээд гараар хуулуулна.
+      // &lrm; тэмдэгтүүдийг оруулахгүй — URL-ийн төгсгөлд наалдаж id-г эвдэнэ.
+      var box = $('linkBox'), range = document.createRange();
+      range.setStartBefore(box.querySelector('.lk-host'));
+      range.setEndAfter(box.querySelector('.lk-path'));
+      window.getSelection().removeAllRanges();
+      window.getSelection().addRange(range);
+      btn.textContent = 'Гараар хуулна уу';
+    }).then(function(){
+      clearTimeout(copyTimer);
+      copyTimer = setTimeout(function(){ btn.textContent = 'Хуулах'; btn.classList.remove('done'); }, 2200);
+    });
   });
-  $('openLink').addEventListener('click', function(){
-    window.open($('linkBox').textContent, '_blank');
-  });
+  // navigator.share байхгүй төхөөрөмжид энэ товч нуугдана — "Хуулах" л үлдэнэ
+  var SHARE_TEXT = { flower:'чамд цэцэг ирлээ 🌸', date:'чамд болзооны урилга ирлээ 💌', sorry:'чамд нэг захидал байна 🥺' };
   $('shareLink').addEventListener('click', function(){
-    var url = $('linkBox').textContent.trim();
-    if(!url){ setStatus('⚠️ Эхлээд линк үүсгэнэ үү'); return; }
     var name = $('recipientName').value.trim();
-    var text = (name ? name + ' минь, ' : '')
-      + (mode === 'flower' ? 'чамд цэцэг ирлээ 🌸' : 'чамд болзооны урилга ирлээ 💌');
-    if(navigator.share){
-      navigator.share({ title:'Bolzoo', text:text, url:url }).catch(function(){});
-    } else {
-      window.location.href = 'mailto:?subject=' + encodeURIComponent('Bolzoo 💌')
-        + '&body=' + encodeURIComponent(text + '\n\n' + url);
-    }
+    var text = (name ? name + ' минь, ' : '') + (SHARE_TEXT[mode] || SHARE_TEXT.date);
+    navigator.share({ title:'Bolzoo', text:text, url:currentUrl }).catch(function(){});
+  });
+  $('newInvite').addEventListener('click', function(){
+    // Dashboard-аас ?edit=…-ээр орсон бол хаягаас нь ч авч хаяна
+    if(window.location.search) history.replaceState(null, '', window.location.pathname);
+    resetForm();
+    window.scrollTo({ top:0, behavior:'smooth' });
   });
 
   /* ---------- reset ---------- */
-  $('resetForm').addEventListener('click', function(){
-    ['accessCode','recipientName','senderName','letterText','responseEmail','videoId','customNote','locationName','locationUrl','specialLetter']
+  function resetForm(){
+    ['accessCode','recipientName','senderName','letterText','responseEmail','videoId','customNote','locationName','locationUrl','specialLetter',
+     'sorryReason','sorryLetter','promiseInput']
       .forEach(function(id){ $(id).value = ''; });
     currentTheme = 'coral';
     var themes = $('themes').children;
     for(var i = 0; i < themes.length; i++){ themes[i].classList.toggle('on', themes[i].getAttribute('data-theme') === 'coral'); }
+    sorryPaper = 'cream';   markSelected('textureGrid', 'data-paper', sorryPaper);
+    sorrySticker = 'roses'; markSelected('stickerGrid', 'data-sticker', sorrySticker);
+    promises = []; renderPromises(); updateLetterCount();
     lastCheckedCode = '';
     setCodeUI('', '');
     $('videoBox').style.display = 'none';
     $('videoErr').style.display = 'none';
-    $('result').classList.remove('on');
+
+    editId = null; savedJson = null; currentUrl = '';
+    document.body.classList.remove('locked');
+    $('modeLock').hidden = true;
+    $('codeGate').style.display = '';
+    $('resetForm').hidden = false;
+    $('generate').textContent = 'Линк үүсгэх';
+    $('compose').hidden = false;
+    $('result').hidden = true;
+    var steps = document.querySelectorAll('.steps b');
+    if(steps[2]) steps[2].classList.remove('on');
     setStatus('');
     updatePreview();
-  });
+  }
+  $('resetForm').addEventListener('click', resetForm);
 
-  updatePreview();
+  /* ---------- Засварлах горим (?edit=<id>) ----------
+   * Нэг код = нэг урилга тул нэг үсгийн алдаа кодыг шатаадаг байсан.
+   * Хариу ирэхээс өмнө бол линкээ хэвээр нь үлдээж агуулгыг засаж болно.
+   */
+  function setMode(m){
+    mode = m;
+    document.body.setAttribute('data-mode', m);
+    var kids = $('modes').children;
+    for(var i = 0; i < kids.length; i++){
+      kids[i].classList.toggle('on', kids[i].getAttribute('data-mode') === m);
+    }
+  }
+
+  function fillForm(cfg){
+    setMode(MODE_PAGES[cfg.mode] ? cfg.mode : 'date');
+    $('recipientName').value = cfg.recipientName || '';
+    $('senderName').value    = cfg.senderName    || '';
+    $('responseEmail').value = cfg.responseEmail || '';
+    $('videoId').value       = cfg.videoId       || '';
+    $('letterText').value    = (cfg.mode === 'flower' ? (cfg.specialLetter || '') : '');
+    $('customNote').value    = cfg.customNote    || '';
+    $('locationName').value  = cfg.locationName  || '';
+    $('locationUrl').value   = cfg.locationUrl   || '';
+    $('specialLetter').value = (cfg.mode === 'date' ? (cfg.specialLetter || '') : '');
+    $('sorryReason').value   = cfg.sorryReason   || '';
+    $('sorryLetter').value   = cfg.sorryLetter   || '';
+
+    currentTheme = cfg.theme || 'coral';
+    markSelected('themes', 'data-theme', currentTheme);
+
+    if(cfg.mode === 'flower'){
+      currentFlower = cfg.flower || G.FLOWERS[0].id;
+      currentPaper  = cfg.paper  || G.PAPERS[0].id;
+      markSelected('flowerGrid', 'data-flower', currentFlower);
+      markSelected('paperGrid', 'data-paper', currentPaper);
+    } else if(cfg.mode === 'sorry'){
+      sorryPaper   = BolzooPaper.PAPERS[cfg.paper] ? cfg.paper : 'cream';
+      sorrySticker = BolzooSticker.STICKERS[cfg.sticker] ? cfg.sticker : 'roses';
+      markSelected('textureGrid', 'data-paper', sorryPaper);
+      markSelected('stickerGrid', 'data-sticker', sorrySticker);
+    }
+    promises = Array.isArray(cfg.promises) ? cfg.promises.slice() : [];
+    renderPromises();
+    updateLetterCount();
+  }
+
+  async function initEditMode(){
+    var id = new URLSearchParams(window.location.search).get('edit');
+    if(!id){ updatePreview(); return; }
+    setStatus('⏳ Урилгыг ачаалж байна…');
+    try{
+      if(!BolzooAPI.getOwnerToken(id)){
+        throw new Error('Энэ урилгыг зөвхөн үүсгэсэн төхөөрөмжөөс засна');
+      }
+      var rec = await BolzooAPI.getInvite(id);
+      if(!rec) throw new Error('Урилга олдсонгүй');
+      if(rec.responded_at) throw new Error('Хариу ирсэн тул засах боломжгүй');
+      fillForm(rec.config || {});
+      enterEdit(id, collectConfig());
+      showLink(shortUrl(mode, id));
+      setStatus('');
+    }catch(e){
+      setStatus('❌ ' + (e.message || e));
+    }
+    updatePreview();
+  }
+
+  initEditMode();
 })();
 </script>
 </body>
