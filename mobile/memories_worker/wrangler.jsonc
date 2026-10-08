@@ -1,0 +1,23 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "nandin-moch-memories-staging",
+  "main": "src/index.ts",
+  "account_id": "4bf67f274347735ca73e54d2ddb00a6c",
+  "compatibility_date": "2026-10-08",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": true,
+  "observability": { "enabled": true },
+  "limits": { "cpu_ms": 30000 },
+  "triggers": { "crons": ["*/15 * * * *"] },
+  "services": [{ "binding": "AUTH", "service": "hamtdaa-api-staging" }],
+  "d1_databases": [{ "binding": "DB", "database_name": "hamtdaa-staging", "database_id": "e796d2c0-8f21-4cf4-90b1-f02821449440", "migrations_dir": "migrations", "migrations_table": "hamtdaa_memory_migrations" }],
+  "r2_buckets": [{ "binding": "PHOTOS", "bucket_name": "nandin-moch-memories-staging" }],
+  "env": {
+    "production": {
+      "name": "nandin-moch-memories-production",
+      "services": [{ "binding": "AUTH", "service": "hamtdaa-api-production" }],
+      "d1_databases": [{ "binding": "DB", "database_name": "hamtdaa-production", "database_id": "77035e1d-5b59-4be4-8e6e-52b616c8f472", "migrations_dir": "migrations", "migrations_table": "hamtdaa_memory_migrations" }],
+      "r2_buckets": [{ "binding": "PHOTOS", "bucket_name": "nandin-moch-memories-production" }]
+    }
+  }
+}

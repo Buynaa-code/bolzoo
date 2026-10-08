@@ -1,9 +1,11 @@
 node_modules
-data
+/data/
 .DS_Store
 .vercel
 .env
 .env.local
+.env.*
+!.env.example
 
 # Claude Code local files
 .claude
@@ -11,3 +13,7 @@ data
 .mcp.json
 skills-lock.json
 .admin-pw
+
+# Local Cloudflare state and immutable recovery snapshots are not application source.
+.wrangler/
+/recovery/

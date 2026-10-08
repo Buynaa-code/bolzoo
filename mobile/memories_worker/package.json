@@ -1,0 +1,25 @@
+{
+  "name": "nandin-moch-memories",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "types": "wrangler types",
+    "check": "tsc --noEmit",
+    "test": "tsx --test test/*.test.ts",
+    "dry-run": "wrangler deploy --dry-run --env=\"\""
+  },
+  "dependencies": {
+    "jpeg-js": "0.4.4"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "miniflare": "5.20261006.0-alpha",
+    "@cloudflare/workers-types": "5.20261008.1",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.0",
+    "wrangler": "4.148.0"
+  },
+  "overrides": {
+    "sharp": "0.35.5"
+  }
+}

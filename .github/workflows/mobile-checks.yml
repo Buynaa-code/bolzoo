@@ -1,0 +1,134 @@
+name: Mobile checks
+
+on:
+  pull_request:
+    paths:
+      - 'mobile/**'
+      - '.github/workflows/mobile-checks.yml'
+  push:
+    paths:
+      - 'mobile/**'
+      - '.github/workflows/mobile-checks.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  CI: 'true'
+  WRANGLER_SEND_METRICS: 'false'
+
+jobs:
+  current-app:
+    name: Current app flows and Android debug build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Java
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache-jdk: 'false'
+      - name: Set up Flutter
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          channel: stable
+          flutter-version: '3.41.6'
+          cache: 'false'
+          pub-cache: 'false'
+      - name: Resolve locked Flutter dependencies
+        id: dependencies
+        run: flutter pub get --enforce-lockfile
+      # This slice gives actionable results for the Cloudflare entry point.
+      # It does not replace the full audit job below or hide restored failures.
+      - name: Analyze current app paths (warnings are fatal)
+        run: |
+          flutter analyze --no-pub --no-fatal-infos \
+            lib/main.dart lib/main_cloudflare.dart \
+            lib/cloudflare lib/together lib/memories lib/wishes lib/billing \
+            lib/account/cloudflare_account_export.dart \
+            lib/auth/auth_models.dart lib/auth/auth_repository.dart \
+            lib/pair/pair_controller.dart lib/pair/pair_models.dart lib/pair/pair_repository.dart \
+            lib/features/auth lib/features/account lib/features/pair \
+            lib/features/premium_cards lib/features/subscription lib/ui \
+            test/cloudflare test/together test/memories test/wishes test/billing \
+            test/account/cloudflare_account_export_test.dart test/auth/auth_screen_test.dart
+      - name: Test current app flows
+        if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
+        run: |
+          flutter test --no-pub \
+            test/cloudflare test/together test/memories test/wishes test/billing \
+            test/account/cloudflare_account_export_test.dart test/auth/auth_screen_test.dart
+      - name: Build Android debug integration
+        if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
+        run: flutter build apk --debug --no-pub --target-platform android-arm64
+
+  full-flutter-audit:
+    name: Full restored Flutter audit
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Flutter
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          channel: stable
+          flutter-version: '3.41.6'
+          cache: 'false'
+          pub-cache: 'false'
+      - name: Resolve locked Flutter dependencies
+        id: dependencies
+        run: flutter pub get --enforce-lockfile
+      # Recovery debt remains a visible workflow failure until it is repaired.
+      - name: Analyze all restored Dart code (warnings are fatal)
+        run: flutter analyze --no-pub --no-fatal-infos
+      - name: Test the complete restored Flutter suite
+        if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
+        run: flutter test --no-pub --timeout 2m
+
+  memories-worker:
+    name: Memories worker checks and local dry runs
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: mobile/memories_worker
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '22'
+          package-manager-cache: false
+      - name: Install locked worker dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Type-check worker
+        run: npm run check
+      # Miniflare tests load dist/index.js. Build it without contacting an account.
+      - name: Dry-run worker bundle for local tests
+        run: npm run dry-run -- --outdir dist
+      - name: Test worker with local bindings
+        run: npm test
+      - name: Validate production bundle without deployment
+        run: npx --no-install wrangler deploy --dry-run --env production --outdir dist-production

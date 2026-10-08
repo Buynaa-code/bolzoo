@@ -1,0 +1,15 @@
+# Copy to android/key.properties (ignored by Git), then fill in the EXISTING
+# Google Play upload key details. Do not generate a replacement store identity.
+# Relative storeFile paths are resolved from mobile/android/.
+# For Windows paths, use forward slashes or escaped backslashes.
+storeFile=/absolute/path/to/existing-upload-keystore.jks
+storePassword=
+keyAlias=
+keyPassword=
+
+# CI may instead supply all four environment variables; these override the file:
+# HAMTDAA_ANDROID_STORE_FILE
+# HAMTDAA_ANDROID_STORE_PASSWORD
+# HAMTDAA_ANDROID_KEY_ALIAS
+# HAMTDAA_ANDROID_KEY_PASSWORD
+# Never commit filled-in credentials or pass passwords as command-line arguments.

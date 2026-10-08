@@ -1,0 +1,25 @@
+const deletionScript = String.raw`'use strict';
+(()=>{
+ const $=id=>document.getElementById(id); let token=null,email='',busy=false;
+ const message=(text)=>{$('message').textContent=text;};
+ async function api(path,body,authenticated=false){
+  const response=await fetch(path,{method:'POST',headers:{'Content-Type':'application/json',...(authenticated?{Authorization:'Bearer '+token}:{})},body:JSON.stringify(body),credentials:'omit',cache:'no-store',signal:AbortSignal.timeout(15000)});
+  const data=await response.json(); if(!response.ok||data.ok!==true)throw {code:data.code};return data;
+ }
+ async function action(work){if(busy)return;busy=true;document.querySelectorAll('button').forEach(b=>b.disabled=true);
+  try{await work();}catch(e){message(e.code==='rate_limited'?'Түр хүлээгээд дахин оролдоно уу.':e.code==='reauthentication_required'?'Нэвтрэх кодыг дахин авч баталгаажуулна уу.':e.code==='invalid_code'?'Код буруу эсвэл хугацаа дууссан байна.':'Хүсэлтийг баталгаажуулж чадсангүй. Дахин оролдоно уу.');}
+  finally{busy=false;document.querySelectorAll('button').forEach(b=>b.disabled=false);}}
+ $('login').addEventListener('submit',e=>{e.preventDefault();action(async()=>{email=$('email').value.trim().toLowerCase();await api('/v1/auth/request-code',{email});$('verify').hidden=false;message('Имэйлд ирсэн 6 оронтой кодыг оруулна уу.');});});
+ $('verify').addEventListener('submit',e=>{e.preventDefault();action(async()=>{const data=await api('/v1/auth/verify-code',{email,code:$('code').value.trim()});token=data.token;$('code').value='';$('confirm').hidden=false;$('account').textContent=email;message('Бүртгэлээ баталгаажууллаа. Доорх үр дагаврыг уншаад устгах сонголтоо хийнэ үү.');});});
+ $('confirm').addEventListener('submit',e=>{e.preventDefault();action(async()=>{if(!token||$('confirmation').value.trim()!=='УСТГАХ'){message('УСТГАХ гэж бүтнээр бичнэ үү.');return;}await api('/v1/account/delete',{confirmation:'УСТГАХ'},true);token=null;$('forms').hidden=true;message('Таны бүртгэл устгагдлаа. Бүх төхөөрөмжийн нэвтрэх эрх цуцлагдсан. Дэлгүүрийн захиалга байвал тусад нь цуцлаарай.');});});
+})();`;
+const deletionHtml = `<!doctype html><html lang="mn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Бүртгэл устгах · Хамтдаа</title><link rel="stylesheet" href="/billing-assets/pages.css"><script defer src="/account-assets/delete.js"></script></head><body><main><header><span class="brand">Хамтдаа · moch</span><nav><a href="/privacy">Нууцлал</a><a href="/terms">Нөхцөл</a></nav></header><h1>Бүртгэлээ устгах</h1><p>Апп суулгаагүй үедээ ч энэ хуудсаар бүртгэлээ устгаж болно. Эхлээд бүртгэлтэй имэйлээ кодоор баталгаажуулна.</p><section class="card"><h2>Юу устах вэ?</h2><ul><li>Нэр, имэйл, нэвтрэх эрх болон таны бичсэн хуанлийн мэдээлэл, өдрийн асуултын хариу устна.</li><li>Хосын холбоос салж, бүх төхөөрөмжийн нэвтрэх эрх цуцлагдана. Үүнийг буцаах боломжгүй.</li><li>Төлбөрийн буцаалт, давхардлаас хамгаалахад шаардлагатай хувийн мэдээлэлгүй төлбөрийн лавлагаа үлдэнэ.</li><li>Бүртгэл устгах нь Apple, Google захиалгыг автоматаар цуцлахгүй. Захиалгаа тухайн дэлгүүрээс тусад нь цуцална.</li></ul></section><div id="forms"><form id="login" class="card"><label class="field" for="email">Бүртгэлтэй имэйл</label><input id="email" type="email" maxlength="254" autocomplete="email" required><button>Код авах</button></form><form id="verify" class="card" hidden><label class="field" for="code">Нэвтрэх код</label><input id="code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" required><button>Баталгаажуулах</button></form><form id="confirm" class="card" hidden><h2>Эцсийн баталгаажуулалт</h2><p id="account"></p><label class="field" for="confirmation">Буцаах боломжгүйг зөвшөөрвөл УСТГАХ гэж бичээрэй</label><input id="confirmation" type="text" autocomplete="off" required><button>Бүртгэлийг бүрмөсөн устгах</button></form></div><p id="message" role="status" aria-live="polite"></p><noscript>Энэ үйлдэлд JavaScript хэрэгтэй. Аппын Бүртгэл хэсгээр мөн устгаж болно.</noscript><footer>Тусламж: <a href="mailto:gbuyandelger277@gmail.com">gbuyandelger277@gmail.com</a></footer></main></body></html>`;
+export function handleAccountPage(request: Request): Response | null {
+ const path=new URL(request.url).pathname;
+ if(path!=='/delete-account' && path!=='/account-assets/delete.js')return null;
+ const headers={ 'Cache-Control':'no-store', 'X-Content-Type-Options':'nosniff','X-Frame-Options':'DENY','Referrer-Policy':'no-referrer',
+  'Content-Security-Policy':"default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; object-src 'none'",
+  'Content-Type':path.endsWith('.js')?'text/javascript; charset=utf-8':'text/html; charset=utf-8'};
+ if(!['GET','HEAD'].includes(request.method))return new Response(null,{status:405,headers:{...headers,Allow:'GET, HEAD'}});
+ return new Response(request.method==='HEAD'?null:path.endsWith('.js')?deletionScript:deletionHtml,{headers});
+}
