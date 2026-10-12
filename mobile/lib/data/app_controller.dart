@@ -176,10 +176,12 @@ class AppController extends ChangeNotifier {
       ? _cloudSocial(id, text: text)
       : _mutate((current) {
           final value = text.trim();
-          if (value.isEmpty || value.length > 1000)
+          if (value.isEmpty || value.length > 1000) {
             throw ArgumentError('Сэтгэгдэл 1–1000 тэмдэгт байна.');
-          if (!current.memories.any((m) => m.id == id))
+          }
+          if (!current.memories.any((m) => m.id == id)) {
             throw StateError('Дурсамж олдсонгүй.');
+          }
           final comment = MemoryComment(
             id: newLocalId(),
             authorName: current.profile.name.isEmpty
@@ -247,15 +249,19 @@ class AppController extends ChangeNotifier {
       (current) => current.copyWith(
         notices: _upsert(
           current.notices,
-          AppNotice(
-            id: id,
-            title: 'Мэдэгдэл',
-            body: '',
-            createdAt: notice.createdAt,
-            kind: 'read-marker',
-            sourceId: '',
-            read: true,
-          ),
+          current.notices.any(
+                (item) => item.id == id && item.kind != 'read-marker',
+              )
+              ? notice.copyWith(read: true)
+              : AppNotice(
+                  id: id,
+                  title: 'Мэдэгдэл',
+                  body: '',
+                  createdAt: notice.createdAt,
+                  kind: 'read-marker',
+                  sourceId: '',
+                  read: true,
+                ),
           (n) => n.id,
         ),
       ),

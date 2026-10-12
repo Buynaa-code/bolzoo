@@ -116,7 +116,9 @@ class TogetherController extends ChangeNotifier {
       ? TogetherCommand(path, data!.pairId!, body) : null;
   Future<bool> send(TogetherCommand command) async {
     if (!current || saving || !paired || command.pairId != data!.pairId ||
-        (pendingCommand != null && !identical(pendingCommand, command))) return false;
+        (pendingCommand != null && !identical(pendingCommand, command))) {
+      return false;
+    }
     saving = true;
     failure = null;
     notice = null;

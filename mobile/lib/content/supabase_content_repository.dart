@@ -13,7 +13,6 @@ class SupabaseContentRepository implements ContentRepository {
   SupabaseContentRepository(SupabaseClient client)
     : _client = client,
       _accountId = client.auth.currentUser?.id ?? '',
-      _rpcTransport = ((name, params) => client.rpc(name, params: params)),
       _sessionCurrent = (() => false) {
     final sessionId = _sessionId(client.auth.currentSession);
     _sessionCurrent = () =>
@@ -21,6 +20,13 @@ class SupabaseContentRepository implements ContentRepository {
         sessionId != null &&
         client.auth.currentUser?.id == _accountId &&
         _sessionId(client.auth.currentSession) == sessionId;
+    _rpcTransport = (name, params) async {
+      final authorization = await _authorization();
+      _checkSession();
+      return client
+          .rpc(name, params: params)
+          .setHeader('Authorization', authorization);
+    };
   }
 
   SupabaseContentRepository.withTransport({
@@ -34,7 +40,7 @@ class SupabaseContentRepository implements ContentRepository {
 
   final SupabaseClient? _client;
   final String _accountId;
-  final ContentRpcTransport _rpcTransport;
+  late final ContentRpcTransport _rpcTransport;
   bool Function() _sessionCurrent;
   bool _valid = true;
   @override
@@ -63,6 +69,20 @@ class SupabaseContentRepository implements ContentRepository {
       _valid = false;
       throw const ContentException('unauthenticated');
     }
+  }
+
+  Future<String> _authorization() async {
+    _checkSession();
+    // Refresh before pinning: a same-login refresh is safe, a new login is not.
+    final session = await _client!.auth.getSession();
+    _checkSession();
+    if (session == null ||
+        session.user.id != _accountId ||
+        _sessionId(session) != _sessionId(_client.auth.currentSession)) {
+      _valid = false;
+      throw const ContentException('unauthenticated');
+    }
+    return 'Bearer ${session.accessToken}';
   }
 
   Future<T> _request<T>(Future<T> Function() action) async {
@@ -195,11 +215,16 @@ class SupabaseContentRepository implements ContentRepository {
     Uint8List bytes,
     String extension,
   ) => _request(() async {
+    final authorization = await _authorization();
+    _checkSession();
     final result = await _client!.functions.invoke(
       'hamtdaa-media',
       queryParameters: {'item': itemId, 'ext': extension},
       body: bytes,
-      headers: {'Content-Type': 'application/octet-stream'},
+      headers: {
+        'Content-Type': 'application/octet-stream',
+        'Authorization': authorization,
+      },
     );
     if (result.status != 200 ||
         result.data is! Map ||
@@ -210,10 +235,13 @@ class SupabaseContentRepository implements ContentRepository {
   });
   @override
   Future<Uint8List> downloadPhoto(String key) => _request(() async {
+    final authorization = await _authorization();
+    _checkSession();
     final result = await _client!.functions.invoke(
       'hamtdaa-media',
       method: HttpMethod.get,
       queryParameters: {'key': key},
+      headers: {'Authorization': authorization},
     );
     if (result.status != 200 || result.data is! List<int>) {
       throw const ContentException('media_download');

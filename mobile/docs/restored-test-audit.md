@@ -85,3 +85,35 @@ This is **8 AuthScreen tests + 17 Cloudflare onboarding tests**. It resolves the
 Files changed for this follow-up: the shared AuthScreen, its targeted test file, and this audit document. No assets or production services were changed.
 
 The root audit subsequently made the legacy gate's rendered-controller condition explicitly require its signed-in session state. This consumes the previously unused field without suppressing analyzer warnings. It does not restore the legacy gate's missing APIs.
+
+## Legacy UI recovery follow-up — 2026-10-12
+
+The legacy UI and controller gaps in this audit were repaired from the retained literal source edits and verified against the original behavior assertions. The default entrypoint remains Cloudflare. The restored legacy screens now expose calendar ownership filters and consent/proposal controls, memory month filters and place links, local hearts/comments, paired coordinate validation, and place editing/sharing permissions. Local notices retain their content after being marked read; remote notices continue to persist only read markers. Invitation screens discard obsolete responses and hide content after access expires. Permanent gift PNGs use the supplied account directory, and temporary sharing PNGs are removed after success, cancellation, or failure.
+
+The missing Natural Earth country geometry was restored from its original public-domain upstream source and declared in the asset manifest. Its original Mongolia longitude assertions are retained. The map test's asynchronous asset load now runs through `tester.runAsync`, so it does not stall in the widget test's fake asynchronous zone. The legacy app-flow test now taps the actual `BackButton`: Flutter's `pageBack()` helper only searches for the English tooltip `Back`, whereas this application uses Mongolian tooltips. No behavior assertion was removed or weakened.
+
+Five new reviewed comparison images live in `test/goldens/legacy/`. They were generated as review candidates, opened and visually inspected, corrected for missing icon/symbol fonts, and then checked by a normal comparison run. Fixed clocks make the date/day displays deterministic. Nunito, MaterialIcons, and the bundled OFL-licensed Noto Sans Symbols 2 font are explicitly loaded for the comparison. The reviewed screens are home, date ideas, flower editor, flower preview, and invitation editor; they have readable Mongolian text, visible icons, and no observed clipping or overflow at 390×844. Original gift photos and bouquet SVGs were not recovered; the UI uses deliberate heart/flower fallback artwork. These baselines record that recovered appearance and do not claim exact recovery of the original artwork. The visual inspection and comparison were performed on macOS; Linux rendering still depends on the CI run.
+
+Focused verification after the repairs:
+
+```text
+flutter test --no-pub --reporter expanded \
+  test/app_flow_test.dart test/calendar_reference_flow_test.dart \
+  test/calendar_proposal_test.dart test/memories_places_flow_test.dart \
+  test/home_notifications_flow_test.dart test/gift_export_test.dart \
+  test/gift_design_capture_test.dart test/memories_media_test.dart \
+  test/content_sync_test.dart
+55 passed, 0 failed
+```
+
+Focused static analysis of the repaired screens, AppController, and theme reports no issues. This is a completed focused run; the original interrupted full-suite record above remains part of the audit, and these results alone do not establish production or physical-device readiness.
+
+The historical `gifts_flow_test.dart` was also recovered from the retained September 25 source plus September 28 patches, rather than omitted from the reconstructed suite. Its 15 original tests pass, including publish retry/idempotency, recipient-only responses, immediate revocation, late response/inbox protection, and all eight gift/idea screens at 320px and 1.6 text scale. This recovered coverage exposed an additional metadata-row overflow in IdeasScreen; wrapping the metadata text repaired it without changing the assertions.
+
+## Full recovery validation — 2026-10-12
+
+After restoring the account/bootstrap/profile contracts and connecting both scheduler lifecycles, the complete Flutter suite finished: **434 passed, 4 skipped capture-only tests, 0 failed** (`flutter test --no-pub --timeout 2m --reporter expanded`). The pre-existing capture-only skips are unchanged; no failing test was skipped or removed. Full static analysis has zero errors and warnings; style information is retained under the existing `--no-fatal-infos` CI policy.
+
+The current Cloudflare calendar now exposes opt-in local reminders. Consent belongs to backend origin, actor and pair. Only accepted upcoming dates schedule; logout, account changes and acknowledged unlink clear native work, including delayed acknowledgments received after backgrounding. Pagination includes every calendar page and rejects mixed identities. Six new legacy shell tests additionally check its event-save/permission/consent/disposal lifecycle. These results repair the original failure classes above without changing the shipped Cloudflare entrypoint.
+
+Native notification delivery after app termination/reboot, store builds/payments and two-phone production acceptance are still unverified. Legacy screens are repaired and tested but remain outside the current Cloudflare navigation. Missing original gift art is still represented by the reviewed fallbacks described above.

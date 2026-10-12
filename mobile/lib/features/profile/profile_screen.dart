@@ -1,13 +1,31 @@
 import 'package:flutter/material.dart';
 
+import '../../auth/auth_models.dart';
+import '../../pair/pair_repository.dart';
+import '../pair/pair_screen.dart';
+import 'privacy_screen.dart';
+import 'home_icon_screen.dart';
 import '../../data/app_controller.dart';
 import '../../ui/components.dart';
 import '../../ui/theme.dart';
 
 class ProfileScreen extends StatelessWidget {
-  const ProfileScreen({super.key, required this.controller});
+  const ProfileScreen({
+    super.key,
+    required this.controller,
+    this.session,
+    this.onSignOut,
+    this.pairRepositoryFactory,
+    this.onExportData,
+    this.onDeleteAccount,
+  });
 
   final AppController controller;
+  final AuthSession? session;
+  final Future<void> Function()? onSignOut;
+  final PairRepository Function()? pairRepositoryFactory;
+  final Future<void> Function(BuildContext)? onExportData;
+  final Future<void> Function()? onDeleteAccount;
 
   void _edit(BuildContext context) {
     Navigator.of(context).push<void>(
@@ -145,6 +163,26 @@ class ProfileScreen extends StatelessWidget {
               ],
             ),
           ),
+          const SizedBox(height: 16),
+          SoftCard(
+            child: ListTile(
+              key: const Key('openHomeIconScreen'),
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(
+                Icons.add_to_home_screen_rounded,
+                color: AppColors.pink,
+              ),
+              title: const Text(
+                'Бидний аппын дүрс',
+                style: TextStyle(fontWeight: FontWeight.w800),
+              ),
+              subtitle: const Text('Хосын зураг, D-1 бичигтэй'),
+              trailing: const Icon(Icons.chevron_right_rounded),
+              onTap: () => Navigator.of(context).push<void>(
+                MaterialPageRoute<void>(builder: (_) => const HomeIconScreen()),
+              ),
+            ),
+          ),
           const SectionLabel('Миний цуглуулга'),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -167,50 +205,145 @@ class ProfileScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 24),
-          const SoftCard(
-            color: Color(0xFFFAF7F9),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Icon(
-                      Icons.lock_outline_rounded,
-                      size: 19,
-                      color: AppColors.muted,
-                    ),
-                    SizedBox(width: 9),
-                    Expanded(
-                      child: Text(
-                        'Зөвхөн танд харагдана',
-                        style: TextStyle(fontWeight: FontWeight.w800),
-                      ),
-                    ),
-                  ],
+          if (session?.isSignedIn == true && onSignOut != null) ...[
+            _AccountCard(session: session!, onSignOut: onSignOut!),
+            const SizedBox(height: 16),
+          ],
+          if (session?.isSignedIn == true && pairRepositoryFactory != null) ...[
+            SoftCard(
+              color: AppColors.blush,
+              child: ListTile(
+                key: const Key('openPairScreen'),
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(
+                  Icons.favorite_border_rounded,
+                  color: AppColors.pink,
                 ),
-                SizedBox(height: 10),
-                Text(
-                  'Зураг, тэмдэглэл энэ төхөөрөмжид хадгалагдана. '
-                  'Аппыг устгавал мэдээлэл устана.',
-                  style: TextStyle(
-                    color: AppColors.muted,
-                    fontSize: 13,
-                    height: 1.6,
+                title: const Text(
+                  'Хосоор холбогдох',
+                  style: TextStyle(fontWeight: FontWeight.w800),
+                ),
+                subtitle: const Text('Урилга илгээж, хоёулаа зөвшөөрнө'),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () => Navigator.of(context).push<void>(
+                  MaterialPageRoute<void>(
+                    builder: (_) => PairScreen(
+                      repository: pairRepositoryFactory!(),
+                      onPairChanged: (_) =>
+                          controller.invalidateSharedContent(),
+                    ),
                   ),
                 ),
-              ],
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+          SoftCard(
+            child: ListTile(
+              key: const Key('openPrivacyScreen'),
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(
+                Icons.lock_outline_rounded,
+                color: AppColors.pink,
+              ),
+              title: const Text(
+                'Нууцлал ба мэдээлэл',
+                style: TextStyle(fontWeight: FontWeight.w800),
+              ),
+              subtitle: Text(
+                session?.isSignedIn == true
+                    ? 'Аппыг устгах нь бүртгэлийг устгахгүй.'
+                    : 'Мэдээллийнхээ хуулбарыг хадгалаарай.',
+              ),
+              trailing: const Icon(Icons.chevron_right_rounded),
+              onTap: () => Navigator.of(context).push<void>(
+                MaterialPageRoute<void>(
+                  builder: (_) => PrivacyScreen(
+                    isCloudAccount: session?.isSignedIn == true,
+                    onExportData: onExportData,
+                    onDeleteAccount: onDeleteAccount,
+                  ),
+                ),
+              ),
             ),
           ),
           const SizedBox(height: 28),
           const Center(
             child: Text(
-              'Хамтдаа · 0.1.0',
+              'Нандин мөч',
               style: TextStyle(color: AppColors.muted, fontSize: 12),
             ),
           ),
         ],
       );
     },
+  );
+}
+
+class _AccountCard extends StatefulWidget {
+  const _AccountCard({required this.session, required this.onSignOut});
+  final AuthSession session;
+  final Future<void> Function() onSignOut;
+  @override
+  State<_AccountCard> createState() => _AccountCardState();
+}
+
+class _AccountCardState extends State<_AccountCard> {
+  bool _busy = false;
+  String? _error;
+  Future<void> _signOut() async {
+    if (_busy) return;
+    setState(() {
+      _busy = true;
+      _error = null;
+    });
+    try {
+      await widget.onSignOut();
+    } catch (error) {
+      if (mounted) {
+        setState(
+          () => _error = error is AuthFailure
+              ? error.message
+              : 'Гарч чадсангүй. Дахин оролдоно уу.',
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => SoftCard(
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Миний бүртгэл',
+          style: TextStyle(fontWeight: FontWeight.w800),
+        ),
+        const SizedBox(height: 8),
+        Text(widget.session.email ?? ''),
+        const SizedBox(height: 8),
+        const Text(
+          'Нэвтэрсэн · Хосын холболтоо доороос удирдаарай.',
+          style: TextStyle(color: AppColors.muted, fontSize: 13),
+        ),
+        if (_error ?? widget.session.message case final String message) ...[
+          const SizedBox(height: 8),
+          Text(
+            message,
+            style: TextStyle(color: Theme.of(context).colorScheme.error),
+          ),
+        ],
+        const SizedBox(height: 12),
+        OutlinedButton.icon(
+          key: const Key('accountSignOutButton'),
+          onPressed: _busy ? null : _signOut,
+          icon: const Icon(Icons.logout_rounded, size: 18),
+          label: Text(_busy ? 'Гарч байна…' : 'Бүртгэлээс гарах'),
+        ),
+      ],
+    ),
   );
 }
 
@@ -250,9 +383,11 @@ class _CollectionCount extends StatelessWidget {
 // The first calendar day is counted as day one.
 int _daysTogether(DateTime since) {
   final today = DateTime.now();
-  return DateTime.utc(today.year, today.month, today.day)
-          .difference(DateTime.utc(since.year, since.month, since.day))
-          .inDays +
+  return DateTime.utc(
+        today.year,
+        today.month,
+        today.day,
+      ).difference(DateTime.utc(since.year, since.month, since.day)).inDays +
       1;
 }
 
@@ -500,7 +635,9 @@ class _ProfileEditorState extends State<_ProfileEditor> {
                   alignment: Alignment.centerRight,
                   child: TextButton.icon(
                     key: const Key('profileRemoveDateButton'),
-                    onPressed: _busy ? null : () => setState(() => _since = null),
+                    onPressed: _busy
+                        ? null
+                        : () => setState(() => _since = null),
                     icon: const Icon(Icons.close_rounded, size: 17),
                     label: const Text('Өдрийг хасах'),
                   ),

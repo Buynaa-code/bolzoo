@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:hamtdaa/data/models.dart';
 import 'package:hamtdaa/notifications/reminders.dart';
-import 'package:hamtdaa/main.dart' as app;
+import 'package:hamtdaa/main_supabase_legacy.dart' as app;
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
@@ -20,6 +20,7 @@ void main() {
       id: 'native-reminder-fixture',
       title: 'Туршилтын болзоо',
       startsAt: DateTime.now().add(const Duration(days: 2)),
+      createdAt: DateTime.now(),
       reminderMinutes: 60,
     );
     try {
@@ -30,8 +31,8 @@ void main() {
       await reminders.clear();
     }
     expect(await plugin.pendingNotificationRequests(), isEmpty);
-    // Exercise the actual startup entrypoint; no login or account is created.
-    await app.main();
+    // Exercise the legacy startup entrypoint; no login or account is created.
+    app.main();
     await tester.pumpAndSettle();
     expect(find.byType(app.AppShell), findsOneWidget);
     expect(tester.takeException(), isNull);

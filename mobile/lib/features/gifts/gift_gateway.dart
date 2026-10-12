@@ -4,8 +4,12 @@ import '../../data/gift_models.dart';
 abstract interface class GiftGateway {
   String get currentUserId;
   Future<List<DateInvitation>> list();
-  Future<DateInvitation> publish(DateInvitation draft, {required String commandId});
-  Future<DateInvitation> respond(DateInvitation invitation, {
+  Future<DateInvitation> publish(
+    DateInvitation draft, {
+    required String commandId,
+  });
+  Future<DateInvitation> respond(
+    DateInvitation invitation, {
     required InvitationResponse response,
     required String commandId,
     DateTime? proposedAt,

@@ -19,6 +19,9 @@ import 'features/account/cloudflare_account_screen.dart';
 import 'features/premium_cards/premium_cards_screen.dart';
 import 'features/subscription/subscription_screen.dart';
 import 'together/together_screen.dart';
+import 'together/together_repository.dart';
+import 'together/together_reminders.dart';
+import 'notifications/reminders.dart';
 import 'features/pair/pair_screen.dart';
 import 'ui/components.dart';
 import 'ui/theme.dart';
@@ -141,10 +144,13 @@ class CloudflareOnboardingApp extends StatefulWidget {
     super.key,
     required this.repository,
     this.subscriptionControllerFactory,
+    this.reminderCoordinatorFactory,
   });
   final CloudflareAuthRepository repository;
   final SubscriptionController Function(CloudflareAuthRepository)?
   subscriptionControllerFactory;
+  final TogetherReminderCoordinator Function(CloudflareAuthRepository)?
+  reminderCoordinatorFactory;
 
   @override
   State<CloudflareOnboardingApp> createState() =>
@@ -155,19 +161,39 @@ class _CloudflareOnboardingAppState extends State<CloudflareOnboardingApp> {
   late StreamSubscription<AuthSession> _subscription;
   late AuthSession _session;
   String? _signOutMessage;
+  int _reminderGeneration = 0;
 
   @override
   void initState() {
     super.initState();
     _session = widget.repository.current;
+    if (!_session.isSignedIn) unawaited(_clearSignedOutReminders());
     _subscription = widget.repository.sessions.listen((session) {
       if (mounted) {
+        ++_reminderGeneration;
+        if (!session.isSignedIn) unawaited(_clearSignedOutReminders());
         setState(() {
           _session = session;
           if (session.isSignedIn) _signOutMessage = null;
         });
       }
     });
+  }
+
+  Future<void> _clearSignedOutReminders() async {
+    final generation = _reminderGeneration;
+    try {
+      await Reminders.instance.initialize();
+      if (!mounted ||
+          generation != _reminderGeneration ||
+          widget.repository.current.isSignedIn) {
+        return;
+      }
+      await Reminders.instance.clear();
+    } catch (_) {
+      // No private notification content is scheduled. A later signed-in
+      // coordinator retries initialization and reports any scheduling failure.
+    }
   }
 
   Future<void> _signOut() async {
@@ -205,6 +231,7 @@ class _CloudflareOnboardingAppState extends State<CloudflareOnboardingApp> {
             repository: widget.repository,
             onSignOut: _signOut,
             subscriptionControllerFactory: widget.subscriptionControllerFactory,
+            reminderCoordinatorFactory: widget.reminderCoordinatorFactory,
           )
         : Scaffold(
             body: Column(
@@ -235,25 +262,48 @@ class _CloudflareHome extends StatefulWidget {
     required this.repository,
     required this.onSignOut,
     this.subscriptionControllerFactory,
+    this.reminderCoordinatorFactory,
   });
   final CloudflareAuthRepository repository;
   final Future<void> Function() onSignOut;
   final SubscriptionController Function(CloudflareAuthRepository)?
   subscriptionControllerFactory;
+  final TogetherReminderCoordinator Function(CloudflareAuthRepository)?
+  reminderCoordinatorFactory;
 
   @override
   State<_CloudflareHome> createState() => _CloudflareHomeState();
 }
 
-class _CloudflareHomeState extends State<_CloudflareHome> {
+class _CloudflareHomeState extends State<_CloudflareHome>
+    with WidgetsBindingObserver {
   late final SubscriptionController _billing;
   late final CloudflareCredential? _credential;
+  late final TogetherReminderCoordinator _reminders;
   bool _signingOut = false;
 
   @override
   void initState() {
     super.initState();
     _credential = widget.repository.credential;
+    WidgetsBinding.instance.addObserver(this);
+    _reminders =
+        widget.reminderCoordinatorFactory?.call(widget.repository) ??
+        TogetherReminderCoordinator(
+          repository: CloudflareTogetherRepository(widget.repository),
+          preferences: SecureTogetherReminderPreferences(
+            namespace: widget.repository.transport is HttpCloudflareTransport
+                ? (widget.repository.transport as HttpCloudflareTransport)
+                      .baseUri
+                      .origin
+                : 'custom',
+          ),
+        );
+    _reminders.setForeground(
+      WidgetsBinding.instance.lifecycleState == null ||
+          WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed,
+    );
+    unawaited(_reminders.initialize());
     _billing =
         widget.subscriptionControllerFactory?.call(widget.repository) ??
         SubscriptionController(
@@ -266,8 +316,15 @@ class _CloudflareHomeState extends State<_CloudflareHome> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _reminders.dispose();
     _billing.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    _reminders.setForeground(state == AppLifecycleState.resumed);
   }
 
   bool get _current =>
@@ -276,7 +333,13 @@ class _CloudflareHomeState extends State<_CloudflareHome> {
   void _open(Widget Function() screen) {
     if (!_current || _signingOut) return;
     final page = screen();
-    Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => page));
+    unawaited(
+      Navigator.of(
+        context,
+      ).push(MaterialPageRoute<void>(builder: (_) => page)).then((_) {
+        if (mounted && _current) unawaited(_reminders.refresh());
+      }),
+    );
   }
 
   SubscriptionLegalLinks get _legalLinks {
@@ -340,6 +403,7 @@ class _CloudflareHomeState extends State<_CloudflareHome> {
                 onTap: () => _open(
                   () => PairScreen(
                     repository: CloudflarePairRepository(widget.repository),
+                    onPairChanged: (_) => _reminders.observe(null),
                   ),
                 ),
               ),
@@ -348,8 +412,12 @@ class _CloudflareHomeState extends State<_CloudflareHome> {
                 icon: Icons.calendar_month_outlined,
                 title: 'Бид хоёр',
                 description: 'Хамтын хуанли, хүслүүд, болзоо, өдрийн асуулт.',
-                onTap: () =>
-                    _open(() => TogetherScreen(auth: widget.repository)),
+                onTap: () => _open(
+                  () => TogetherScreen(
+                    auth: widget.repository,
+                    reminders: _reminders,
+                  ),
+                ),
               ),
               _HomeDestination(
                 id: 'cloudflareOpenSubscription',

@@ -34,54 +34,69 @@ class _FakeAuth implements AuthRepository {
 }
 
 void main() {
-  test('signout and same-user login never revive an old account scope', () async {
-    final auth = _FakeAuth();
-    final coordinator = SessionCoordinator(auth);
-    const login = AuthSession.signedIn(userId: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', email: 'a@example.com', epoch: 1);
-    auth.emit(login);
-    await Future<void>.delayed(Duration.zero);
-    final original = coordinator.current.scope;
-    await coordinator.signOut();
-    await Future<void>.delayed(Duration.zero);
-    auth.emit(login);
-    await Future<void>.delayed(Duration.zero);
-    final reopened = coordinator.current.scope;
-    expect(coordinator.accepts(original), isFalse);
-    expect(coordinator.accepts(reopened), isTrue);
-    auth.emit(login);
-    await Future<void>.delayed(Duration.zero);
-    expect(coordinator.current.scope, reopened);
-    await coordinator.dispose();
-    await auth.dispose();
-  });
-
-  test('identity change always invalidates the previous account scope', () async {
-    final auth = _FakeAuth();
-    final coordinator = SessionCoordinator(auth);
-    auth.emit(
-      const AuthSession.signedIn(
+  test(
+    'signout and same-user login never revive an old account scope',
+    () async {
+      final auth = _FakeAuth();
+      final coordinator = SessionCoordinator(auth);
+      const login = AuthSession.signedIn(
         userId: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
         email: 'a@example.com',
         epoch: 1,
-      ),
-    );
-    final a = coordinator.current.scope;
-    expect(coordinator.accepts(a), isTrue);
+      );
+      auth.emit(login);
+      await Future<void>.delayed(Duration.zero);
+      final original = coordinator.current.scope;
+      await coordinator.signOut();
+      await Future<void>.delayed(Duration.zero);
+      auth.emit(login);
+      await Future<void>.delayed(Duration.zero);
+      final reopened = coordinator.current.scope;
+      expect(coordinator.accepts(original), isFalse);
+      expect(coordinator.accepts(reopened), isTrue);
+      auth.emit(login);
+      await Future<void>.delayed(Duration.zero);
+      expect(coordinator.current.scope, reopened);
+      await coordinator.dispose();
+      await auth.dispose();
+    },
+  );
 
-    auth.emit(
-      const AuthSession.signedIn(
-        userId: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
-        email: 'b@example.com',
-        epoch: 1,
-      ),
-    );
-    expect(coordinator.accepts(a), isFalse);
-    expect(coordinator.current.scope.userId, 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb');
-    expect(coordinator.current.epoch, 2);
+  test(
+    'identity change always invalidates the previous account scope',
+    () async {
+      final auth = _FakeAuth();
+      final coordinator = SessionCoordinator(auth);
+      auth.emit(
+        const AuthSession.signedIn(
+          userId: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+          email: 'a@example.com',
+          epoch: 1,
+        ),
+      );
+      await Future<void>.delayed(Duration.zero);
+      final a = coordinator.current.scope;
+      expect(coordinator.accepts(a), isTrue);
 
-    await coordinator.dispose();
-    await auth.dispose();
-  });
+      auth.emit(
+        const AuthSession.signedIn(
+          userId: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
+          email: 'b@example.com',
+          epoch: 1,
+        ),
+      );
+      await Future<void>.delayed(Duration.zero);
+      expect(coordinator.accepts(a), isFalse);
+      expect(
+        coordinator.current.scope.userId,
+        'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
+      );
+      expect(coordinator.current.epoch, 2);
+
+      await coordinator.dispose();
+      await auth.dispose();
+    },
+  );
 
   test('signed-out state rejects a late callback scope', () async {
     final auth = _FakeAuth();
@@ -93,6 +108,7 @@ void main() {
         epoch: 4,
       ),
     );
+    await Future<void>.delayed(Duration.zero);
     final scope = coordinator.current.scope;
     await coordinator.signOut();
     await Future<void>.delayed(Duration.zero);

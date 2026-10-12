@@ -17,6 +17,7 @@ import 'together_controller.dart';
 import 'together_event_editor.dart';
 import 'together_models.dart';
 import 'together_repository.dart';
+import 'together_reminders.dart';
 
 class TogetherScreen extends StatefulWidget {
   const TogetherScreen({
@@ -26,6 +27,7 @@ class TogetherScreen extends StatefulWidget {
     this.memories,
     this.memoryPhotoPicker,
     this.wishes,
+    this.reminders,
   });
   final CloudflareAuthRepository auth;
 
@@ -34,6 +36,9 @@ class TogetherScreen extends StatefulWidget {
   final MemoryController? memories;
   final MemoryPhotoPicker? memoryPhotoPicker;
   final WishController? wishes;
+
+  /// The signed-in home owns reminders across calendar route navigation.
+  final TogetherReminderCoordinator? reminders;
   @override
   State<TogetherScreen> createState() => _TogetherScreenState();
 }
@@ -97,6 +102,7 @@ class _TogetherScreenState extends State<TogetherScreen>
     final snapshot = _controller.data;
     final changed = !identical(snapshot, _lastSnapshot);
     _lastSnapshot = snapshot;
+    if (changed) widget.reminders?.observe(snapshot);
     final wishPair = _controller.paired ? snapshot?.pairId : null;
     if (_wishPair != wishPair) {
       _wishPair = wishPair;
@@ -182,8 +188,9 @@ class _TogetherScreenState extends State<TogetherScreen>
   Future<void> _wishCalendar(SharedWish wish, {bool memory = false}) async {
     if (!_controller.paired ||
         wish.pairId != _controller.data?.pairId ||
-        wish.eventStartsAt == null)
+        wish.eventStartsAt == null) {
       return;
+    }
     final day = togetherTime(wish.eventStartsAt!);
     final delta =
         (day.year - _controller.month.year) * 12 +
@@ -197,8 +204,9 @@ class _TogetherScreenState extends State<TogetherScreen>
     if (!mounted ||
         !_foreground ||
         !_controller.paired ||
-        wish.pairId != _controller.data?.pairId)
+        wish.pairId != _controller.data?.pairId) {
       return;
+    }
     _controller.selectDay(day);
     setState(() {
       _tab = 0;
@@ -210,6 +218,76 @@ class _TogetherScreenState extends State<TogetherScreen>
           ? null
           : (_controller.event(wish.eventId ?? '')?.id);
     });
+  }
+
+  void _showReminders() {
+    final reminders = widget.reminders;
+    if (reminders == null) return;
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) => SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(22),
+          child: AnimatedBuilder(
+            animation: reminders,
+            builder: (context, _) => Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Болзооны сануулга',
+                  style: TextStyle(fontSize: 23, fontWeight: FontWeight.w800),
+                ),
+                const SizedBox(height: 12),
+                SwitchListTile.adaptive(
+                  key: const Key('togetherRemindersEnabled'),
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('Энэ утсанд сануулах'),
+                  value: reminders.enabled,
+                  onChanged:
+                      reminders.supported &&
+                          !reminders.busy &&
+                          reminders.pairId != null &&
+                          reminders.pairId == _controller.data?.pairId
+                      ? reminders.setEnabled
+                      : null,
+                ),
+                const Text(
+                  'Ойрын 60 хоногт болох, хоёулаа зөвшөөрсөн 60 хүртэлх болзоог нэг цагийн өмнө сануулна. Нэг цаг хүрэхгүй хугацаа үлдсэн бол эхлэхэд нь сануулна. Түгжээтэй дэлгэцэд нэр, газар, тэмдэглэл харагдахгүй.',
+                  style: TextStyle(height: 1.5),
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  'Сонголт зөвхөн таны энэ хосын холболтод үйлчилнэ. Апп нээлттэй, интернеттэй үед өөрчлөлт шинэчлэгдэнэ. Апп хаалттай байхад хос тань болзоог өөрчилж эсвэл холболтыг салгавал өмнөх сануулга дараа нээх хүртэл үлдэж болно.',
+                  style: TextStyle(height: 1.5, color: AppColors.muted),
+                ),
+                if (!reminders.supported)
+                  const Padding(
+                    padding: EdgeInsets.only(top: 12),
+                    child: Text(
+                      'Сануулга iPhone болон Android утсанд ажиллана.',
+                    ),
+                  ),
+                if (reminders.message case final message?)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 12),
+                    child: Text(message),
+                  ),
+                const SizedBox(height: 16),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Хаах'),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -239,6 +317,13 @@ class _TogetherScreenState extends State<TogetherScreen>
           icon: const Icon(Icons.arrow_back_rounded),
         ),
         actions: [
+          if (widget.reminders != null && !_inPane)
+            IconButton(
+              key: const Key('togetherReminders'),
+              onPressed: _showReminders,
+              tooltip: 'Сануулга',
+              icon: const Icon(Icons.notifications_outlined),
+            ),
           if (!_inPane)
             IconButton(
               onPressed: _controller.loading || _controller.saving
@@ -293,13 +378,14 @@ class _TogetherScreenState extends State<TogetherScreen>
     ),
   );
   Widget _body() {
-    if (!_controller.current)
+    if (!_controller.current) {
       return const _Empty(
         icon: Icons.lock_outline,
         title: 'Дахин нэвтрээрэй',
         message: 'Таны өмнөх мэдээллийг хаалаа.',
       );
-    if (_controller.data == null)
+    }
+    if (_controller.data == null) {
       return _Empty(
         icon: Icons.cloud_outlined,
         title: _controller.loading
@@ -313,7 +399,8 @@ class _TogetherScreenState extends State<TogetherScreen>
                 child: const Text('Дахин шалгах'),
               ),
       );
-    if (!_controller.paired)
+    }
+    if (!_controller.paired) {
       return _Empty(
         icon: Icons.favorite_border,
         title: 'Хосоороо холбогдоорой',
@@ -321,6 +408,7 @@ class _TogetherScreenState extends State<TogetherScreen>
             'Хоёр тал зөвшөөрч холбогдсоны дараа хуанли болон өдөр тутмын асуултаа хамт ашиглана.',
         action: OutlinedButton(onPressed: _back, child: const Text('Буцах')),
       );
+    }
     if (_addingMemory && _memories != null) {
       return MemoryEditor(
         key: _memoryEditorKey,
@@ -337,13 +425,14 @@ class _TogetherScreenState extends State<TogetherScreen>
     }
     if (_memoryId != null && _memories != null) {
       final matching = _memories!.items.where((m) => m.id == _memoryId);
-      if (matching.isEmpty)
+      if (matching.isEmpty) {
         return _Empty(
           icon: Icons.photo_outlined,
           title: 'Дурсамж олдсонгүй',
           message: 'Хуанли руу буцаж шинэ мэдээллийг хараарай.',
           action: OutlinedButton(onPressed: _back, child: const Text('Буцах')),
         );
+      }
       final memory = matching.first;
       return MemoryDetail(
         key: ValueKey('memory:$_panePair:${memory.id}'),
@@ -357,8 +446,9 @@ class _TogetherScreenState extends State<TogetherScreen>
     if (_creating || _editing) {
       final event = _eventId == null ? null : _controller.event(_eventId!);
       if (_editing && event == null) return _missing();
-      if (_editing && event!.creatorId != _controller.actorId)
+      if (_editing && event!.creatorId != _controller.actorId) {
         return _missing();
+      }
       return TogetherEventEditor(
         key: ValueKey(
           'editor:${_controller.data!.pairId}:${event?.id}:${event?.version}',
@@ -366,11 +456,12 @@ class _TogetherScreenState extends State<TogetherScreen>
         controller: _controller,
         event: event,
         onSaved: () {
-          if (mounted)
+          if (mounted) {
             setState(() {
               _creating = _editing = false;
               _eventId = null;
             });
+          }
         },
       );
     }
@@ -1032,8 +1123,9 @@ class _DailyState extends State<_Daily> {
       'question_id': daily.questionId,
       'answer': _answer.text.trim(),
     });
-    if (command != null && await widget.controller.send(command) && mounted)
+    if (command != null && await widget.controller.send(command) && mounted) {
       _answer.clear();
+    }
   }
 
   @override

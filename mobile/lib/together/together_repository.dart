@@ -15,7 +15,9 @@ abstract interface class TogetherRepository {
 
 class CloudflareTogetherRepository implements TogetherRepository {
   CloudflareTogetherRepository(this._auth) : _credential = _auth.credential {
-    _changes = _auth.sessions.listen((_) { if (!isCurrent) _invalidate(); });
+    _changes = _auth.sessions.listen((_) {
+      if (!isCurrent) _invalidate();
+    });
   }
   final CloudflareAuthRepository _auth;
   final CloudflareCredential? _credential;
@@ -25,7 +27,8 @@ class CloudflareTogetherRepository implements TogetherRepository {
   @override
   String get actorId => _credential?.scope.userId ?? '';
   @override
-  bool get isCurrent => !_disposed && _valid && _credential != null && _auth.accepts(_credential);
+  bool get isCurrent =>
+      !_disposed && _valid && _credential != null && _auth.accepts(_credential);
   @override
   Stream<void> get invalidations => _events.stream;
   void _invalidate() {
@@ -33,34 +36,56 @@ class CloudflareTogetherRepository implements TogetherRepository {
     _valid = false;
     _events.add(null);
   }
+
   void _check() {
     if (!isCurrent) {
       _invalidate();
       throw const TogetherFailure('unauthenticated');
     }
   }
-  Future<Map<String, dynamic>> _call(String path, Map<String, dynamic> body) async {
+
+  Future<Map<String, dynamic>> _call(
+    String path,
+    Map<String, dynamic> body,
+  ) async {
     _check();
     try {
-      final response = await _auth.transport.send('POST', '/v1/together/$path',
-        token: _credential!.token, body: body);
+      final response = await _auth.transport.send(
+        'POST',
+        '/v1/together/$path',
+        token: _credential!.token,
+        body: body,
+      );
       _check();
       if (response.status == 401) {
         _invalidate();
-        try { await _auth.reject(_credential); } catch (_) { /* Already closed. */ }
+        try {
+          await _auth.reject(_credential);
+        } catch (_) {
+          /* Already closed. */
+        }
         throw const TogetherFailure('unauthenticated');
       }
-      if (response.status < 200 || response.status >= 300 || response.body['ok'] != true) {
-        throw TogetherFailure(response.body['code'] is String ? response.body['code'] as String : 'invalid_response',
-          retryable: response.status >= 500 || response.body['retryable'] == true);
+      if (response.status < 200 ||
+          response.status >= 300 ||
+          response.body['ok'] != true) {
+        throw TogetherFailure(
+          response.body['code'] is String
+              ? response.body['code'] as String
+              : 'invalid_response',
+          retryable:
+              response.status >= 500 || response.body['retryable'] == true,
+        );
       }
       return response.body;
-    } on TogetherFailure { rethrow; }
-    catch (_) {
+    } on TogetherFailure {
+      rethrow;
+    } catch (_) {
       _check();
       throw const TogetherFailure('network_error', retryable: true);
     }
   }
+
   @override
   Future<TogetherSnapshot> state(String month) async {
     try {
@@ -74,20 +99,71 @@ class CloudflareTogetherRepository implements TogetherRepository {
   }
 
   Future<TogetherSnapshot> _pagedState(String month) async {
-    final result = await _call('state', {'month': month});
-    try { return TogetherSnapshot.fromJson(result); }
-    catch (_) { throw const TogetherFailure('invalid_response', retryable: true); }
+    TogetherSnapshot? first;
+    final events = <TogetherEvent>[];
+    final ids = <String>{}, cursors = <String>{};
+    String? cursor;
+    do {
+      final result = await _call('state', {'month': month, 'cursor': ?cursor});
+      try {
+        final page = TogetherSnapshot.fromJson(result);
+        if (first != null &&
+            (page.pairId != first.pairId ||
+                page.partnerId != first.partnerId ||
+                page.paired != first.paired)) {
+          throw const TogetherFailure('pair_changed');
+        }
+        first ??= page;
+        for (final event in page.events) {
+          if (!ids.add(event.id)) throw const FormatException();
+          events.add(event);
+        }
+        final next = result['next_cursor'];
+        if (next != null &&
+            (next is! String ||
+                next.isEmpty ||
+                !page.paired ||
+                page.events.isEmpty ||
+                !cursors.add(next))) {
+          throw const FormatException();
+        }
+        // The server caps a pair at 500 events. Reject an endless/broken page
+        // stream rather than expose a partial calendar to UI or reminders.
+        if (events.length > 500 || cursors.length > 500) {
+          throw const FormatException();
+        }
+        cursor = next as String?;
+      } on TogetherFailure {
+        rethrow;
+      } catch (_) {
+        throw const TogetherFailure('invalid_response', retryable: true);
+      }
+    } while (cursor != null);
+    return TogetherSnapshot(
+      paired: first.paired,
+      pairId: first.pairId,
+      partnerId: first.partnerId,
+      partnerName: first.partnerName,
+      events: List.unmodifiable(events),
+      daily: first.daily,
+    );
   }
+
   @override
   Future<void> mutate(TogetherCommand command) async {
     await _call(command.path, command.body);
   }
+
   @override
   Future<TogetherHistory> history({String? beforeDay}) async {
-    final result = await _call('daily/history', {if (beforeDay != null) 'before_day': beforeDay});
-    try { return TogetherHistory.fromJson(result); }
-    catch (_) { throw const TogetherFailure('invalid_response', retryable: true); }
+    final result = await _call('daily/history', {'before_day': ?beforeDay});
+    try {
+      return TogetherHistory.fromJson(result);
+    } catch (_) {
+      throw const TogetherFailure('invalid_response', retryable: true);
+    }
   }
+
   @override
   Future<void> dispose() async {
     if (_disposed) return;

@@ -4,70 +4,174 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
+import '../../account/account_deletion.dart';
 import '../../auth/auth_models.dart';
 import '../../auth/auth_repository.dart';
+import '../../auth/session_coordinator.dart';
 import '../../data/account_scoped_store.dart';
 import '../../data/app_controller.dart';
-import '../../main_supabase_legacy.dart' show AppShell;
 import '../../ui/theme.dart';
 import '../../ui/components.dart';
 
+/// Recovered legacy account gate. The shipped app uses the Cloudflare entrypoint.
 class CloudAuthGate extends StatefulWidget {
   const CloudAuthGate({
     super.key,
     required this.documentsDirectory,
     required this.repository,
+    required this.appBuilder,
+    this.storeFactory,
+    this.accountInitializer,
+    this.onResumeAccountDeletion,
+    this.navigatorObservers = const [],
   });
-
   final Directory documentsDirectory;
   final AuthRepository repository;
+  final Widget Function(AppController) appBuilder;
+  final AppStore Function(AccountScope)? storeFactory;
+  final Future<void> Function(AccountScope)? accountInitializer;
+  final Future<void> Function(AccountScope)? onResumeAccountDeletion;
+  final List<NavigatorObserver> navigatorObservers;
 
   @override
   State<CloudAuthGate> createState() => _CloudAuthGateState();
 }
 
 class _CloudAuthGateState extends State<CloudAuthGate> {
+  late final SessionCoordinator _sessions;
   late final StreamSubscription<AuthSession> _subscription;
   AuthSession _session = const AuthSession.signedOut();
+  AccountScope? _scope;
   AppController? _controller;
   int _loadToken = 0;
+  bool _loading = false;
+  bool _failed = false;
+  bool _signingOut = false;
+  bool _deletionPending = false;
+  bool _resumingDeletion = false;
+  String? _error;
 
   @override
   void initState() {
     super.initState();
-    _subscription = widget.repository.sessions.listen(_applySession);
-    _applySession(widget.repository.current);
+    _sessions = SessionCoordinator(widget.repository);
+    _subscription = _sessions.sessions.listen(_applySession);
+    _applySession(_sessions.current);
   }
 
-  Future<void> _applySession(AuthSession session) async {
+  void _applySession(AuthSession session) {
     if (!mounted) return;
+    final scope = session.isSignedIn ? session.scope : null;
+    _session = session;
+    if (scope == _scope) {
+      setState(() {});
+      return;
+    }
+    _scope = scope;
+    _error = null;
+    _signingOut = false;
+    _resumingDeletion = false;
+    unawaited(_loadAccount());
+  }
+
+  bool _accepts(AccountScope scope, int token) =>
+      mounted && token == _loadToken && _sessions.accepts(scope);
+
+  Future<void> _loadAccount() async {
+    final scope = _scope;
     final token = ++_loadToken;
     final old = _controller;
     _controller = null;
     old?.dispose();
-    setState(() => _session = session);
-    if (!session.isSignedIn) return;
-    final next = AppController(
-      AccountScopedFileStore(
-        documentsDirectory: widget.documentsDirectory,
-        scope: session.scope,
-      ),
-    );
+    setState(() {
+      _loading = scope != null;
+      _failed = false;
+      _deletionPending = false;
+    });
+    if (scope == null) return;
+    AppController? next;
     try {
+      await widget.accountInitializer?.call(scope);
+      if (!_accepts(scope, token)) return;
+      next = AppController(
+        widget.storeFactory?.call(scope) ??
+            AccountScopedFileStore(
+              documentsDirectory: widget.documentsDirectory,
+              scope: scope,
+            ),
+      );
       await next.load();
-      if (!mounted ||
-          token != _loadToken ||
-          !widget.repository.current.isSignedIn) {
+      if (!_accepts(scope, token)) {
         next.dispose();
         return;
       }
-      setState(() => _controller = next);
+      setState(() {
+        _controller = next;
+        _loading = false;
+      });
+    } on AccountDeletionPending {
+      next?.dispose();
+      if (_accepts(scope, token)) {
+        setState(() {
+          _loading = false;
+          _deletionPending = true;
+        });
+      }
     } catch (_) {
-      next.dispose();
-      if (mounted && token == _loadToken) {
+      next?.dispose();
+      if (_accepts(scope, token)) {
+        setState(() {
+          _loading = false;
+          _failed = true;
+        });
+      }
+    }
+  }
+
+  Future<void> _signOut() async {
+    final scope = _scope;
+    if (_signingOut || scope == null) return;
+    setState(() {
+      _signingOut = true;
+      _error = null;
+    });
+    try {
+      await _sessions.signOut();
+    } catch (error) {
+      if (mounted && _sessions.accepts(scope)) {
         setState(
-          () => _session = session.withMessage('Мэдээллийг нээж чадсангүй.'),
+          () => _error = error is AuthFailure
+              ? error.message
+              : 'Гарч чадсангүй. Дахин оролдоно уу.',
         );
+      }
+    } finally {
+      if (mounted && _sessions.accepts(scope)) {
+        setState(() => _signingOut = false);
+      }
+    }
+  }
+
+  Future<void> _resumeDeletion() async {
+    final scope = _scope;
+    final resume = widget.onResumeAccountDeletion;
+    if (_resumingDeletion || scope == null || resume == null) return;
+    setState(() {
+      _resumingDeletion = true;
+      _error = null;
+    });
+    try {
+      await resume(scope);
+    } catch (_) {
+      if (mounted && _sessions.accepts(scope)) {
+        setState(
+          () => _error =
+              'Устгал дуусаагүй байна. Холболтоо шалгаад дахин оролдоорой.',
+        );
+      }
+    } finally {
+      if (mounted && _sessions.accepts(scope)) {
+        setState(() => _resumingDeletion = false);
       }
     }
   }
@@ -75,22 +179,83 @@ class _CloudAuthGateState extends State<CloudAuthGate> {
   @override
   void dispose() {
     _loadToken++;
-    _subscription.cancel();
+    unawaited(_subscription.cancel());
+    unawaited(_sessions.dispose());
     _controller?.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) => MaterialApp(
-    title: 'Хамтдаа',
+    key: ValueKey(_scope),
+    title: 'Нандин мөч',
     debugShowCheckedModeBanner: false,
     theme: buildAppTheme(),
     locale: const Locale('mn'),
     supportedLocales: const [Locale('mn'), Locale('en')],
     localizationsDelegates: GlobalMaterialLocalizations.delegates,
-    home: _controller != null && _session.isSignedIn
-        ? AppShell(controller: _controller!)
-        : AuthScreen(repository: widget.repository, onSignedIn: _applySession),
+    navigatorObservers: widget.navigatorObservers,
+    home: !_session.isSignedIn
+        ? AuthScreen(repository: widget.repository)
+        : _controller != null
+        ? widget.appBuilder(_controller!)
+        : Scaffold(
+            body: SafeArea(
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: _loading
+                      ? const CircularProgressIndicator()
+                      : Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              _deletionPending
+                                  ? 'Бүртгэлийн устгалыг үргэлжлүүлье'
+                                  : _failed
+                                  ? 'Мэдээллийг нээж чадсангүй'
+                                  : 'Мэдээллийг нээж байна…',
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              _deletionPending
+                                  ? 'Та бүртгэлээ бүрмөсөн устгахаар баталгаажуулсан. Үүлэн хадгалалтын устгалыг дуусгахад интернэт хэрэгтэй.'
+                                  : 'Хадгалсан мэдээллийг өөрчлөөгүй.',
+                              textAlign: TextAlign.center,
+                            ),
+                            if (_error != null) Text(_error!),
+                            const SizedBox(height: 20),
+                            FilledButton(
+                              onPressed:
+                                  _signingOut ||
+                                      _resumingDeletion ||
+                                      (_deletionPending &&
+                                          widget.onResumeAccountDeletion ==
+                                              null)
+                                  ? null
+                                  : _deletionPending
+                                  ? _resumeDeletion
+                                  : _loadAccount,
+                              child: Text(
+                                _resumingDeletion
+                                    ? 'Устгаж байна…'
+                                    : _deletionPending
+                                    ? 'Устгал үргэлжлүүлэх'
+                                    : 'Дахин оролдох',
+                              ),
+                            ),
+                            TextButton(
+                              onPressed: _signingOut || _resumingDeletion
+                                  ? null
+                                  : _signOut,
+                              child: const Text('Бүртгэлээс гарах'),
+                            ),
+                          ],
+                        ),
+                ),
+              ),
+            ),
+          ),
   );
 }
 

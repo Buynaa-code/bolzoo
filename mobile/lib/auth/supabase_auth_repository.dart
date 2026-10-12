@@ -8,20 +8,37 @@ import 'auth_repository.dart';
 /// Supabase Auth adapter. The rest of the app depends only on AuthRepository,
 /// so a local fake can be used in tests and offline development.
 class SupabaseAuthRepository implements AuthRepository {
-  SupabaseAuthRepository(this._client) {
-    _current = _fromSupabaseSession(_client.auth.currentSession);
-    _subscription = _client.auth.onAuthStateChange.listen((state) {
-      _current = _fromSupabaseSession(state.session);
-      _events.add(_current);
-    });
+  SupabaseAuthRepository(SupabaseClient client)
+    : this.withAuthClient(client.auth);
+
+  SupabaseAuthRepository.withAuthClient(this._auth) {
+    _applySupabaseSession(_auth.currentSession);
+    _subscription = _auth.onAuthStateChange.listen(
+      (state) {
+        if (state.event == AuthChangeEvent.initialSession &&
+            state.session == null &&
+            _current.status == AuthStatus.awaitingCode) {
+          return;
+        }
+        _applySupabaseSession(state.session);
+      },
+      onError: (Object _, StackTrace _) {
+        _publish(
+          _current.withMessage(
+            'Нэвтрэлтийг шинэчилж чадсангүй. Интернэт холболтоо шалгана уу.',
+          ),
+        );
+      },
+    );
   }
 
-  final SupabaseClient _client;
-  final StreamController<AuthSession> _events =
-      StreamController<AuthSession>.broadcast();
+  final GoTrueClient _auth;
+  final _events = StreamController<AuthSession>.broadcast();
   late final StreamSubscription<AuthState> _subscription;
-  late AuthSession _current;
+  AuthSession _current = const AuthSession.signedOut();
   int _epoch = 0;
+  String? _identity;
+  bool _closed = false;
 
   @override
   AuthSession get current => _current;
@@ -29,42 +46,46 @@ class SupabaseAuthRepository implements AuthRepository {
   @override
   Stream<AuthSession> get sessions => _events.stream;
 
-  AuthSession _fromSupabaseSession(Session? session) {
+  void _applySupabaseSession(Session? session) {
+    if (_closed) return;
     final user = session?.user;
-    if (user == null) {
-      return const AuthSession.signedOut();
+    if (_identity != user?.id) {
+      _epoch++;
+      _identity = user?.id;
     }
-    final email = user.email;
-    if (email == null || email.isEmpty) {
-      return AuthSession.signedIn(
-        userId: user.id,
-        email: '',
-        epoch: _epoch,
-      );
-    }
-    return AuthSession.signedIn(
-      userId: user.id,
-      email: email,
-      epoch: _epoch,
+    _publish(
+      user == null
+          ? const AuthSession.signedOut()
+          : AuthSession.signedIn(
+              userId: user.id,
+              email: user.email ?? '',
+              epoch: _epoch,
+            ),
     );
+  }
+
+  void _publish(AuthSession session) {
+    if (_closed) return;
+    if (_current.status == session.status &&
+        _current.userId == session.userId &&
+        _current.email == session.email &&
+        _current.epoch == session.epoch &&
+        _current.message == session.message) {
+      return;
+    }
+    _current = session;
+    _events.add(session);
   }
 
   @override
   Future<void> requestEmailCode(String email) async {
     final normalized = email.trim().toLowerCase();
     if (!_validEmail(normalized)) {
-      throw const AuthFailure(
-        'invalid_email',
-        'Зөв имэйл хаяг оруулна уу.',
-      );
+      throw const AuthFailure('invalid_email', 'Зөв имэйл хаяг оруулна уу.');
     }
     try {
-      await _client.auth.signInWithOtp(
-        email: normalized,
-        shouldCreateUser: true,
-      );
-      _current = AuthSession.awaitingCode(normalized);
-      _events.add(_current);
+      await _auth.signInWithOtp(email: normalized, shouldCreateUser: true);
+      if (!_current.isSignedIn) _publish(AuthSession.awaitingCode(normalized));
     } on AuthException catch (error) {
       throw AuthFailure(
         error.statusCode ?? 'auth_error',
@@ -87,25 +108,19 @@ class SupabaseAuthRepository implements AuthRepository {
       throw const AuthFailure('invalid_code', '6 оронтой код оруулна уу.');
     }
     try {
-      final response = await _client.auth.verifyOTP(
+      final response = await _auth.verifyOTP(
         email: normalized,
         token: code.trim(),
         type: OtpType.email,
       );
-      final user = response.user;
-      if (user == null) {
+      if (response.session == null) {
         throw const AuthFailure(
           'missing_user',
           'Нэвтрэлт баталгаажаагүй байна. Дахин оролдоно уу.',
         );
       }
-      _epoch++;
-      _current = AuthSession.signedIn(
-        userId: user.id,
-        email: user.email ?? normalized,
-        epoch: _epoch,
-      );
-      _events.add(_current);
+      // The callback and verification response share one transition.
+      _applySupabaseSession(response.session);
       return _current;
     } on AuthFailure {
       rethrow;
@@ -127,13 +142,18 @@ class SupabaseAuthRepository implements AuthRepository {
   @override
   Future<void> signOut() async {
     try {
-      await _client.auth.signOut();
-      _epoch++;
-      _current = const AuthSession.signedOut();
-      _events.add(_current);
+      await _auth.signOut(scope: SignOutScope.local);
+      // A later login may complete while the old logout awaits its response.
+      _applySupabaseSession(_auth.currentSession);
     } on AuthException catch (error) {
       throw AuthFailure(
         error.statusCode ?? 'sign_out_error',
+        'Гарах үед алдаа гарлаа. Дахин оролдоно уу.',
+        retryable: true,
+      );
+    } catch (_) {
+      throw const AuthFailure(
+        'sign_out_error',
         'Гарах үед алдаа гарлаа. Дахин оролдоно уу.',
         retryable: true,
       );
@@ -141,6 +161,8 @@ class SupabaseAuthRepository implements AuthRepository {
   }
 
   Future<void> dispose() async {
+    if (_closed) return;
+    _closed = true;
     await _subscription.cancel();
     await _events.close();
   }

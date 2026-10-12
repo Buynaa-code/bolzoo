@@ -13,8 +13,11 @@ final pairRouteObserver = RouteObserver<PageRoute<dynamic>>();
 
 /// Give each route a new account-bound repository. This route owns its lifetime.
 class PairScreen extends StatefulWidget {
-  const PairScreen({super.key, required this.repository});
+  const PairScreen({super.key, required this.repository, this.onPairChanged});
   final PairRepository repository;
+
+  /// Reports resolved pairing changes and cleared private state to the owner.
+  final ValueChanged<PairSnapshot?>? onPairChanged;
 
   @override
   State<PairScreen> createState() => _PairScreenState();
@@ -29,16 +32,38 @@ class _PairScreenState extends State<PairScreen>
   bool _routeVisible = true;
   bool _appVisible = true;
   bool _editingName = false;
+  bool _changingVisibility = false;
+  (bool, String?, int?, String?)? _reportedPair;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _controller = PairController(widget.repository);
+    _controller.addListener(_pairChanged);
     _appVisible =
         WidgetsBinding.instance.lifecycleState == null ||
         WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed;
     _controller.setForeground(_appVisible);
+  }
+
+  void _pairChanged() {
+    final snapshot = _controller.snapshot;
+    // Hiding a private projection is not evidence that the pairing ended.
+    // Existing native reminders must survive route changes and backgrounding.
+    if (snapshot == null && _changingVisibility) return;
+    // Initial loading has no verified pairing to report or invalidate.
+    if (snapshot == null && _reportedPair == null) return;
+    final pair = snapshot?.pair;
+    final next = (
+      snapshot != null,
+      pair?.id,
+      pair?.version,
+      pair?.partner.userId,
+    );
+    if (next == _reportedPair) return;
+    _reportedPair = next;
+    widget.onPairChanged?.call(snapshot);
   }
 
   @override
@@ -72,13 +97,19 @@ class _PairScreenState extends State<PairScreen>
 
   void _visibilityChanged() {
     if (!_appVisible || !_routeVisible) _token.clear();
-    _controller.setForeground(_appVisible && _routeVisible);
+    _changingVisibility = true;
+    try {
+      _controller.setForeground(_appVisible && _routeVisible);
+    } finally {
+      _changingVisibility = false;
+    }
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     pairRouteObserver.unsubscribe(this);
+    _controller.removeListener(_pairChanged);
     _controller.dispose();
     widget.repository.dispose();
     _token.dispose();

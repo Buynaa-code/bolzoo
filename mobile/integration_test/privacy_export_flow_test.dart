@@ -11,7 +11,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:hamtdaa/data/app_controller.dart';
-import 'package:hamtdaa/main.dart';
+import 'package:hamtdaa/main_supabase_legacy.dart';
 
 Future<void> _tap(WidgetTester tester, Finder finder) async {
   if (finder.evaluate().isEmpty) {

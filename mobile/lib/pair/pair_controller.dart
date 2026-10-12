@@ -237,6 +237,12 @@ class PairController extends ChangeNotifier {
         _issuedToken = null;
         _issuedInvitationId = null;
       }
+      if (command.kind == PairCommandKind.unlink) {
+        // The server has acknowledged removal. Revoke private projections and
+        // native reminder observers before the follow-up status request awaits.
+        _clearProjection();
+        _emit();
+      }
       _clearPreview();
       if (_current(epoch)) {
         _notice = switch (command.kind) {

@@ -6,6 +6,7 @@ import 'package:path_provider/path_provider.dart';
 
 import '../../data/app_controller.dart';
 import '../../ui/theme.dart';
+import '../places/places_screen.dart';
 import 'media_files.dart';
 
 String _memoryDate(DateTime value) =>
@@ -38,21 +39,84 @@ Future<void> openMemoryDetail(
   ),
 );
 
-class MemoriesScreen extends StatelessWidget {
+class MemoriesScreen extends StatefulWidget {
   const MemoriesScreen({super.key, required this.controller});
-
   final AppController controller;
 
   @override
+  State<MemoriesScreen> createState() => _MemoriesScreenState();
+}
+
+class _MemoriesScreenState extends State<MemoriesScreen> {
+  DateTime? _month;
+
+  Future<void> _chooseMonth(List<MemoryEntry> memories) async {
+    final months =
+        memories
+            .map((m) => DateTime(m.date.year, m.date.month))
+            .toSet()
+            .toList()
+          ..sort((a, b) => b.compareTo(a));
+    final selection = await showModalBottomSheet<DateTime>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) => SafeArea(
+        child: ListView(
+          shrinkWrap: true,
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
+          children: [
+            const Padding(
+              padding: EdgeInsets.all(12),
+              child: Text(
+                'Дурсамжийн сар',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+              ),
+            ),
+            ListTile(
+              key: const ValueKey('memoriesAllMonths'),
+              title: const Text('Бүх дурсамж'),
+              trailing: _month == null
+                  ? const Icon(Icons.check_rounded, color: AppColors.pink)
+                  : null,
+              onTap: () => Navigator.pop(context, DateTime(1)),
+            ),
+            for (final month in months)
+              ListTile(
+                key: ValueKey('memoryMonth-${month.year}-${month.month}'),
+                title: Text('${month.year} · ${month.month}-р сар'),
+                trailing: _month == month
+                    ? const Icon(Icons.check_rounded, color: AppColors.pink)
+                    : null,
+                onTap: () => Navigator.pop(context, month),
+              ),
+          ],
+        ),
+      ),
+    );
+    if (selection != null && mounted) {
+      setState(() => _month = selection.year == 1 ? null : selection);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) => AnimatedBuilder(
-    animation: controller,
+    animation: widget.controller,
     builder: (context, _) {
-      final memories = [...controller.data.memories]
+      final all = [...widget.controller.data.memories]
         ..sort((a, b) => b.date.compareTo(a.date));
+      final memories = all
+          .where(
+            (m) =>
+                _month == null ||
+                (m.date.year == _month!.year && m.date.month == _month!.month),
+          )
+          .toList();
+      final width = MediaQuery.sizeOf(context).width;
+      final scale = MediaQuery.textScalerOf(context).scale(1).clamp(1.0, 2.0);
       return CustomScrollView(
         slivers: [
           SliverPadding(
-            padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
+            padding: const EdgeInsets.fromLTRB(22, 20, 22, 24),
             sliver: SliverToBoxAdapter(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -61,14 +125,22 @@ class MemoriesScreen extends StatelessWidget {
                     children: [
                       Expanded(
                         child: Text(
-                          'Дурсамж',
-                          style: Theme.of(context).textTheme.headlineLarge
+                          'Бидний дурсамж',
+                          style: Theme.of(context).textTheme.headlineSmall
                               ?.copyWith(fontWeight: FontWeight.w800),
                         ),
                       ),
+                      IconButton(
+                        key: const ValueKey('memoriesPlacesButton'),
+                        tooltip: 'Очсон газрууд',
+                        onPressed: () => openPlaces(context, widget.controller),
+                        icon: const Icon(Icons.map_outlined),
+                      ),
                       IconButton.filledTonal(
+                        key: const ValueKey('memoriesAddButton'),
                         tooltip: 'Дурсамж нэмэх',
-                        onPressed: () => openMemoryEditor(context, controller),
+                        onPressed: () =>
+                            openMemoryEditor(context, widget.controller),
                         icon: const Icon(Icons.add_rounded),
                       ),
                     ],
@@ -76,10 +148,38 @@ class MemoriesScreen extends StatelessWidget {
                   const SizedBox(height: 8),
                   const Text(
                     'Жижигхэн мөчүүд. Нандин дурсамжууд.',
-                    style: TextStyle(color: AppColors.muted, fontSize: 15),
+                    style: TextStyle(color: AppColors.muted, fontSize: 14),
                   ),
-                  const SizedBox(height: 18),
-                  const _PrivateCaption(),
+                  const SizedBox(height: 22),
+                  Row(
+                    children: [
+                      Flexible(
+                        child: OutlinedButton.icon(
+                          key: const ValueKey('memoriesMonthFilter'),
+                          onPressed: () => _chooseMonth(all),
+                          icon: const Icon(
+                            Icons.calendar_month_outlined,
+                            size: 17,
+                          ),
+                          label: Text(
+                            _month == null
+                                ? 'Бүх сар'
+                                : '${_month!.year} · ${_month!.month}-р сар',
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        '${memories.length} дурсамж',
+                        style: const TextStyle(
+                          color: AppColors.muted,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  _PrivateCaption(mixed: all.any((memory) => memory.shared)),
                 ],
               ),
             ),
@@ -88,22 +188,53 @@ class MemoriesScreen extends StatelessWidget {
             SliverFillRemaining(
               hasScrollBody: false,
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(24, 8, 24, 36),
-                child: _EmptyMemories(
-                  onAdd: () => openMemoryEditor(context, controller),
-                ),
+                padding: const EdgeInsets.fromLTRB(22, 0, 22, 32),
+                child: _month == null
+                    ? _EmptyMemories(
+                        onAdd: () =>
+                            openMemoryEditor(context, widget.controller),
+                      )
+                    : Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.photo_library_outlined,
+                              size: 40,
+                              color: AppColors.muted,
+                            ),
+                            const SizedBox(height: 16),
+                            const Text('Энэ сард дурсамж алга'),
+                            const SizedBox(height: 12),
+                            TextButton(
+                              onPressed: () => setState(() => _month = null),
+                              child: const Text('Бүх дурсамжийг харах'),
+                            ),
+                          ],
+                        ),
+                      ),
               ),
             )
           else
             SliverPadding(
-              padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
-              sliver: SliverList.separated(
+              padding: const EdgeInsets.fromLTRB(22, 0, 22, 32),
+              sliver: SliverGrid.builder(
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: width >= 650 ? 3 : 2,
+                  crossAxisSpacing: 14,
+                  mainAxisSpacing: 18,
+                  mainAxisExtent:
+                      (width - 58) / (width >= 650 ? 3 : 2) + 100 * scale,
+                ),
                 itemCount: memories.length,
-                separatorBuilder: (_, _) => const SizedBox(height: 18),
                 itemBuilder: (context, index) => _MemoryCard(
                   memory: memories[index],
-                  onTap: () =>
-                      openMemoryDetail(context, controller, memories[index].id),
+                  controller: widget.controller,
+                  onTap: () => openMemoryDetail(
+                    context,
+                    widget.controller,
+                    memories[index].id,
+                  ),
                 ),
               ),
             ),
@@ -114,16 +245,28 @@ class MemoriesScreen extends StatelessWidget {
 }
 
 class _PrivateCaption extends StatelessWidget {
-  const _PrivateCaption();
+  const _PrivateCaption({this.shared = false, this.mixed = false});
+  final bool shared;
+  final bool mixed;
 
   @override
-  Widget build(BuildContext context) => const Row(
+  Widget build(BuildContext context) => Row(
     children: [
-      Icon(Icons.lock_outline_rounded, size: 14, color: AppColors.muted),
+      Icon(
+        shared || mixed
+            ? Icons.people_outline_rounded
+            : Icons.lock_outline_rounded,
+        size: 14,
+        color: AppColors.muted,
+      ),
       SizedBox(width: 6),
       Expanded(
         child: Text(
-          'Зөвхөн танд харагдана',
+          mixed
+              ? 'Хувийн болон хуваалцсан дурсамжууд'
+              : shared
+              ? 'Хостойгоо хуваалцсан'
+              : 'Зөвхөн танд харагдана',
           style: TextStyle(color: AppColors.muted, fontSize: 12),
         ),
       ),
@@ -188,63 +331,119 @@ class _EmptyMemories extends StatelessWidget {
 }
 
 class _MemoryCard extends StatelessWidget {
-  const _MemoryCard({required this.memory, required this.onTap});
-
+  const _MemoryCard({
+    required this.memory,
+    required this.controller,
+    required this.onTap,
+  });
+  final AppController controller;
   final MemoryEntry memory;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) => Material(
     color: Colors.white,
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(24),
-      side: const BorderSide(color: AppColors.line),
-    ),
+    borderRadius: BorderRadius.circular(22),
     clipBehavior: Clip.antiAlias,
     child: InkWell(
+      key: ValueKey('memoryCard-${memory.id}'),
       onTap: onTap,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (memory.photoPath != null)
-            AspectRatio(
-              aspectRatio: 1.55,
-              child: _MemoryPhoto(path: memory.photoPath!),
-            ),
-          Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  _memoryDate(memory.date),
-                  style: const TextStyle(
-                    color: AppColors.muted,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  memory.title,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
-                ),
-                if (memory.text.trim().isNotEmpty) ...[
-                  const SizedBox(height: 8),
-                  Text(
-                    memory.text,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(color: AppColors.muted, height: 1.5),
+          AspectRatio(
+            aspectRatio: 1,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(22),
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  if (memory.photoPath != null || memory.mediaKey != null)
+                    _MemoryPhoto(
+                      path: controller.isPartnerItem(memory.id)
+                          ? null
+                          : memory.photoPath,
+                      mediaKey: memory.mediaKey,
+                      controller: controller,
+                    )
+                  else
+                    const ColoredBox(
+                      color: AppColors.blush,
+                      child: Center(
+                        child: Icon(
+                          Icons.auto_stories_outlined,
+                          size: 38,
+                          color: AppColors.pink,
+                        ),
+                      ),
+                    ),
+                  Positioned(
+                    left: 10,
+                    bottom: 10,
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: .94),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 9,
+                          vertical: 5,
+                        ),
+                        child: Text(
+                          '${memory.date.month}.${memory.date.day.toString().padLeft(2, '0')}',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w800,
+                            fontSize: 11,
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
                 ],
-              ],
+              ),
             ),
           ),
+          const SizedBox(height: 11),
+          Text(
+            memory.title,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w800,
+              height: 1.25,
+            ),
+          ),
+          const SizedBox(height: 5),
+          if (memory.place.isNotEmpty)
+            Row(
+              children: [
+                const Icon(
+                  Icons.place_outlined,
+                  size: 13,
+                  color: AppColors.muted,
+                ),
+                const SizedBox(width: 3),
+                Expanded(
+                  child: Text(
+                    memory.place,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: AppColors.muted,
+                      fontSize: 11,
+                    ),
+                  ),
+                ),
+              ],
+            )
+          else
+            Text(
+              '${memory.date.year} оны ${memory.date.month}-р сар',
+              maxLines: 1,
+              style: const TextStyle(color: AppColors.muted, fontSize: 11),
+            ),
         ],
       ),
     ),
@@ -252,36 +451,67 @@ class _MemoryCard extends StatelessWidget {
 }
 
 class _MemoryPhoto extends StatelessWidget {
-  const _MemoryPhoto({required this.path});
+  const _MemoryPhoto({this.path, this.mediaKey, this.controller});
+  final String? path;
+  final String? mediaKey;
+  final AppController? controller;
 
-  final String path;
-
-  @override
-  Widget build(BuildContext context) => Image.file(
-    File(path),
-    fit: BoxFit.cover,
-    width: double.infinity,
-    errorBuilder: (context, error, stack) => const ColoredBox(
-      color: AppColors.blush,
-      child: Center(
-        child: Padding(
-          padding: EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.image_not_supported_outlined, color: AppColors.muted),
-              SizedBox(height: 8),
-              Text(
-                'Зураг нээгдэхгүй байна',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: AppColors.muted, fontSize: 12),
+  Widget _unavailable({bool remote = false}) => ColoredBox(
+    color: AppColors.blush,
+    child: Center(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons.image_not_supported_outlined,
+              color: AppColors.muted,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              remote ? 'Зураг татагдаагүй байна' : 'Зураг нээгдэхгүй байна',
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: AppColors.muted, fontSize: 12),
+            ),
+            if (remote && controller != null)
+              TextButton(
+                onPressed: () async {
+                  try {
+                    await controller!.refreshCloud();
+                  } catch (_) {}
+                },
+                child: const Text('Дахин татах'),
               ),
-            ],
-          ),
+          ],
         ),
       ),
     ),
   );
+
+  @override
+  Widget build(BuildContext context) {
+    final local = path;
+    if (local != null) {
+      return Image.file(
+        File(local),
+        fit: BoxFit.cover,
+        width: double.infinity,
+        errorBuilder: (_, _, _) => _unavailable(),
+      );
+    }
+    final key = mediaKey;
+    final bytes = key == null ? null : controller?.mediaBytes(key);
+    if (bytes != null) {
+      return Image.memory(
+        bytes,
+        fit: BoxFit.cover,
+        width: double.infinity,
+        errorBuilder: (_, _, _) => _unavailable(remote: true),
+      );
+    }
+    return _unavailable(remote: key != null);
+  }
 }
 
 class _MemoryDetail extends StatefulWidget {
@@ -296,6 +526,55 @@ class _MemoryDetail extends StatefulWidget {
 
 class _MemoryDetailState extends State<_MemoryDetail> {
   bool _deleting = false;
+  bool _socialBusy = false;
+  final _comment = TextEditingController();
+
+  @override
+  void dispose() {
+    _comment.dispose();
+    super.dispose();
+  }
+
+  Future<void> _like() async {
+    if (_socialBusy) return;
+    setState(() => _socialBusy = true);
+    try {
+      await widget.controller.toggleMemoryLike(widget.memoryId);
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Хадгалж чадсангүй. Дахин оролдоорой.')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _socialBusy = false);
+    }
+  }
+
+  Future<void> _addComment() async {
+    if (_socialBusy || _comment.text.trim().isEmpty) return;
+    setState(() => _socialBusy = true);
+    try {
+      await widget.controller.addMemoryComment(
+        widget.memoryId,
+        _comment.text.trim(),
+      );
+      if (mounted) {
+        _comment.clear();
+        FocusScope.of(context).unfocus();
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Сэтгэгдэл хадгалагдсангүй. Дахин оролдоорой.'),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _socialBusy = false);
+    }
+  }
 
   Future<void> _delete() async {
     final confirmed = await showDialog<bool>(
@@ -327,19 +606,15 @@ class _MemoryDetailState extends State<_MemoryDetail> {
       await widget.controller.deleteMemory(widget.memoryId);
       await deleteUnusedManagedPhoto(
         oldPhotoPath,
+        documentsDirectory: widget.controller.storageDirectory,
         referencedPaths: () =>
             widget.controller.data.memories.map((memory) => memory.photoPath),
       );
       if (!mounted) return;
-      setState(() => _deleting = false);
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted) return;
-        final messenger = ScaffoldMessenger.of(context);
-        Navigator.of(context).pop();
-        messenger.showSnackBar(
-          const SnackBar(content: Text('Дурсамж устгагдлаа')),
-        );
-      });
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Дурсамж устгагдлаа')));
     } catch (_) {
       if (!mounted) return;
       setState(() => _deleting = false);
@@ -364,7 +639,7 @@ class _MemoryDetailState extends State<_MemoryDetail> {
           appBar: AppBar(
             title: const Text('Дурсамж'),
             actions: [
-              if (current != null)
+              if (current != null && widget.controller.canEdit(current.id))
                 IconButton(
                   tooltip: 'Дурсамж засах',
                   onPressed: _deleting
@@ -376,17 +651,18 @@ class _MemoryDetailState extends State<_MemoryDetail> {
                         ),
                   icon: const Icon(Icons.edit_outlined),
                 ),
-              IconButton(
-                tooltip: 'Дурсамж устгах',
-                onPressed: current == null || _deleting ? null : _delete,
-                icon: _deleting
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Icon(Icons.delete_outline_rounded),
-              ),
+              if (current != null && widget.controller.canEdit(current.id))
+                IconButton(
+                  tooltip: 'Дурсамж устгах',
+                  onPressed: _deleting ? null : _delete,
+                  icon: _deleting
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.delete_outline_rounded),
+                ),
               const SizedBox(width: 8),
             ],
           ),
@@ -395,12 +671,19 @@ class _MemoryDetailState extends State<_MemoryDetail> {
               : ListView(
                   padding: const EdgeInsets.fromLTRB(24, 12, 24, 40),
                   children: [
-                    if (current.photoPath != null) ...[
+                    if (current.photoPath != null ||
+                        current.mediaKey != null) ...[
                       ClipRRect(
                         borderRadius: BorderRadius.circular(28),
                         child: AspectRatio(
                           aspectRatio: 1,
-                          child: _MemoryPhoto(path: current.photoPath!),
+                          child: _MemoryPhoto(
+                            path: widget.controller.isPartnerItem(current.id)
+                                ? null
+                                : current.photoPath,
+                            mediaKey: current.mediaKey,
+                            controller: widget.controller,
+                          ),
                         ),
                       ),
                       const SizedBox(height: 28),
@@ -415,6 +698,47 @@ class _MemoryDetailState extends State<_MemoryDetail> {
                       style: Theme.of(context).textTheme.headlineMedium
                           ?.copyWith(fontWeight: FontWeight.w800, height: 1.25),
                     ),
+                    if (current.place.isNotEmpty) ...[
+                      const SizedBox(height: 14),
+                      InkWell(
+                        key: const ValueKey('memoryPlaceLink'),
+                        onTap: current.placeId == null
+                            ? null
+                            : () => openPlaceDetail(
+                                context,
+                                widget.controller,
+                                current.placeId!,
+                              ),
+                        borderRadius: BorderRadius.circular(12),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.place_outlined,
+                                color: AppColors.pink,
+                                size: 20,
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  current.place,
+                                  style: const TextStyle(
+                                    color: AppColors.muted,
+                                  ),
+                                ),
+                              ),
+                              if (current.placeId != null)
+                                const Icon(
+                                  Icons.chevron_right_rounded,
+                                  color: AppColors.muted,
+                                  size: 20,
+                                ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                     if (current.text.trim().isNotEmpty) ...[
                       const SizedBox(height: 22),
                       SelectableText(
@@ -422,10 +746,123 @@ class _MemoryDetailState extends State<_MemoryDetail> {
                         style: const TextStyle(fontSize: 16, height: 1.7),
                       ),
                     ],
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 25),
+                    Row(
+                      children: [
+                        IconButton(
+                          key: const ValueKey('memoryLikeButton'),
+                          tooltip: current.likedByMe
+                              ? 'Таалагдсаныг болих'
+                              : 'Таалагдлаа',
+                          onPressed: _socialBusy ? null : _like,
+                          icon: Icon(
+                            current.likedByMe
+                                ? Icons.favorite_rounded
+                                : Icons.favorite_border_rounded,
+                            color: AppColors.pink,
+                          ),
+                        ),
+                        Text(
+                          '${current.likeCount} таалагдсан',
+                          style: const TextStyle(
+                            color: AppColors.muted,
+                            fontSize: 12,
+                          ),
+                        ),
+                        const Spacer(),
+                        const Icon(
+                          Icons.chat_bubble_outline_rounded,
+                          size: 18,
+                          color: AppColors.muted,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          '${current.comments.length}',
+                          style: const TextStyle(color: AppColors.muted),
+                        ),
+                      ],
+                    ),
                     const Divider(),
-                    const SizedBox(height: 16),
-                    const _PrivateCaption(),
+                    const SizedBox(height: 14),
+                    const Text(
+                      'Сэтгэгдэл',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 17,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      current.shared
+                          ? 'Хуваалцсан дурсамжийн сэтгэгдлүүд.'
+                          : widget.controller.cloudAvailable
+                          ? 'Таны бүртгэлийн сэтгэгдлүүд.'
+                          : 'Энэ төхөөрөмж дээр хадгалсан сэтгэгдлүүд.',
+                      style: TextStyle(color: AppColors.muted, fontSize: 11),
+                    ),
+                    for (final comment in current.comments)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 16),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const CircleAvatar(
+                              radius: 17,
+                              backgroundColor: AppColors.blush,
+                              child: Icon(
+                                Icons.person_outline_rounded,
+                                size: 19,
+                                color: AppColors.pink,
+                              ),
+                            ),
+                            const SizedBox(width: 11),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    comment.authorName,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    comment.text,
+                                    style: const TextStyle(height: 1.5),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    const SizedBox(height: 18),
+                    TextField(
+                      key: const ValueKey('memoryComment'),
+                      controller: _comment,
+                      enabled: !_socialBusy,
+                      minLines: 1,
+                      maxLines: 4,
+                      maxLength: 1000,
+                      decoration: const InputDecoration(
+                        hintText: 'Сэтгэгдлээ үлдээгээрэй…',
+                        counterText: '',
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton.icon(
+                        key: const ValueKey('memoryCommentSave'),
+                        onPressed: _socialBusy ? null : _addComment,
+                        icon: const Icon(Icons.send_rounded, size: 16),
+                        label: const Text('Хадгалах'),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    _PrivateCaption(shared: current.shared),
                   ],
                 ),
         ),
@@ -456,6 +893,11 @@ class _MemoryEditorState extends State<_MemoryEditor> {
   final _picker = ImagePicker();
   late final TextEditingController _title;
   late final TextEditingController _text;
+  late final TextEditingController _place;
+  late final String _initialPlace;
+  String? _placeId;
+  String? _initialPlaceId;
+  late bool _shared;
   late final String _initialTitle;
   late final String _initialText;
   late final DateTime _initialDate;
@@ -479,6 +921,18 @@ class _MemoryEditorState extends State<_MemoryEditor> {
     }
     _initialTitle = widget.memory?.title ?? event?.title ?? '';
     _initialText = widget.memory?.text ?? '';
+    _shared = widget.memory?.shared ?? false;
+    _placeId = widget.memory?.placeId ?? widget.placeId;
+    PlaceEntry? savedPlace;
+    for (final entry in widget.controller.data.places) {
+      if (entry.id == _placeId) savedPlace = entry;
+    }
+    if (savedPlace == null) _placeId = null;
+    _initialPlaceId = _placeId;
+    _initialPlace =
+        widget.memory?.place ?? savedPlace?.name ?? event?.place ?? '';
+    _place = TextEditingController(text: _initialPlace);
+    _place.addListener(_changed);
     _title = TextEditingController(text: _initialTitle);
     _text = TextEditingController(text: _initialText);
     _initialDate = widget.memory?.date ?? event?.startsAt ?? DateTime.now();
@@ -494,6 +948,9 @@ class _MemoryEditorState extends State<_MemoryEditor> {
   bool get _dirty =>
       _title.text != _initialTitle ||
       _text.text != _initialText ||
+      _place.text != _initialPlace ||
+      _placeId != _initialPlaceId ||
+      _shared != (widget.memory?.shared ?? false) ||
       !DateUtils.isSameDay(_date, _initialDate) ||
       _pickedPhoto != null ||
       (_removePhoto && widget.memory?.photoPath != null);
@@ -505,6 +962,7 @@ class _MemoryEditorState extends State<_MemoryEditor> {
   void dispose() {
     _title.dispose();
     _text.dispose();
+    _place.dispose();
     super.dispose();
   }
 
@@ -617,15 +1075,26 @@ class _MemoryEditorState extends State<_MemoryEditor> {
         await picked.saveTo(newPhoto.path);
         photoPath = newPhoto.path;
       }
+      final base =
+          widget.memory ??
+          MemoryEntry(
+            id: newLocalId(),
+            title: _title.text.trim(),
+            date: _date,
+            eventId: widget.eventId,
+          );
       await widget.controller.saveMemory(
-        MemoryEntry(
-          id: widget.memory?.id ?? newLocalId(),
+        base.copyWith(
           title: _title.text.trim(),
           date: DateTime(_date.year, _date.month, _date.day),
           text: _text.text.trim(),
           photoPath: photoPath,
-          eventId: widget.memory?.eventId ?? widget.eventId,
-          placeId: widget.memory?.placeId ?? widget.placeId,
+          mediaKey: _removePhoto || picked != null ? null : base.mediaKey,
+          shared: _shared,
+          place: _place.text.trim(),
+          placeId: widget.controller.data.places.any((p) => p.id == _placeId)
+              ? _placeId
+              : null,
         ),
       );
       await deleteUnusedManagedPhoto(
@@ -639,9 +1108,9 @@ class _MemoryEditorState extends State<_MemoryEditor> {
         _allowPop = true;
         _saving = false;
       });
+      final messenger = ScaffoldMessenger.of(context);
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
-        final messenger = ScaffoldMessenger.of(context);
         Navigator.of(context).pop();
         messenger.showSnackBar(
           const SnackBar(content: Text('Дурсамж хадгалагдлаа')),
@@ -658,7 +1127,9 @@ class _MemoryEditorState extends State<_MemoryEditor> {
       if (!mounted) return;
       setState(() {
         _saving = false;
-        _error = 'Хадгалж чадсангүй. Утасны сул зайг шалгаад дахин оролдоорой.';
+        _error = widget.controller.cloudAvailable
+            ? 'Хадгалж чадсангүй. Холболт болон зургийн төрлийг шалгаад дахин оролдоорой.'
+            : 'Хадгалж чадсангүй. Утасны сул зайг шалгаад дахин оролдоорой.';
       });
     }
   }
@@ -685,12 +1156,17 @@ class _MemoryEditorState extends State<_MemoryEditor> {
           child: ListView(
             padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
             children: [
-              if (photoPath != null) ...[
+              if (photoPath != null ||
+                  (!_removePhoto && widget.memory?.mediaKey != null)) ...[
                 ClipRRect(
                   borderRadius: BorderRadius.circular(26),
                   child: AspectRatio(
                     aspectRatio: 1.4,
-                    child: _MemoryPhoto(path: photoPath),
+                    child: _MemoryPhoto(
+                      path: photoPath,
+                      mediaKey: _removePhoto ? null : widget.memory?.mediaKey,
+                      controller: widget.controller,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -804,6 +1280,56 @@ class _MemoryEditorState extends State<_MemoryEditor> {
               ),
               const SizedBox(height: 18),
               TextFormField(
+                key: const ValueKey('memoryPlace'),
+                controller: _place,
+                enabled: !_saving,
+                maxLength: 300,
+                decoration: const InputDecoration(
+                  labelText: 'Байршил',
+                  hintText: 'Тэр өдөр хаана байсан бэ?',
+                  counterText: '',
+                  prefixIcon: Icon(Icons.place_outlined),
+                ),
+                onChanged: (_) {
+                  if (_placeId != null) setState(() => _placeId = null);
+                },
+              ),
+              if (widget.controller.data.places.isNotEmpty) ...[
+                const SizedBox(height: 14),
+                DropdownButtonFormField<String>(
+                  key: ValueKey('memorySavedPlace-${_placeId ?? 'none'}'),
+                  initialValue: _placeId,
+                  isExpanded: true,
+                  decoration: const InputDecoration(
+                    labelText: 'Хадгалсан газартай холбох',
+                  ),
+                  items: [
+                    const DropdownMenuItem(value: '', child: Text('Холбохгүй')),
+                    for (final place in widget.controller.data.places)
+                      DropdownMenuItem(
+                        value: place.id,
+                        child: Text(
+                          place.name,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                  ],
+                  onChanged: _saving
+                      ? null
+                      : (value) => setState(() {
+                          _placeId = value == null || value.isEmpty
+                              ? null
+                              : value;
+                          if (_placeId != null) {
+                            _place.text = widget.controller.data.places
+                                .firstWhere((p) => p.id == _placeId)
+                                .name;
+                          }
+                        }),
+                ),
+              ],
+              const SizedBox(height: 18),
+              TextFormField(
                 key: const ValueKey('memoryText'),
                 controller: _text,
                 enabled: !_saving,
@@ -813,15 +1339,38 @@ class _MemoryEditorState extends State<_MemoryEditor> {
                 textCapitalization: TextCapitalization.sentences,
                 decoration: const InputDecoration(
                   labelText: 'Тэр өдрийн тухай',
-                  hintText: 'Санаж үлдмээр мөчөө бичээрэй…',
+                  hintText: 'Юугаараа онцгой байв?',
                   alignLabelWithHint: true,
                 ),
               ),
               const SizedBox(height: 14),
-              const _PrivateCaption(),
+              SwitchListTile.adaptive(
+                key: const ValueKey('memorySharedSwitch'),
+                contentPadding: EdgeInsets.zero,
+                title: const Text(
+                  'Хоёуланд харагдана',
+                  style: TextStyle(fontWeight: FontWeight.w700),
+                ),
+                subtitle: Text(
+                  widget.controller.cloudAvailable
+                      ? 'Хуваалцсан дурсамжийг хос тань харна.'
+                      : 'Хуваалцахын тулд бүртгэлээрээ нэвтрээрэй.',
+                  style: const TextStyle(color: AppColors.muted, fontSize: 12),
+                ),
+                value: _shared,
+                onChanged: _saving || !widget.controller.cloudAvailable
+                    ? null
+                    : (value) => setState(() => _shared = value),
+              ),
+              const SizedBox(height: 12),
+              _PrivateCaption(shared: _shared),
               const SizedBox(height: 6),
-              const Text(
-                'Энэ төхөөрөмж дээр хадгалагдана.',
+              Text(
+                _shared
+                    ? 'Сервер хадгалсны дараа хосод харагдана.'
+                    : widget.controller.cloudAvailable
+                    ? 'Таны бүртгэлд хадгалагдана.'
+                    : 'Энэ төхөөрөмж дээр хадгалагдана.',
                 style: TextStyle(color: AppColors.muted, fontSize: 12),
               ),
               if (_error != null) ...[

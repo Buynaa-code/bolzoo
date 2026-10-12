@@ -15,6 +15,8 @@ class SessionCoordinator {
   final _controller = StreamController<AuthSession>.broadcast();
   late final StreamSubscription<AuthSession> _subscription;
   AuthSession _session = const AuthSession.signedOut();
+  AccountScope? _sourceScope;
+  int _epoch = 0;
   bool _closed = false;
 
   AuthSession get current => _session;
@@ -30,17 +32,30 @@ class SessionCoordinator {
 
   void _onSession(AuthSession next) {
     if (_closed) return;
-    // Auth implementations must increment epoch for every identity change.
-    // We still repair a reused epoch here so callers cannot accidentally
-    // accept a response from the previous account.
-    final changedIdentity = next.userId != _session.userId;
-    final repaired = changedIdentity && next.epoch <= _session.epoch
-        ? AuthSession.signedIn(
-            userId: next.userId!,
-            email: next.email!,
-            epoch: _session.epoch + 1,
-          )
-        : next;
+    var repaired = next;
+    if (next.isSignedIn) {
+      if (!_session.isSignedIn || _sourceScope != next.scope) {
+        // Keep this high-water mark while signed out, even if the next login
+        // reuses the previous user's source epoch.
+        _epoch = next.epoch > _epoch ? next.epoch : _epoch + 1;
+      }
+      _sourceScope = next.scope;
+      repaired = AuthSession.signedIn(
+        userId: next.userId!,
+        email: next.email ?? '',
+        epoch: _epoch,
+      ).withMessage(next.message);
+    } else {
+      if (_session.isSignedIn) _epoch++;
+      _sourceScope = null;
+    }
+    if (_session.status == repaired.status &&
+        _session.userId == repaired.userId &&
+        _session.email == repaired.email &&
+        _session.epoch == repaired.epoch &&
+        _session.message == repaired.message) {
+      return;
+    }
     _session = repaired;
     _controller.add(repaired);
   }

@@ -36,7 +36,11 @@ flutter:
   uses-material-design: true
   assets:
     - assets/branding/
+    - assets/maps/
   fonts:
     - family: Nunito
       fonts:
         - asset: assets/fonts/Nunito.ttf
+    - family: NotoSansSymbols2
+      fonts:
+        - asset: assets/fonts/NotoSansSymbols2-Regular.ttf

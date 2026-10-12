@@ -15,6 +15,7 @@ ThemeData buildAppTheme() {
   final base = ThemeData(
     useMaterial3: true,
     fontFamily: 'Nunito',
+    fontFamilyFallback: const ['NotoSansSymbols2'],
     colorScheme: ColorScheme.fromSeed(
       seedColor: AppColors.pink,
       primary: AppColors.pink,
@@ -35,7 +36,9 @@ ThemeData buildAppTheme() {
       surfaceTintColor: Colors.transparent,
       centerTitle: true,
       titleTextStyle: TextStyle(
-        fontFamily: 'Nunito', fontSize: 20, fontWeight: FontWeight.w800,
+        fontFamily: 'Nunito',
+        fontSize: 20,
+        fontWeight: FontWeight.w800,
         color: AppColors.ink,
       ),
     ),
@@ -49,22 +52,42 @@ ThemeData buildAppTheme() {
       filled: true,
       fillColor: const Color(0xFFFAF7F9),
       contentPadding: const EdgeInsets.all(18),
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(18), borderSide: BorderSide.none),
-      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(18), borderSide: const BorderSide(color: AppColors.line)),
-      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(18), borderSide: const BorderSide(color: AppColors.pink, width: 1.5)),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(18),
+        borderSide: BorderSide.none,
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(18),
+        borderSide: const BorderSide(color: AppColors.line),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(18),
+        borderSide: const BorderSide(color: AppColors.pink, width: 1.5),
+      ),
       labelStyle: const TextStyle(color: AppColors.muted),
     ),
     navigationBarTheme: NavigationBarThemeData(
       backgroundColor: Colors.white,
       surfaceTintColor: Colors.transparent,
       indicatorColor: AppColors.blush,
-      labelTextStyle: WidgetStateProperty.resolveWith((states) => TextStyle(
-        fontFamily: 'Nunito', fontWeight: FontWeight.w800, fontSize: 11,
-        color: states.contains(WidgetState.selected) ? AppColors.pink : AppColors.muted,
-      )),
-      iconTheme: WidgetStateProperty.resolveWith((states) => IconThemeData(
-        size: 24, color: states.contains(WidgetState.selected) ? AppColors.pink : AppColors.muted,
-      )),
+      labelTextStyle: WidgetStateProperty.resolveWith(
+        (states) => TextStyle(
+          fontFamily: 'Nunito',
+          fontWeight: FontWeight.w800,
+          fontSize: 11,
+          color: states.contains(WidgetState.selected)
+              ? AppColors.pink
+              : AppColors.muted,
+        ),
+      ),
+      iconTheme: WidgetStateProperty.resolveWith(
+        (states) => IconThemeData(
+          size: 24,
+          color: states.contains(WidgetState.selected)
+              ? AppColors.pink
+              : AppColors.muted,
+        ),
+      ),
     ),
     snackBarTheme: SnackBarThemeData(
       backgroundColor: AppColors.ink,

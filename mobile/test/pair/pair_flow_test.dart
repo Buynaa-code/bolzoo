@@ -132,6 +132,31 @@ void main() {
     controller.dispose(); repo.dispose();
   });
 
+  testWidgets('acknowledged unlink clears pairing before status reconciliation', (tester) async {
+    final repo = FakePairRepository()..current = snapshot(active: pair);
+    final controller = PairController(repo)..setForeground(true);
+    await tester.pump();
+    expect(controller.snapshot?.pair?.id, pair.id);
+    final status = Completer<PairSnapshot>();
+    final observed = <PairSnapshot?>[];
+    controller.addListener(() => observed.add(controller.snapshot));
+    repo.run = (_) async {
+      repo.read = () => status.future;
+      return {'ok': true};
+    };
+    final unlink = controller.unlink(pair);
+    await tester.pump();
+    expect(controller.snapshot, isNull);
+    expect(observed.last, isNull);
+    expect(controller.canAct, isFalse);
+    expect(status.isCompleted, isFalse);
+    status.complete(snapshot());
+    await unlink;
+    expect(controller.snapshot, isNotNull);
+    expect(controller.snapshot?.pair, isNull);
+    controller.dispose(); repo.dispose();
+  });
+
   test('repository rejects a late response after account switch', () async {
     var active = true;
     final response = Completer<dynamic>();
@@ -186,4 +211,98 @@ void main() {
     expect(find.byKey(const Key('pairRequest')), findsOneWidget);
     await tester.pumpWidget(const SizedBox());
   });
+
+  testWidgets(
+    'pair owner hears an acknowledged unlink while the app is backgrounded',
+    (tester) async {
+      tester.view.physicalSize = const Size(800, 1400);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final repo = FakePairRepository()..current = snapshot(active: pair);
+      final changes = <PairSnapshot?>[];
+      final acknowledgement = Completer<Map<String, dynamic>>();
+      repo.run = (_) => acknowledgement.future;
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: buildAppTheme(),
+          navigatorObservers: [pairRouteObserver],
+          home: PairScreen(repository: repo, onPairChanged: changes.add),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(changes.single?.pair?.id, pair.id);
+      await tester.ensureVisible(find.byKey(const Key('pairUnlink')));
+      await tester.tap(find.byKey(const Key('pairUnlink')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('pairDialogConfirm')));
+      await tester.pump();
+      expect(repo.commands.single.kind, PairCommandKind.unlink);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+      await tester.pump();
+      expect(changes, hasLength(1));
+
+      acknowledgement.complete({'ok': true});
+      await tester.pump();
+      expect(changes, hasLength(2));
+      expect(changes.last, isNull);
+
+      await tester.pumpWidget(const SizedBox());
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    },
+  );
+
+  testWidgets(
+    'pair owner hears unlink and invalidation without repeated refresh callbacks',
+    (tester) async {
+      tester.view.physicalSize = const Size(800, 1400);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final repo = FakePairRepository()..current = snapshot(active: pair);
+      final changes = <PairSnapshot?>[];
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: buildAppTheme(),
+          navigatorObservers: [pairRouteObserver],
+          home: PairScreen(repository: repo, onPairChanged: changes.add),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(changes, hasLength(1));
+      expect(changes.single?.pair?.id, pair.id);
+
+      await tester.tap(find.byKey(const Key('pairRefresh')));
+      await tester.pumpAndSettle();
+      expect(changes, hasLength(1));
+
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+      await tester.pump();
+      expect(changes, hasLength(1));
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      await tester.pumpAndSettle();
+      expect(changes, hasLength(1));
+
+      repo.run = (command) async {
+        expect(command.kind, PairCommandKind.unlink);
+        repo.current = snapshot();
+        return {'ok': true};
+      };
+      await tester.ensureVisible(find.byKey(const Key('pairUnlink')));
+      await tester.tap(find.byKey(const Key('pairUnlink')));
+      await tester.pumpAndSettle();
+      expect(changes, hasLength(1));
+      await tester.tap(find.byKey(const Key('pairDialogConfirm')));
+      await tester.pumpAndSettle();
+      expect(changes, hasLength(3));
+      expect(changes[1], isNull);
+      expect(changes.last, isNotNull);
+      expect(changes.last?.pair, isNull);
+
+      repo.events.add(null);
+      expect(changes, hasLength(4));
+      expect(changes.last, isNull);
+      await tester.pumpWidget(const SizedBox());
+    },
+  );
 }

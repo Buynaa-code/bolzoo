@@ -120,6 +120,33 @@ void main() {
     expect(plugin.calls, isEmpty);
     expect(reminders.pendingEventId, isNull);
   });
+
+  test('clear during initialization removes a late launch payload at its native barrier', () async {
+    final plugin = _Plugin()..initializeGate = Completer<void>();
+    final reminders = Reminders.withPlugin(plugin);
+    final initialization = reminders.initialize();
+    await _settle();
+    final clearing = reminders.clear();
+    plugin.initializeGate!.complete();
+    await Future.wait([initialization, clearing]);
+    expect(reminders.ready, isTrue);
+    expect(reminders.pendingEventId, isNull);
+    expect(plugin.calls, ['initialize', 'launchDetails', 'cancelAll']);
+  });
+
+  test('unsupported platforms never initialize, request permission, or touch native notices', () async {
+    final plugin = _Plugin();
+    final reminders = Reminders.withPlugin(plugin, supported: false)
+      ..pendingEventId = 'old';
+    await reminders.initialize();
+    expect(await reminders.requestPermission(), isFalse);
+    expect(await reminders.hasPermission(), isFalse);
+    await reminders.sync([_event('date')]);
+    await reminders.clear();
+    expect(reminders.ready, isFalse);
+    expect(reminders.pendingEventId, isNull);
+    expect(plugin.calls, isEmpty);
+  });
 }
 
 class _Scheduled {
@@ -131,9 +158,25 @@ class _Scheduled {
 class _Plugin implements FlutterLocalNotificationsPlugin {
   final calls = <String>[];
   final pending = <int, _Scheduled>{};
-  Completer<void>? cancelGate, scheduleGate;
+  Completer<void>? cancelGate, scheduleGate, initializeGate;
   bool failCancel = false, failSchedule = false;
   int concurrentCalls = 0, maximumConcurrentCalls = 0;
+
+  @override
+  Future<bool?> initialize({required InitializationSettings settings,
+    DidReceiveNotificationResponseCallback? onDidReceiveNotificationResponse,
+    DidReceiveBackgroundNotificationResponseCallback? onDidReceiveBackgroundNotificationResponse}) async {
+    await _call('initialize', () async { await initializeGate?.future; });
+    return true;
+  }
+  @override
+  Future<NotificationAppLaunchDetails?> getNotificationAppLaunchDetails() async {
+    calls.add('launchDetails');
+    return const NotificationAppLaunchDetails(true,
+      notificationResponse: NotificationResponse(
+        notificationResponseType: NotificationResponseType.selectedNotification,
+        payload: 'old-account-event'));
+  }
 
   Future<void> _call(String name, Future<void> Function() body) async {
     calls.add(name);
