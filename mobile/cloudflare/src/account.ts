@@ -130,6 +130,11 @@ async function deleteAccount(env: AccountEnvironment, actor: AccountActor): Prom
   if (!env.BETTER_AUTH_SECRET || env.BETTER_AUTH_SECRET.length < 32) return error('temporarily_unavailable', 503);
   const db = env.DB;
   const seconds = Math.floor(now / 1000);
+  // Better Auth's SQLite adapter has supportsDates=false: it stores canonical
+  // ISO strings, not Unix milliseconds. Keep comparisons in that native format.
+  const nowIso = new Date(now).toISOString();
+  const createdIso = new Date(created).toISOString();
+  const freshSince = new Date(now - 600000).toISOString();
   const tombstoneEmail = `deleted-${crypto.randomUUID()}@deleted.invalid`;
   const otpHash = await keyedHash(env.BETTER_AUTH_SECRET, 'auth-identifier-v1', `sign-in-otp-${actor.email}`);
   const rateHashes = await Promise.all(['send-cooldown', 'send-hour', 'verify-email'].map(key =>
@@ -138,12 +143,12 @@ async function deleteAccount(env: AccountEnvironment, actor: AccountActor): Prom
     await db.batch([
       ...guard(db, activeActor, actor.id, actor.email),
       // A revoked login cannot delete by racing after the router's auth check.
-      ...guard(db, `EXISTS(SELECT 1 FROM "session" WHERE id=? AND userId=? AND CAST(createdAt AS INTEGER)=?
-        AND CAST(expiresAt AS INTEGER)>? AND CAST(createdAt AS INTEGER)>=?)`, actor.sessionId, actor.id, created, now, now - 600000),
+      ...guard(db, `EXISTS(SELECT 1 FROM "session" WHERE id=? AND userId=? AND createdAt=?
+        AND expiresAt>? AND createdAt>=?)`, actor.sessionId, actor.id, createdIso, nowIso, freshSince),
       q(db, 'INSERT INTO hamtdaa_deleted_accounts(user_id,deleted_at) VALUES(?,?)', actor.id, now),
       q(db, `INSERT INTO hamtdaa_profiles(user_id,display_name,account_state) VALUES(?,'Устгасан бүртгэл','disabled')
         ON CONFLICT(user_id) DO UPDATE SET display_name=excluded.display_name,account_state='disabled',version=hamtdaa_profiles.version+1`, actor.id),
-      q(db, `UPDATE "user" SET name='Deleted account',email=?,emailVerified=0,image=NULL,createdAt=?,updatedAt=? WHERE id=?`, tombstoneEmail, now, now, actor.id),
+      q(db, `UPDATE "user" SET name='Deleted account',email=?,emailVerified=0,image=NULL,createdAt=?,updatedAt=? WHERE id=?`, tombstoneEmail, nowIso, nowIso, actor.id),
       q(db, `UPDATE hamtdaa_pairs SET state='unlinked',unlinked_at=COALESCE(unlinked_at,?),version=version+1
         WHERE id IN(SELECT pair_id FROM hamtdaa_pair_members WHERE user_id=?) AND state<>'unlinked'`, seconds, actor.id),
       q(db, `UPDATE hamtdaa_pair_members SET revoked_at=COALESCE(revoked_at,?)
@@ -173,7 +178,7 @@ async function deleteAccount(env: AccountEnvironment, actor: AccountActor): Prom
       subscriptions: 'Store subscriptions are not canceled by account deletion. Manage them in App Store or Google Play.' });
   } catch {
     if (!await q(db, `SELECT 1 WHERE ${activeActor}`, actor.id, actor.email).first()) return error('unauthenticated', 401);
-    const live = await q(db, `SELECT 1 FROM "session" WHERE id=? AND userId=? AND CAST(createdAt AS INTEGER)=? AND CAST(expiresAt AS INTEGER)>?`, actor.sessionId, actor.id, created, now).first();
+    const live = await q(db, `SELECT 1 FROM "session" WHERE id=? AND userId=? AND createdAt=? AND expiresAt>?`, actor.sessionId, actor.id, createdIso, nowIso).first();
     if (!live) return error('reauthentication_required', 409);
     return error('temporarily_unavailable', 503);
   }

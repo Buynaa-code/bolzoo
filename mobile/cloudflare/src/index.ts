@@ -154,7 +154,8 @@ export async function handleRequest(request: Request, env: BillingEnvironment & 
         .bind(data.user.id).first<{ account_state: string }>();
       if (profile && profile.account_state !== 'active') throw new RequestFailure('unauthenticated', 401);
       return { user: { id: data.user.id, email: data.user.email }, expires_at: data.session.expiresAt,
-        session_created_at: typeof data.session.createdAt === 'string' ? data.session.createdAt : '' };
+        session_created_at: typeof data.session.createdAt === 'string' ? data.session.createdAt : '',
+        session_id: typeof data.session.id === 'string' ? data.session.id : '' };
     };
 
     if (url.pathname === '/v1/auth/request-code' && request.method === 'POST') {
@@ -187,7 +188,7 @@ export async function handleRequest(request: Request, env: BillingEnvironment & 
     if (url.pathname.startsWith('/v1/account/')) {
       const verified = await session(bearer(request));
       return handleAccountRequest(request, env,
-        { ...verified.user, sessionCreatedAt: verified.session_created_at },
+        { ...verified.user, sessionCreatedAt: verified.session_created_at, sessionId: verified.session_id },
         request.method === 'POST' ? await body(request) : null);
     }
     if (url.pathname.startsWith('/v1/billing/')) {

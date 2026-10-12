@@ -1,4 +1,4 @@
-import { betterAuth, type BetterAuthOptions } from 'better-auth';
+import { betterAuth, type BetterAuthOptions, type Verification } from 'better-auth';
 import { APIError, createAuthMiddleware } from 'better-auth/api';
 import { bearer, emailOTP } from 'better-auth/plugins';
 
@@ -137,6 +137,39 @@ export function createAuthOptions(env: AuthEnvironment) {
             ctx.setHeader('Retry-After', String(result.retryAfter));
             throw new APIError('TOO_MANY_REQUESTS', { code: 'RATE_LIMITED', message: 'Please try again later.' });
           }
+        }
+        if (verifying) {
+          const identifier = `sign-in-otp-${email}`;
+          const storedIdentifier = await keyedHash(env.BETTER_AUTH_SECRET, 'auth-identifier-v1', identifier);
+          const original = ctx.context.internalAdapter;
+          // dispatchAuthEndpoint clones this context per request. Replace the
+          // adapter object on that clone; never mutate the shared base adapter.
+          ctx.context.internalAdapter = {
+            ...original,
+            findVerificationValue: async (candidate: string) => {
+              const value = await original.findVerificationValue(candidate);
+              // The library otherwise deletes an expired snapshot by its
+              // identifier after lookup, which could delete a concurrent
+              // resend. Its normal expiry cleanup already uses a predicate.
+              return candidate === identifier && value && value.expiresAt <= new Date() ? null : value;
+            },
+            consumeVerificationValue: async (candidate: string) => {
+              if (candidate !== identifier) return original.consumeVerificationValue(candidate);
+              // Better Auth 1.7.6 normally consumes by id then deletes every
+              // remaining row for the identifier. D1 cannot transact those
+              // steps; that cleanup can erase a newly resent OTP. Our unique
+              // identifier schema needs no duplicate cleanup. Use the same
+              // library adapter's atomic consume and field conversion in one
+              // operation, scoped only to this request's sign-in challenge.
+              return ctx.context.adapter.consumeOne<Verification>({
+                model: 'verification',
+                where: [
+                  { field: 'identifier', value: storedIdentifier },
+                  { field: 'expiresAt', operator: 'gt', value: new Date() },
+                ],
+              });
+            },
+          };
         }
       }),
       after: createAuthMiddleware(async (ctx) => {

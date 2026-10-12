@@ -5,7 +5,8 @@ const configured = { ...env, LEGAL_OPERATOR_NAME: 'Test service', LEGAL_SUPPORT_
 const request = (path: string, method = 'GET') => new Request(`https://auth.test${path}`, { method });
 describe('standalone billing and legal pages', () => {
   it('renders an explicitly disabled draft until legal identity is provided', async () => {
-    const response = handleBillingPage(request('/plans'), { ...env, BILLING_ENABLED: 'true', BILLING_WEB_ENABLED: 'true' })!;
+    const response = handleBillingPage(request('/plans'), { ...env, BILLING_ENABLED: 'true', BILLING_WEB_ENABLED: 'true',
+      LEGAL_OPERATOR_NAME: undefined, LEGAL_SUPPORT_EMAIL: undefined })!;
     expect(response.status).toBe(200);
     const text = await response.text();
     expect(text).toContain('data-legal-ready="false"');
@@ -16,7 +17,7 @@ describe('standalone billing and legal pages', () => {
     expect(text).toContain('Автоматаар сунгахгүй.');
   });
   it('uses external local assets and a strict no-inline-script content policy', async () => {
-    for (const path of ['/plans', '/privacy', '/terms']) {
+    for (const path of ['/plans', '/privacy', '/terms', '/web-terms']) {
       const response = handleBillingPage(request(path), configured)!;
       const csp = response.headers.get('Content-Security-Policy')!;
       expect(csp).toContain("script-src 'self'");
@@ -42,12 +43,21 @@ describe('standalone billing and legal pages', () => {
     expect(text).toContain('data-legal-ready="true"');
   });
   it('keeps legal pages independent of the alternative checkout route', async () => {
-    for (const path of ['/terms', '/privacy']) {
+    for (const path of ['/terms', '/privacy', '/web-terms']) {
       const text = await handleBillingPage(request(path), configured)!.text();
       expect(text).not.toContain('href="/plans"');
       expect(text).not.toContain('plans.js');
       expect(text).toContain('support@example.test');
     }
+  });
+  it('separates native terms from the web purchase terms without checkout links', async () => {
+    const native = await handleBillingPage(request('/terms'), configured)!.text();
+    expect(native).not.toContain('QPay'); expect(native).not.toContain('9,900');
+    expect(native).not.toContain('/web-terms'); expect(native).not.toContain('/plans');
+    const web = await handleBillingPage(request('/web-terms'), configured)!.text();
+    expect(web).toContain('9,900'); expect(web).toContain('79,900'); expect(web).not.toContain('href="/plans"');
+    const plans = await handleBillingPage(request('/plans'), configured)!.text();
+    expect(plans).toContain('href="/web-terms"'); expect(plans).not.toContain('href="/terms"');
   });
   it('ships client guards for legal readiness, exact hosted origin, ownership polling and memory-only credentials', async () => {
     const response = handleBillingPage(request('/billing-assets/plans.js'), configured)!;

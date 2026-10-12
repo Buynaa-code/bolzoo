@@ -1,0 +1,563 @@
+{
+  "captured_on": "2026-10-12",
+  "source": "Production and staging D1 sqlite_master, schema-only read; no application rows.",
+  "auth_migrations": [
+    "0001_auth.sql",
+    "0002_pair.sql",
+    "0003_billing.sql",
+    "0004_together.sql",
+    "0005_account.sql"
+  ],
+  "memory_migrations": [
+    "0001_memories.sql",
+    "0002_wishes.sql"
+  ],
+  "objects": [
+    {
+      "type": "index",
+      "name": "account_userId_idx",
+      "tbl_name": "account",
+      "sql": "CREATE INDEX \"account_userId_idx\" on \"account\" (\"userId\")"
+    },
+    {
+      "type": "index",
+      "name": "hamtdaa_billing_grants_owner",
+      "tbl_name": "hamtdaa_billing_grants",
+      "sql": "CREATE INDEX hamtdaa_billing_grants_owner ON hamtdaa_billing_grants(user_id,expires_at)"
+    },
+    {
+      "type": "index",
+      "name": "hamtdaa_billing_orders_owner",
+      "tbl_name": "hamtdaa_billing_orders",
+      "sql": "CREATE INDEX hamtdaa_billing_orders_owner ON hamtdaa_billing_orders(user_id,created_at)"
+    },
+    {
+      "type": "index",
+      "name": "hamtdaa_blocks_blocked",
+      "tbl_name": "hamtdaa_blocks",
+      "sql": "CREATE INDEX hamtdaa_blocks_blocked ON hamtdaa_blocks(blocked_id)"
+    },
+    {
+      "type": "index",
+      "name": "hamtdaa_calendar_pair_start",
+      "tbl_name": "hamtdaa_calendar_events",
+      "sql": "CREATE INDEX hamtdaa_calendar_pair_start ON hamtdaa_calendar_events(pair_id,starts_at,id)"
+    },
+    {
+      "type": "index",
+      "name": "hamtdaa_memories_creator",
+      "tbl_name": "hamtdaa_memories",
+      "sql": "CREATE INDEX hamtdaa_memories_creator ON hamtdaa_memories(creator_id)"
+    },
+    {
+      "type": "index",
+      "name": "hamtdaa_memories_pair_day",
+      "tbl_name": "hamtdaa_memories",
+      "sql": "CREATE INDEX hamtdaa_memories_pair_day ON hamtdaa_memories(pair_id,state,day DESC,id DESC)"
+    },
+    {
+      "type": "index",
+      "name": "hamtdaa_memories_pending_deadline",
+      "tbl_name": "hamtdaa_memories",
+      "sql": "CREATE INDEX hamtdaa_memories_pending_deadline ON hamtdaa_memories(upload_deadline) WHERE state='pending'"
+    },
+    {
+      "type": "index",
+      "name": "hamtdaa_memory_gc_due",
+      "tbl_name": "hamtdaa_memory_gc",
+      "sql": "CREATE INDEX hamtdaa_memory_gc_due ON hamtdaa_memory_gc(due_at)"
+    },
+    {
+      "type": "index",
+      "name": "hamtdaa_memory_receipts_pair",
+      "tbl_name": "hamtdaa_memory_receipts",
+      "sql": "CREATE INDEX hamtdaa_memory_receipts_pair ON hamtdaa_memory_receipts(pair_id)"
+    },
+    {
+      "type": "index",
+      "name": "hamtdaa_pair_invites_creator",
+      "tbl_name": "hamtdaa_pair_invitations",
+      "sql": "CREATE INDEX hamtdaa_pair_invites_creator ON hamtdaa_pair_invitations(creator_id,state)"
+    },
+    {
+      "type": "index",
+      "name": "hamtdaa_pair_invites_pair",
+      "tbl_name": "hamtdaa_pair_invitations",
+      "sql": "CREATE INDEX hamtdaa_pair_invites_pair ON hamtdaa_pair_invitations(pair_id)"
+    },
+    {
+      "type": "index",
+      "name": "hamtdaa_pair_invites_requester",
+      "tbl_name": "hamtdaa_pair_invitations",
+      "sql": "CREATE INDEX hamtdaa_pair_invites_requester ON hamtdaa_pair_invitations(requester_id,state)"
+    },
+    {
+      "type": "index",
+      "name": "hamtdaa_pair_one_active_membership",
+      "tbl_name": "hamtdaa_pair_members",
+      "sql": "CREATE UNIQUE INDEX hamtdaa_pair_one_active_membership ON hamtdaa_pair_members(user_id) WHERE revoked_at IS NULL"
+    },
+    {
+      "type": "index",
+      "name": "hamtdaa_pair_one_live_invite",
+      "tbl_name": "hamtdaa_pair_invitations",
+      "sql": "CREATE UNIQUE INDEX hamtdaa_pair_one_live_invite ON hamtdaa_pair_invitations(creator_id) WHERE state IN ('open','awaiting_creator')"
+    },
+    {
+      "type": "index",
+      "name": "hamtdaa_pair_one_pending_request",
+      "tbl_name": "hamtdaa_pair_invitations",
+      "sql": "CREATE UNIQUE INDEX hamtdaa_pair_one_pending_request ON hamtdaa_pair_invitations(requester_id) WHERE state='awaiting_creator'"
+    },
+    {
+      "type": "index",
+      "name": "hamtdaa_together_receipts_daily",
+      "tbl_name": "hamtdaa_together_receipts",
+      "sql": "CREATE INDEX hamtdaa_together_receipts_daily ON hamtdaa_together_receipts(user_id,day,operation)"
+    },
+    {
+      "type": "index",
+      "name": "hamtdaa_wish_likes_user",
+      "tbl_name": "hamtdaa_wish_likes",
+      "sql": "CREATE INDEX hamtdaa_wish_likes_user ON hamtdaa_wish_likes(user_id)"
+    },
+    {
+      "type": "index",
+      "name": "hamtdaa_wish_receipts_pair",
+      "tbl_name": "hamtdaa_wish_receipts",
+      "sql": "CREATE INDEX hamtdaa_wish_receipts_pair ON hamtdaa_wish_receipts(pair_id)"
+    },
+    {
+      "type": "index",
+      "name": "hamtdaa_wishes_creator",
+      "tbl_name": "hamtdaa_wishes",
+      "sql": "CREATE INDEX hamtdaa_wishes_creator ON hamtdaa_wishes(creator_id)"
+    },
+    {
+      "type": "index",
+      "name": "hamtdaa_wishes_pair",
+      "tbl_name": "hamtdaa_wishes",
+      "sql": "CREATE INDEX hamtdaa_wishes_pair ON hamtdaa_wishes(pair_id,created_at DESC,id)"
+    },
+    {
+      "type": "index",
+      "name": "rateLimit_lastRequest_idx",
+      "tbl_name": "rateLimit",
+      "sql": "CREATE INDEX rateLimit_lastRequest_idx ON \"rateLimit\" (\"lastRequest\")"
+    },
+    {
+      "type": "index",
+      "name": "session_userId_idx",
+      "tbl_name": "session",
+      "sql": "CREATE INDEX \"session_userId_idx\" on \"session\" (\"userId\")"
+    },
+    {
+      "type": "table",
+      "name": "account",
+      "tbl_name": "account",
+      "sql": "CREATE TABLE \"account\" (\"id\" text not null primary key, \"accountId\" text not null, \"providerId\" text not null, \"userId\" text not null references \"user\" (\"id\") on delete cascade, \"accessToken\" text, \"refreshToken\" text, \"idToken\" text, \"accessTokenExpiresAt\" date, \"refreshTokenExpiresAt\" date, \"scope\" text, \"password\" text, \"createdAt\" date not null, \"updatedAt\" date not null)"
+    },
+    {
+      "type": "table",
+      "name": "hamtdaa_account_export_limits",
+      "tbl_name": "hamtdaa_account_export_limits",
+      "sql": "CREATE TABLE hamtdaa_account_export_limits (\n  user_id TEXT PRIMARY KEY REFERENCES \"user\"(id) ON DELETE RESTRICT,\n  window_start INTEGER NOT NULL,\n  attempts INTEGER NOT NULL CHECK(attempts>0)\n)"
+    },
+    {
+      "type": "table",
+      "name": "hamtdaa_account_guards",
+      "tbl_name": "hamtdaa_account_guards",
+      "sql": "CREATE TABLE hamtdaa_account_guards (\n  id TEXT PRIMARY KEY,\n  allowed INTEGER NOT NULL CHECK(allowed=1)\n)"
+    },
+    {
+      "type": "table",
+      "name": "hamtdaa_billing_events",
+      "tbl_name": "hamtdaa_billing_events",
+      "sql": "CREATE TABLE hamtdaa_billing_events (\n  provider TEXT NOT NULL CHECK(provider='wire'),\n  event_id TEXT NOT NULL,\n  order_id TEXT NOT NULL REFERENCES hamtdaa_billing_orders(id) ON DELETE RESTRICT,\n  processed_at INTEGER NOT NULL,\n  PRIMARY KEY(provider,event_id)\n)"
+    },
+    {
+      "type": "table",
+      "name": "hamtdaa_billing_grants",
+      "tbl_name": "hamtdaa_billing_grants",
+      "sql": "CREATE TABLE hamtdaa_billing_grants (\n  provider TEXT NOT NULL CHECK(provider IN ('wire','apple','google')),\n  source_id TEXT NOT NULL,\n  environment TEXT NOT NULL DEFAULT 'Production' CHECK(environment IN ('Production','Sandbox') AND (provider<>'wire' OR environment='Production')),\n  user_id TEXT NOT NULL REFERENCES \"user\"(id) ON DELETE RESTRICT,\n  transaction_id TEXT NOT NULL,\n  product_id TEXT NOT NULL,\n  starts_at INTEGER NOT NULL,\n  expires_at INTEGER NOT NULL CHECK(expires_at>starts_at),\n  revoked_at INTEGER,\n  auto_renew INTEGER NOT NULL DEFAULT 0 CHECK(auto_renew IN (0,1)),\n  observed_at INTEGER NOT NULL, \n  refresh_cipher TEXT,\n  is_active INTEGER NOT NULL DEFAULT 1 CHECK(is_active IN (0,1)),\n  PRIMARY KEY(provider,source_id)\n)"
+    },
+    {
+      "type": "table",
+      "name": "hamtdaa_billing_guards",
+      "tbl_name": "hamtdaa_billing_guards",
+      "sql": "CREATE TABLE hamtdaa_billing_guards (\n  id TEXT PRIMARY KEY,\n  allowed INTEGER NOT NULL CHECK(allowed=1)\n)"
+    },
+    {
+      "type": "table",
+      "name": "hamtdaa_billing_orders",
+      "tbl_name": "hamtdaa_billing_orders",
+      "sql": "CREATE TABLE hamtdaa_billing_orders (\n  id TEXT PRIMARY KEY,\n  user_id TEXT NOT NULL REFERENCES \"user\"(id) ON DELETE RESTRICT,\n  command_id TEXT NOT NULL,\n  plan TEXT NOT NULL CHECK(plan IN ('monthly','yearly')),\n  duration_seconds INTEGER NOT NULL CHECK(duration_seconds IN (2592000,31536000)),\n  amount_minor INTEGER NOT NULL CHECK(amount_minor IN (990000,7990000)),\n  currency TEXT NOT NULL DEFAULT 'MNT' CHECK(currency='MNT'),\n  livemode INTEGER NOT NULL CHECK(livemode IN (0,1)),\n  return_url TEXT NOT NULL,\n  description TEXT NOT NULL,\n  provider_id TEXT UNIQUE,\n  state TEXT NOT NULL DEFAULT 'reserved' CHECK(state IN ('reserved','new','requires_payment_method','requires_action','requires_capture','processing','succeeded','canceled','refunded')),\n  checkout_url TEXT,\n  next_action TEXT CHECK(next_action IS NULL OR json_valid(next_action)),\n  expires_at INTEGER,\n  created_at INTEGER NOT NULL,\n  updated_at INTEGER NOT NULL,\n  UNIQUE(user_id,command_id),\n  CHECK((plan='monthly' AND duration_seconds=2592000 AND amount_minor=990000)\n    OR (plan='yearly' AND duration_seconds=31536000 AND amount_minor=7990000))\n)"
+    },
+    {
+      "type": "table",
+      "name": "hamtdaa_billing_transactions",
+      "tbl_name": "hamtdaa_billing_transactions",
+      "sql": "CREATE TABLE hamtdaa_billing_transactions (\n  provider TEXT NOT NULL CHECK(provider IN ('apple','google')),\n  environment TEXT NOT NULL CHECK(environment IN ('Production','Sandbox')),\n  transaction_id TEXT NOT NULL,\n  source_id TEXT NOT NULL,\n  user_id TEXT NOT NULL REFERENCES \"user\"(id) ON DELETE RESTRICT,\n  PRIMARY KEY(provider,environment,transaction_id)\n)"
+    },
+    {
+      "type": "table",
+      "name": "hamtdaa_blocks",
+      "tbl_name": "hamtdaa_blocks",
+      "sql": "CREATE TABLE hamtdaa_blocks (\n  blocker_id TEXT NOT NULL REFERENCES hamtdaa_profiles(user_id) ON DELETE RESTRICT,\n  blocked_id TEXT NOT NULL REFERENCES hamtdaa_profiles(user_id) ON DELETE RESTRICT,\n  PRIMARY KEY(blocker_id,blocked_id),\n  CHECK(blocker_id <> blocked_id)\n)"
+    },
+    {
+      "type": "table",
+      "name": "hamtdaa_calendar_events",
+      "tbl_name": "hamtdaa_calendar_events",
+      "sql": "CREATE TABLE hamtdaa_calendar_events (\n  id TEXT PRIMARY KEY,\n  pair_id TEXT NOT NULL REFERENCES hamtdaa_pairs(id) ON DELETE RESTRICT,\n  creator_id TEXT NOT NULL REFERENCES hamtdaa_profiles(user_id) ON DELETE RESTRICT,\n  title TEXT NOT NULL CHECK(length(trim(title)) BETWEEN 1 AND 120),\n  note TEXT NOT NULL DEFAULT '' CHECK(length(note)<=2000),\n  location TEXT NOT NULL DEFAULT '' CHECK(length(location)<=200),\n  starts_at INTEGER NOT NULL,\n  ends_at INTEGER CHECK(ends_at IS NULL OR (ends_at>starts_at AND ends_at-starts_at<=2678400000)),\n  status TEXT NOT NULL DEFAULT 'pending' CHECK(status IN ('pending','accepted','declined')),\n  version INTEGER NOT NULL DEFAULT 1 CHECK(version>0),\n  created_at INTEGER NOT NULL,\n  updated_at INTEGER NOT NULL\n)"
+    },
+    {
+      "type": "table",
+      "name": "hamtdaa_daily_answers",
+      "tbl_name": "hamtdaa_daily_answers",
+      "sql": "CREATE TABLE hamtdaa_daily_answers (\n  pair_id TEXT NOT NULL REFERENCES hamtdaa_pairs(id) ON DELETE RESTRICT,\n  day TEXT NOT NULL CHECK(length(day)=10),\n  user_id TEXT NOT NULL REFERENCES hamtdaa_profiles(user_id) ON DELETE RESTRICT,\n  question_id TEXT NOT NULL,\n  answer TEXT NOT NULL CHECK(length(trim(answer)) BETWEEN 1 AND 2000),\n  created_at INTEGER NOT NULL,\n  PRIMARY KEY(pair_id,day,user_id)\n)"
+    },
+    {
+      "type": "table",
+      "name": "hamtdaa_deleted_accounts",
+      "tbl_name": "hamtdaa_deleted_accounts",
+      "sql": "CREATE TABLE hamtdaa_deleted_accounts (\n  user_id TEXT PRIMARY KEY REFERENCES \"user\"(id) ON DELETE RESTRICT,\n  deleted_at INTEGER NOT NULL\n)"
+    },
+    {
+      "type": "table",
+      "name": "hamtdaa_memories",
+      "tbl_name": "hamtdaa_memories",
+      "sql": "CREATE TABLE hamtdaa_memories (\n  id TEXT NOT NULL PRIMARY KEY CHECK(\n    length(id)=36 AND substr(id,9,1)='-' AND substr(id,14,1)='-'\n    AND substr(id,19,1)='-' AND substr(id,24,1)='-'\n    AND length(replace(id,'-',''))=32\n    AND replace(id,'-','') NOT GLOB '*[^0-9a-f]*'\n  ),\n  pair_id TEXT NOT NULL REFERENCES hamtdaa_pairs(id) ON DELETE RESTRICT,\n  creator_id TEXT NOT NULL REFERENCES hamtdaa_profiles(user_id) ON DELETE RESTRICT,\n  day TEXT NOT NULL CHECK(\n    day GLOB '20[0-9][0-9]-[0-9][0-9]-[0-9][0-9]'\n    AND date(day,'+0 days') IS NOT NULL AND date(day,'+0 days')=day\n  ),\n  title TEXT NOT NULL CHECK(length(trim(title)) BETWEEN 1 AND 80),\n  note TEXT NOT NULL DEFAULT '' CHECK(length(note)<=2000),\n  sticker TEXT NOT NULL CHECK(sticker IN ('rounded','polaroid')),\n  state TEXT NOT NULL DEFAULT 'pending' CHECK(state IN ('pending','ready')),\n  photo_key TEXT NOT NULL UNIQUE CHECK(length(photo_key) BETWEEN 1 AND 512),\n  thumbnail_key TEXT NOT NULL UNIQUE CHECK(length(thumbnail_key) BETWEEN 1 AND 512),\n  photo_bytes INTEGER NOT NULL CHECK(typeof(photo_bytes)='integer' AND photo_bytes>0),\n  thumb_bytes INTEGER NOT NULL CHECK(typeof(thumb_bytes)='integer' AND thumb_bytes>0),\n  payload_hash TEXT NOT NULL CHECK(length(payload_hash)=64 AND payload_hash NOT GLOB '*[^0-9a-f]*'),\n  command_id TEXT NOT NULL CHECK(length(command_id)=36),\n  version INTEGER NOT NULL DEFAULT 1 CHECK(typeof(version)='integer' AND version>0),\n  created_at INTEGER NOT NULL CHECK(typeof(created_at)='integer' AND created_at>0),\n  upload_deadline INTEGER NOT NULL CHECK(typeof(upload_deadline)='integer' AND upload_deadline>created_at),\n  UNIQUE(creator_id,command_id),\n  CHECK(photo_key<>thumbnail_key)\n)"
+    },
+    {
+      "type": "table",
+      "name": "hamtdaa_memory_gc",
+      "tbl_name": "hamtdaa_memory_gc",
+      "sql": "CREATE TABLE hamtdaa_memory_gc (\n  object_key TEXT NOT NULL PRIMARY KEY CHECK(length(object_key) BETWEEN 1 AND 512),\n  due_at INTEGER NOT NULL CHECK(typeof(due_at)='integer' AND due_at>0),\n  retain_until INTEGER NOT NULL CHECK(typeof(retain_until)='integer' AND retain_until>=due_at),\n  attempts INTEGER NOT NULL DEFAULT 0 CHECK(typeof(attempts)='integer' AND attempts>=0)\n)"
+    },
+    {
+      "type": "table",
+      "name": "hamtdaa_memory_gc_state",
+      "tbl_name": "hamtdaa_memory_gc_state",
+      "sql": "CREATE TABLE hamtdaa_memory_gc_state (\n  name TEXT NOT NULL PRIMARY KEY,\n  value TEXT NOT NULL\n)"
+    },
+    {
+      "type": "table",
+      "name": "hamtdaa_memory_guards",
+      "tbl_name": "hamtdaa_memory_guards",
+      "sql": "CREATE TABLE hamtdaa_memory_guards (\n  id TEXT NOT NULL PRIMARY KEY,\n  allowed INTEGER NOT NULL CHECK(allowed=1)\n)"
+    },
+    {
+      "type": "table",
+      "name": "hamtdaa_memory_quotas",
+      "tbl_name": "hamtdaa_memory_quotas",
+      "sql": "CREATE TABLE hamtdaa_memory_quotas (\n  user_id TEXT NOT NULL PRIMARY KEY REFERENCES hamtdaa_profiles(user_id) ON DELETE RESTRICT,\n  day TEXT NOT NULL CHECK(\n    day GLOB '20[0-9][0-9]-[0-9][0-9]-[0-9][0-9]'\n    AND date(day,'+0 days') IS NOT NULL AND date(day,'+0 days')=day\n  ),\n  creates INTEGER NOT NULL CHECK(typeof(creates)='integer' AND creates BETWEEN 1 AND 10)\n)"
+    },
+    {
+      "type": "table",
+      "name": "hamtdaa_memory_receipts",
+      "tbl_name": "hamtdaa_memory_receipts",
+      "sql": "CREATE TABLE hamtdaa_memory_receipts (\n  user_id TEXT NOT NULL REFERENCES hamtdaa_profiles(user_id) ON DELETE RESTRICT,\n  command_id TEXT NOT NULL CHECK(length(command_id)=36),\n  pair_id TEXT NOT NULL REFERENCES hamtdaa_pairs(id) ON DELETE RESTRICT,\n  operation TEXT NOT NULL CHECK(operation IN ('create','delete')),\n  payload_hash TEXT NOT NULL CHECK(length(payload_hash)=64 AND payload_hash NOT GLOB '*[^0-9a-f]*'),\n  \n  memory_id TEXT,\n  created_at INTEGER NOT NULL CHECK(typeof(created_at)='integer' AND created_at>0),\n  PRIMARY KEY(user_id,command_id)\n)"
+    },
+    {
+      "type": "table",
+      "name": "hamtdaa_pair_invitations",
+      "tbl_name": "hamtdaa_pair_invitations",
+      "sql": "CREATE TABLE hamtdaa_pair_invitations (\n  id TEXT PRIMARY KEY,\n  creator_id TEXT NOT NULL REFERENCES hamtdaa_profiles(user_id) ON DELETE RESTRICT,\n  requester_id TEXT REFERENCES hamtdaa_profiles(user_id) ON DELETE RESTRICT,\n  token_hash TEXT NOT NULL UNIQUE CHECK(length(token_hash)=64 AND token_hash NOT GLOB '*[^0-9a-f]*'),\n  state TEXT NOT NULL DEFAULT 'open' CHECK(state IN ('open','awaiting_creator','linked','revoked','declined','cancelled','expired')),\n  version INTEGER NOT NULL DEFAULT 1 CHECK(version > 0),\n  created_at INTEGER NOT NULL,\n  expires_at INTEGER NOT NULL CHECK(expires_at > created_at),\n  requested_at INTEGER,\n  confirmed_at INTEGER,\n  pair_id TEXT REFERENCES hamtdaa_pairs(id) ON DELETE RESTRICT,\n  CHECK(requester_id IS NULL OR creator_id <> requester_id),\n  CHECK(state NOT IN ('awaiting_creator','linked') OR (requester_id IS NOT NULL AND requested_at IS NOT NULL)),\n  CHECK(state <> 'linked' OR (pair_id IS NOT NULL AND confirmed_at IS NOT NULL))\n)"
+    },
+    {
+      "type": "table",
+      "name": "hamtdaa_pair_members",
+      "tbl_name": "hamtdaa_pair_members",
+      "sql": "CREATE TABLE hamtdaa_pair_members (\n  pair_id TEXT NOT NULL REFERENCES hamtdaa_pairs(id) ON DELETE RESTRICT,\n  user_id TEXT NOT NULL REFERENCES hamtdaa_profiles(user_id) ON DELETE RESTRICT,\n  slot INTEGER NOT NULL CHECK(slot IN (1,2)),\n  revoked_at INTEGER,\n  PRIMARY KEY(pair_id,user_id),\n  UNIQUE(pair_id,slot)\n)"
+    },
+    {
+      "type": "table",
+      "name": "hamtdaa_pair_rate_limits",
+      "tbl_name": "hamtdaa_pair_rate_limits",
+      "sql": "CREATE TABLE hamtdaa_pair_rate_limits (\n  user_id TEXT NOT NULL REFERENCES hamtdaa_profiles(user_id) ON DELETE RESTRICT,\n  action TEXT NOT NULL CHECK(action IN ('preview','create','request','mutation')),\n  window_start INTEGER NOT NULL,\n  attempts INTEGER NOT NULL CHECK(attempts>0),\n  PRIMARY KEY(user_id,action)\n)"
+    },
+    {
+      "type": "table",
+      "name": "hamtdaa_pair_receipts",
+      "tbl_name": "hamtdaa_pair_receipts",
+      "sql": "CREATE TABLE hamtdaa_pair_receipts (\n  user_id TEXT NOT NULL REFERENCES hamtdaa_profiles(user_id) ON DELETE RESTRICT,\n  command_id TEXT NOT NULL,\n  payload_hash TEXT NOT NULL CHECK(length(payload_hash)=64),\n  outcome TEXT NOT NULL CHECK(json_valid(outcome)),\n  created_at INTEGER NOT NULL,\n  PRIMARY KEY(user_id,command_id)\n)"
+    },
+    {
+      "type": "table",
+      "name": "hamtdaa_pair_transition_guards",
+      "tbl_name": "hamtdaa_pair_transition_guards",
+      "sql": "CREATE TABLE hamtdaa_pair_transition_guards (\n  id TEXT PRIMARY KEY,\n  allowed INTEGER NOT NULL CHECK(allowed=1)\n)"
+    },
+    {
+      "type": "table",
+      "name": "hamtdaa_pairs",
+      "tbl_name": "hamtdaa_pairs",
+      "sql": "CREATE TABLE hamtdaa_pairs (\n  id TEXT PRIMARY KEY,\n  invitation_id TEXT NOT NULL UNIQUE REFERENCES hamtdaa_pair_invitations(id) ON DELETE RESTRICT,\n  state TEXT NOT NULL DEFAULT 'forming' CHECK(state IN ('forming','active','unlinked')),\n  version INTEGER NOT NULL DEFAULT 1 CHECK(version > 0),\n  created_at INTEGER NOT NULL,\n  unlinked_at INTEGER,\n  CHECK(state <> 'unlinked' OR unlinked_at IS NOT NULL)\n)"
+    },
+    {
+      "type": "table",
+      "name": "hamtdaa_profiles",
+      "tbl_name": "hamtdaa_profiles",
+      "sql": "CREATE TABLE hamtdaa_profiles (\n  user_id TEXT PRIMARY KEY REFERENCES \"user\"(id) ON DELETE RESTRICT,\n  display_name TEXT NOT NULL DEFAULT 'Хэрэглэгч' CHECK(length(trim(display_name)) BETWEEN 1 AND 40),\n  account_state TEXT NOT NULL DEFAULT 'active' CHECK(account_state IN ('active','deleting','disabled')),\n  version INTEGER NOT NULL DEFAULT 1 CHECK(version > 0)\n)"
+    },
+    {
+      "type": "table",
+      "name": "hamtdaa_together_guards",
+      "tbl_name": "hamtdaa_together_guards",
+      "sql": "CREATE TABLE hamtdaa_together_guards (\n  id TEXT PRIMARY KEY,\n  allowed INTEGER NOT NULL CHECK(allowed=1)\n)"
+    },
+    {
+      "type": "table",
+      "name": "hamtdaa_together_quotas",
+      "tbl_name": "hamtdaa_together_quotas",
+      "sql": "CREATE TABLE hamtdaa_together_quotas (\n  user_id TEXT PRIMARY KEY REFERENCES hamtdaa_profiles(user_id) ON DELETE RESTRICT,\n  day TEXT NOT NULL,\n  mutations INTEGER NOT NULL CHECK(mutations BETWEEN 1 AND 100)\n)"
+    },
+    {
+      "type": "table",
+      "name": "hamtdaa_together_receipts",
+      "tbl_name": "hamtdaa_together_receipts",
+      "sql": "CREATE TABLE hamtdaa_together_receipts (\n  user_id TEXT NOT NULL REFERENCES hamtdaa_profiles(user_id) ON DELETE RESTRICT,\n  command_id TEXT NOT NULL,\n  pair_id TEXT NOT NULL REFERENCES hamtdaa_pairs(id) ON DELETE RESTRICT,\n  payload_hash TEXT NOT NULL CHECK(length(payload_hash)=64),\n  operation TEXT NOT NULL,\n  day TEXT NOT NULL,\n  created_at INTEGER NOT NULL,\n  PRIMARY KEY(user_id,command_id)\n)"
+    },
+    {
+      "type": "table",
+      "name": "hamtdaa_wish_guards",
+      "tbl_name": "hamtdaa_wish_guards",
+      "sql": "CREATE TABLE hamtdaa_wish_guards (id TEXT NOT NULL PRIMARY KEY, allowed INTEGER NOT NULL CHECK(allowed=1))"
+    },
+    {
+      "type": "table",
+      "name": "hamtdaa_wish_likes",
+      "tbl_name": "hamtdaa_wish_likes",
+      "sql": "CREATE TABLE hamtdaa_wish_likes (\n  wish_id TEXT NOT NULL REFERENCES hamtdaa_wishes(id) ON DELETE CASCADE,\n  user_id TEXT NOT NULL REFERENCES hamtdaa_profiles(user_id) ON DELETE RESTRICT,\n  created_at INTEGER NOT NULL CHECK(typeof(created_at)='integer' AND created_at>0),\n  PRIMARY KEY(wish_id,user_id)\n)"
+    },
+    {
+      "type": "table",
+      "name": "hamtdaa_wish_quotas",
+      "tbl_name": "hamtdaa_wish_quotas",
+      "sql": "CREATE TABLE hamtdaa_wish_quotas (\n  user_id TEXT NOT NULL PRIMARY KEY REFERENCES hamtdaa_profiles(user_id) ON DELETE RESTRICT,\n  day TEXT NOT NULL CHECK(day GLOB '20[0-9][0-9]-[0-9][0-9]-[0-9][0-9]' AND date(day,'+0 days') IS NOT NULL AND date(day,'+0 days')=day),\n  mutations INTEGER NOT NULL CHECK(typeof(mutations)='integer' AND mutations BETWEEN 1 AND 100)\n)"
+    },
+    {
+      "type": "table",
+      "name": "hamtdaa_wish_receipts",
+      "tbl_name": "hamtdaa_wish_receipts",
+      "sql": "CREATE TABLE hamtdaa_wish_receipts (\n  user_id TEXT NOT NULL REFERENCES hamtdaa_profiles(user_id) ON DELETE RESTRICT,\n  command_id TEXT NOT NULL CHECK(length(command_id)=36),\n  pair_id TEXT NOT NULL REFERENCES hamtdaa_pairs(id) ON DELETE RESTRICT,\n  operation TEXT NOT NULL CHECK(operation IN ('create','like','delete','plan','complete')),\n  payload_hash TEXT NOT NULL CHECK(length(payload_hash)=64 AND payload_hash NOT GLOB '*[^0-9a-f]*'),\n  \n  wish_id TEXT NOT NULL,\n  event_id TEXT,\n  created_at INTEGER NOT NULL CHECK(typeof(created_at)='integer' AND created_at>0),\n  PRIMARY KEY(user_id,command_id)\n)"
+    },
+    {
+      "type": "table",
+      "name": "hamtdaa_wishes",
+      "tbl_name": "hamtdaa_wishes",
+      "sql": "CREATE TABLE hamtdaa_wishes (\n  id TEXT NOT NULL PRIMARY KEY CHECK(length(id)=36 AND length(replace(id,'-',''))=32 AND replace(id,'-','') NOT GLOB '*[^0-9a-f]*'),\n  pair_id TEXT NOT NULL REFERENCES hamtdaa_pairs(id) ON DELETE RESTRICT,\n  creator_id TEXT NOT NULL REFERENCES hamtdaa_profiles(user_id) ON DELETE RESTRICT,\n  title TEXT NOT NULL CHECK(length(trim(title)) BETWEEN 1 AND 80),\n  note TEXT NOT NULL DEFAULT '' CHECK(length(note)<=500),\n  location TEXT NOT NULL DEFAULT '' CHECK(length(location)<=120),\n  category TEXT NOT NULL CHECK(category IN ('home','outdoor','food','travel','other')),\n  budget TEXT NOT NULL CHECK(budget IN ('free','low','medium','high')),\n  status TEXT NOT NULL DEFAULT 'idea' CHECK(status IN ('idea','planned','done')),\n  event_id TEXT UNIQUE REFERENCES hamtdaa_calendar_events(id) ON DELETE SET NULL,\n  version INTEGER NOT NULL DEFAULT 1 CHECK(typeof(version)='integer' AND version>0),\n  created_at INTEGER NOT NULL CHECK(typeof(created_at)='integer' AND created_at>0),\n  updated_at INTEGER NOT NULL CHECK(typeof(updated_at)='integer' AND updated_at>=created_at),\n  CHECK((status='idea' AND event_id IS NULL) OR (status='planned' AND event_id IS NOT NULL) OR status='done')\n)"
+    },
+    {
+      "type": "table",
+      "name": "rateLimit",
+      "tbl_name": "rateLimit",
+      "sql": "CREATE TABLE \"rateLimit\" (\"id\" text not null primary key, \"key\" text not null unique, \"count\" integer not null, \"lastRequest\" bigint not null)"
+    },
+    {
+      "type": "table",
+      "name": "session",
+      "tbl_name": "session",
+      "sql": "CREATE TABLE \"session\" (\"id\" text not null primary key, \"expiresAt\" date not null, \"token\" text not null unique, \"createdAt\" date not null, \"updatedAt\" date not null, \"ipAddress\" text, \"userAgent\" text, \"userId\" text not null references \"user\" (\"id\") on delete cascade)"
+    },
+    {
+      "type": "table",
+      "name": "user",
+      "tbl_name": "user",
+      "sql": "CREATE TABLE \"user\" (\"id\" text not null primary key, \"name\" text not null, \"email\" text not null unique, \"emailVerified\" integer not null, \"image\" text, \"createdAt\" date not null, \"updatedAt\" date not null)"
+    },
+    {
+      "type": "table",
+      "name": "verification",
+      "tbl_name": "verification",
+      "sql": "CREATE TABLE \"verification\" (\"id\" text not null primary key, \"identifier\" text not null unique, \"value\" text not null, \"expiresAt\" date not null, \"createdAt\" date not null, \"updatedAt\" date not null)"
+    },
+    {
+      "type": "trigger",
+      "name": "hamtdaa_billing_grant_owner_immutable",
+      "tbl_name": "hamtdaa_billing_grants",
+      "sql": "CREATE TRIGGER hamtdaa_billing_grant_owner_immutable BEFORE UPDATE ON hamtdaa_billing_grants\nWHEN NEW.user_id<>OLD.user_id OR NEW.provider<>OLD.provider OR NEW.source_id<>OLD.source_id OR NEW.environment<>OLD.environment\nBEGIN SELECT RAISE(ABORT,'billing_grant_owner_immutable'); END"
+    },
+    {
+      "type": "trigger",
+      "name": "hamtdaa_billing_order_immutable",
+      "tbl_name": "hamtdaa_billing_orders",
+      "sql": "CREATE TRIGGER hamtdaa_billing_order_immutable BEFORE UPDATE ON hamtdaa_billing_orders\nWHEN NEW.user_id<>OLD.user_id OR NEW.command_id<>OLD.command_id OR NEW.plan<>OLD.plan\n  OR NEW.duration_seconds<>OLD.duration_seconds OR NEW.amount_minor<>OLD.amount_minor\n  OR NEW.currency<>OLD.currency OR NEW.livemode<>OLD.livemode\n  OR NEW.return_url<>OLD.return_url OR NEW.description<>OLD.description\n  OR NEW.created_at<>OLD.created_at\n  OR (OLD.provider_id IS NOT NULL AND NEW.provider_id IS NOT OLD.provider_id)\n  OR (OLD.checkout_url IS NOT NULL AND NEW.checkout_url IS NOT OLD.checkout_url\n    AND NOT (NEW.checkout_url IS NULL AND EXISTS(\n      SELECT 1 FROM hamtdaa_deleted_accounts WHERE user_id=NEW.user_id)))\nBEGIN SELECT RAISE(ABORT,'billing_order_immutable'); END"
+    },
+    {
+      "type": "trigger",
+      "name": "hamtdaa_daily_answers_immutable",
+      "tbl_name": "hamtdaa_daily_answers",
+      "sql": "CREATE TRIGGER hamtdaa_daily_answers_immutable BEFORE UPDATE ON hamtdaa_daily_answers\nBEGIN SELECT RAISE(ABORT,'daily_answer_immutable'); END"
+    },
+    {
+      "type": "trigger",
+      "name": "hamtdaa_deleted_auth_account_insert",
+      "tbl_name": "account",
+      "sql": "CREATE TRIGGER hamtdaa_deleted_auth_account_insert BEFORE INSERT ON \"account\"\nWHEN EXISTS(SELECT 1 FROM hamtdaa_deleted_accounts WHERE user_id=NEW.userId)\nBEGIN SELECT RAISE(ABORT,'account_deleted'); END"
+    },
+    {
+      "type": "trigger",
+      "name": "hamtdaa_deleted_auth_account_update",
+      "tbl_name": "account",
+      "sql": "CREATE TRIGGER hamtdaa_deleted_auth_account_update BEFORE UPDATE ON \"account\"\nWHEN EXISTS(SELECT 1 FROM hamtdaa_deleted_accounts WHERE user_id=NEW.userId)\nBEGIN SELECT RAISE(ABORT,'account_deleted'); END"
+    },
+    {
+      "type": "trigger",
+      "name": "hamtdaa_deleted_grant_insert",
+      "tbl_name": "hamtdaa_billing_grants",
+      "sql": "CREATE TRIGGER hamtdaa_deleted_grant_insert AFTER INSERT ON hamtdaa_billing_grants\nWHEN EXISTS(SELECT 1 FROM hamtdaa_deleted_accounts WHERE user_id=NEW.user_id)\n  AND (NEW.refresh_cipher IS NOT NULL OR NEW.is_active<>0)\nBEGIN UPDATE hamtdaa_billing_grants SET refresh_cipher=NULL,is_active=0\n  WHERE provider=NEW.provider AND source_id=NEW.source_id; END"
+    },
+    {
+      "type": "trigger",
+      "name": "hamtdaa_deleted_grant_update",
+      "tbl_name": "hamtdaa_billing_grants",
+      "sql": "CREATE TRIGGER hamtdaa_deleted_grant_update AFTER UPDATE ON hamtdaa_billing_grants\nWHEN EXISTS(SELECT 1 FROM hamtdaa_deleted_accounts WHERE user_id=NEW.user_id)\n  AND (NEW.refresh_cipher IS NOT NULL OR NEW.is_active<>0)\nBEGIN UPDATE hamtdaa_billing_grants SET refresh_cipher=NULL,is_active=0\n  WHERE provider=NEW.provider AND source_id=NEW.source_id; END"
+    },
+    {
+      "type": "trigger",
+      "name": "hamtdaa_deleted_order_insert",
+      "tbl_name": "hamtdaa_billing_orders",
+      "sql": "CREATE TRIGGER hamtdaa_deleted_order_insert AFTER INSERT ON hamtdaa_billing_orders\nWHEN EXISTS(SELECT 1 FROM hamtdaa_deleted_accounts WHERE user_id=NEW.user_id)\n  AND (NEW.checkout_url IS NOT NULL OR NEW.next_action IS NOT NULL)\nBEGIN UPDATE hamtdaa_billing_orders SET checkout_url=NULL,next_action=NULL WHERE id=NEW.id; END"
+    },
+    {
+      "type": "trigger",
+      "name": "hamtdaa_deleted_order_update",
+      "tbl_name": "hamtdaa_billing_orders",
+      "sql": "CREATE TRIGGER hamtdaa_deleted_order_update AFTER UPDATE ON hamtdaa_billing_orders\nWHEN EXISTS(SELECT 1 FROM hamtdaa_deleted_accounts WHERE user_id=NEW.user_id)\n  AND (NEW.checkout_url IS NOT NULL OR NEW.next_action IS NOT NULL)\nBEGIN UPDATE hamtdaa_billing_orders SET checkout_url=NULL,next_action=NULL WHERE id=NEW.id; END"
+    },
+    {
+      "type": "trigger",
+      "name": "hamtdaa_deleted_profile_update",
+      "tbl_name": "hamtdaa_profiles",
+      "sql": "CREATE TRIGGER hamtdaa_deleted_profile_update BEFORE UPDATE ON hamtdaa_profiles\nWHEN EXISTS(SELECT 1 FROM hamtdaa_deleted_accounts WHERE user_id=NEW.user_id)\n  AND (NEW.account_state<>'disabled' OR NEW.display_name<>'Устгасан бүртгэл')\nBEGIN SELECT RAISE(ABORT,'account_deleted'); END"
+    },
+    {
+      "type": "trigger",
+      "name": "hamtdaa_deleted_session_insert",
+      "tbl_name": "session",
+      "sql": "CREATE TRIGGER hamtdaa_deleted_session_insert BEFORE INSERT ON \"session\"\nWHEN EXISTS(SELECT 1 FROM hamtdaa_deleted_accounts WHERE user_id=NEW.userId)\nBEGIN SELECT RAISE(ABORT,'account_deleted'); END"
+    },
+    {
+      "type": "trigger",
+      "name": "hamtdaa_deleted_session_update",
+      "tbl_name": "session",
+      "sql": "CREATE TRIGGER hamtdaa_deleted_session_update BEFORE UPDATE ON \"session\"\nWHEN EXISTS(SELECT 1 FROM hamtdaa_deleted_accounts WHERE user_id=NEW.userId)\nBEGIN SELECT RAISE(ABORT,'account_deleted'); END"
+    },
+    {
+      "type": "trigger",
+      "name": "hamtdaa_deleted_user_update",
+      "tbl_name": "user",
+      "sql": "CREATE TRIGGER hamtdaa_deleted_user_update BEFORE UPDATE ON \"user\"\nWHEN EXISTS(SELECT 1 FROM hamtdaa_deleted_accounts WHERE user_id=NEW.id)\n  AND (NEW.emailVerified<>0 OR NEW.image IS NOT NULL OR NEW.name<>'Deleted account'\n    OR NEW.email NOT GLOB 'deleted-*@deleted.invalid')\nBEGIN SELECT RAISE(ABORT,'account_deleted'); END"
+    },
+    {
+      "type": "trigger",
+      "name": "hamtdaa_memory_account_delete",
+      "tbl_name": "hamtdaa_deleted_accounts",
+      "sql": "CREATE TRIGGER hamtdaa_memory_account_delete AFTER INSERT ON hamtdaa_deleted_accounts\nBEGIN\n  DELETE FROM hamtdaa_memories WHERE creator_id=NEW.user_id;\n  DELETE FROM hamtdaa_memory_receipts WHERE user_id=NEW.user_id;\n  DELETE FROM hamtdaa_memory_quotas WHERE user_id=NEW.user_id;\nEND"
+    },
+    {
+      "type": "trigger",
+      "name": "hamtdaa_memory_delete_gc",
+      "tbl_name": "hamtdaa_memories",
+      "sql": "CREATE TRIGGER hamtdaa_memory_delete_gc BEFORE DELETE ON hamtdaa_memories\nBEGIN\n  INSERT INTO hamtdaa_memory_gc(object_key,due_at,retain_until)\n    VALUES(OLD.photo_key,CAST(strftime('%s','now') AS INTEGER)*1000+300000,\n      CAST(strftime('%s','now') AS INTEGER)*1000+86400000)\n    ON CONFLICT(object_key) DO UPDATE SET\n      due_at=max(hamtdaa_memory_gc.due_at,excluded.due_at),\n      retain_until=max(hamtdaa_memory_gc.retain_until,excluded.retain_until);\n  INSERT INTO hamtdaa_memory_gc(object_key,due_at,retain_until)\n    VALUES(OLD.thumbnail_key,CAST(strftime('%s','now') AS INTEGER)*1000+300000,\n      CAST(strftime('%s','now') AS INTEGER)*1000+86400000)\n    ON CONFLICT(object_key) DO UPDATE SET\n      due_at=max(hamtdaa_memory_gc.due_at,excluded.due_at),\n      retain_until=max(hamtdaa_memory_gc.retain_until,excluded.retain_until);\nEND"
+    },
+    {
+      "type": "trigger",
+      "name": "hamtdaa_memory_immutable",
+      "tbl_name": "hamtdaa_memories",
+      "sql": "CREATE TRIGGER hamtdaa_memory_immutable BEFORE UPDATE ON hamtdaa_memories\nWHEN OLD.state<>'pending' OR NEW.state<>'ready'\n  OR NEW.id IS NOT OLD.id OR NEW.pair_id IS NOT OLD.pair_id\n  OR NEW.creator_id IS NOT OLD.creator_id OR NEW.day IS NOT OLD.day\n  OR NEW.title IS NOT OLD.title OR NEW.note IS NOT OLD.note\n  OR NEW.sticker IS NOT OLD.sticker OR NEW.photo_key IS NOT OLD.photo_key\n  OR NEW.thumbnail_key IS NOT OLD.thumbnail_key OR NEW.photo_bytes IS NOT OLD.photo_bytes\n  OR NEW.thumb_bytes IS NOT OLD.thumb_bytes OR NEW.payload_hash IS NOT OLD.payload_hash\n  OR NEW.command_id IS NOT OLD.command_id OR NEW.created_at IS NOT OLD.created_at\n  OR NEW.upload_deadline IS NOT OLD.upload_deadline\n  OR NEW.version NOT IN (OLD.version,OLD.version+1)\nBEGIN SELECT RAISE(ABORT,'memory_immutable'); END"
+    },
+    {
+      "type": "trigger",
+      "name": "hamtdaa_memory_insert_guard",
+      "tbl_name": "hamtdaa_memories",
+      "sql": "CREATE TRIGGER hamtdaa_memory_insert_guard BEFORE INSERT ON hamtdaa_memories\nWHEN NEW.state<>'pending' OR NOT EXISTS (\n  SELECT 1 FROM hamtdaa_pairs p\n  JOIN hamtdaa_pair_members own ON own.pair_id=p.id\n    AND own.user_id=NEW.creator_id AND own.revoked_at IS NULL\n  JOIN hamtdaa_pair_members other ON other.pair_id=p.id\n    AND other.user_id<>own.user_id AND other.revoked_at IS NULL\n  JOIN hamtdaa_profiles ap ON ap.user_id=own.user_id AND ap.account_state='active'\n  JOIN hamtdaa_profiles op ON op.user_id=other.user_id AND op.account_state='active'\n  JOIN \"user\" au ON au.id=own.user_id AND au.emailVerified=1\n  JOIN \"user\" ou ON ou.id=other.user_id AND ou.emailVerified=1\n  WHERE p.id=NEW.pair_id AND p.state='active'\n    AND NOT EXISTS(SELECT 1 FROM hamtdaa_deleted_accounts d\n      WHERE d.user_id IN (own.user_id,other.user_id))\n    AND NOT EXISTS(SELECT 1 FROM hamtdaa_blocks b\n      WHERE (b.blocker_id=own.user_id AND b.blocked_id=other.user_id)\n         OR (b.blocker_id=other.user_id AND b.blocked_id=own.user_id))\n)\nBEGIN SELECT RAISE(ABORT,'memory_pair_guard'); END"
+    },
+    {
+      "type": "trigger",
+      "name": "hamtdaa_memory_key_guard",
+      "tbl_name": "hamtdaa_memories",
+      "sql": "CREATE TRIGGER hamtdaa_memory_key_guard BEFORE INSERT ON hamtdaa_memories\nWHEN EXISTS(SELECT 1 FROM hamtdaa_memories m\n    WHERE m.photo_key IN (NEW.photo_key,NEW.thumbnail_key)\n       OR m.thumbnail_key IN (NEW.photo_key,NEW.thumbnail_key))\n  OR EXISTS(SELECT 1 FROM hamtdaa_memory_gc g\n    WHERE g.object_key IN (NEW.photo_key,NEW.thumbnail_key))\nBEGIN SELECT RAISE(ABORT,'memory_object_key_used'); END"
+    },
+    {
+      "type": "trigger",
+      "name": "hamtdaa_memory_pair_unlink",
+      "tbl_name": "hamtdaa_pairs",
+      "sql": "CREATE TRIGGER hamtdaa_memory_pair_unlink AFTER UPDATE OF state ON hamtdaa_pairs\nWHEN NEW.state='unlinked' AND OLD.state<>'unlinked'\nBEGIN\n  DELETE FROM hamtdaa_memories WHERE pair_id=NEW.id;\nEND"
+    },
+    {
+      "type": "trigger",
+      "name": "hamtdaa_memory_ready_guard",
+      "tbl_name": "hamtdaa_memories",
+      "sql": "CREATE TRIGGER hamtdaa_memory_ready_guard BEFORE UPDATE OF state ON hamtdaa_memories\nWHEN NEW.state='ready' AND (\n  NEW.upload_deadline<=CAST(strftime('%s','now') AS INTEGER)*1000\n  OR NOT EXISTS (\n    SELECT 1 FROM hamtdaa_pairs p\n    JOIN hamtdaa_pair_members own ON own.pair_id=p.id\n      AND own.user_id=NEW.creator_id AND own.revoked_at IS NULL\n    JOIN hamtdaa_pair_members other ON other.pair_id=p.id\n      AND other.user_id<>own.user_id AND other.revoked_at IS NULL\n    JOIN hamtdaa_profiles ap ON ap.user_id=own.user_id AND ap.account_state='active'\n    JOIN hamtdaa_profiles op ON op.user_id=other.user_id AND op.account_state='active'\n    JOIN \"user\" au ON au.id=own.user_id AND au.emailVerified=1\n    JOIN \"user\" ou ON ou.id=other.user_id AND ou.emailVerified=1\n    WHERE p.id=NEW.pair_id AND p.state='active'\n      AND NOT EXISTS(SELECT 1 FROM hamtdaa_deleted_accounts d\n        WHERE d.user_id IN (own.user_id,other.user_id))\n      AND NOT EXISTS(SELECT 1 FROM hamtdaa_blocks b\n        WHERE (b.blocker_id=own.user_id AND b.blocked_id=other.user_id)\n           OR (b.blocker_id=other.user_id AND b.blocked_id=own.user_id))\n  )\n)\nBEGIN SELECT RAISE(ABORT,'memory_pair_guard'); END"
+    },
+    {
+      "type": "trigger",
+      "name": "hamtdaa_pair_activate_guard",
+      "tbl_name": "hamtdaa_pairs",
+      "sql": "CREATE TRIGGER hamtdaa_pair_activate_guard BEFORE UPDATE OF state ON hamtdaa_pairs\nWHEN NEW.state='active' AND (OLD.state<>'forming' OR (\n    SELECT count(*) FROM hamtdaa_pair_members WHERE pair_id=NEW.id AND revoked_at IS NULL\n  )<>2)\nBEGIN\n  SELECT RAISE(ABORT,'pair_activation_guard');\nEND"
+    },
+    {
+      "type": "trigger",
+      "name": "hamtdaa_pair_member_insert_guard",
+      "tbl_name": "hamtdaa_pair_members",
+      "sql": "CREATE TRIGGER hamtdaa_pair_member_insert_guard BEFORE INSERT ON hamtdaa_pair_members\nWHEN NOT EXISTS (\n    SELECT 1 FROM hamtdaa_pairs p JOIN hamtdaa_pair_invitations i ON i.id=p.invitation_id\n    JOIN hamtdaa_profiles u ON u.user_id=NEW.user_id JOIN \"user\" a ON a.id=u.user_id\n    WHERE p.id=NEW.pair_id AND p.state='forming' AND u.account_state='active' AND a.emailVerified=1\n      AND i.state='awaiting_creator' AND i.expires_at>CAST(strftime('%s','now') AS INTEGER)\n      AND ((NEW.slot=1 AND NEW.user_id=i.creator_id) OR (NEW.slot=2 AND NEW.user_id=i.requester_id))\n  )\nBEGIN\n  SELECT RAISE(ABORT,'pair_membership_guard');\nEND"
+    },
+    {
+      "type": "trigger",
+      "name": "hamtdaa_pair_no_member_restore",
+      "tbl_name": "hamtdaa_pair_members",
+      "sql": "CREATE TRIGGER hamtdaa_pair_no_member_restore BEFORE UPDATE OF revoked_at ON hamtdaa_pair_members\nWHEN OLD.revoked_at IS NOT NULL AND NEW.revoked_at IS NULL\nBEGIN\n  SELECT RAISE(ABORT,'pair_member_revoked');\nEND"
+    },
+    {
+      "type": "trigger",
+      "name": "hamtdaa_pair_no_reactivate",
+      "tbl_name": "hamtdaa_pairs",
+      "sql": "CREATE TRIGGER hamtdaa_pair_no_reactivate BEFORE UPDATE OF state ON hamtdaa_pairs\nWHEN OLD.state='unlinked' AND NEW.state<>'unlinked'\nBEGIN\n  SELECT RAISE(ABORT,'pair_unlinked');\nEND"
+    },
+    {
+      "type": "trigger",
+      "name": "hamtdaa_wish_account_delete",
+      "tbl_name": "hamtdaa_deleted_accounts",
+      "sql": "CREATE TRIGGER hamtdaa_wish_account_delete AFTER INSERT ON hamtdaa_deleted_accounts\nBEGIN\n  DELETE FROM hamtdaa_wishes WHERE creator_id=NEW.user_id;\n  DELETE FROM hamtdaa_wish_likes WHERE user_id=NEW.user_id;\n  DELETE FROM hamtdaa_wish_receipts WHERE user_id=NEW.user_id;\n  DELETE FROM hamtdaa_wish_quotas WHERE user_id=NEW.user_id;\nEND"
+    },
+    {
+      "type": "trigger",
+      "name": "hamtdaa_wish_calendar_delete",
+      "tbl_name": "hamtdaa_calendar_events",
+      "sql": "CREATE TRIGGER hamtdaa_wish_calendar_delete BEFORE DELETE ON hamtdaa_calendar_events\nBEGIN\n  UPDATE hamtdaa_wishes SET status=CASE WHEN status='planned' THEN 'idea' ELSE status END,\n    event_id=NULL,version=version+1,updated_at=max(updated_at,CAST(strftime('%s','now') AS INTEGER)*1000)\n    WHERE event_id=OLD.id;\nEND"
+    },
+    {
+      "type": "trigger",
+      "name": "hamtdaa_wish_event_guard",
+      "tbl_name": "hamtdaa_wishes",
+      "sql": "CREATE TRIGGER hamtdaa_wish_event_guard BEFORE UPDATE OF event_id ON hamtdaa_wishes\nWHEN NEW.event_id IS NOT NULL AND NOT EXISTS(SELECT 1 FROM hamtdaa_calendar_events e WHERE e.id=NEW.event_id AND e.pair_id=NEW.pair_id)\nBEGIN SELECT RAISE(ABORT,'wish_event_scope'); END"
+    },
+    {
+      "type": "trigger",
+      "name": "hamtdaa_wish_identity_guard",
+      "tbl_name": "hamtdaa_wishes",
+      "sql": "CREATE TRIGGER hamtdaa_wish_identity_guard BEFORE UPDATE ON hamtdaa_wishes\nWHEN NEW.id IS NOT OLD.id OR NEW.pair_id IS NOT OLD.pair_id OR NEW.creator_id IS NOT OLD.creator_id\n  OR NEW.title IS NOT OLD.title OR NEW.note IS NOT OLD.note OR NEW.location IS NOT OLD.location\n  OR NEW.category IS NOT OLD.category OR NEW.budget IS NOT OLD.budget OR NEW.created_at IS NOT OLD.created_at\n  OR NEW.version<>OLD.version+1\nBEGIN SELECT RAISE(ABORT,'wish_immutable'); END"
+    },
+    {
+      "type": "trigger",
+      "name": "hamtdaa_wish_insert_guard",
+      "tbl_name": "hamtdaa_wishes",
+      "sql": "CREATE TRIGGER hamtdaa_wish_insert_guard BEFORE INSERT ON hamtdaa_wishes\nWHEN NEW.status<>'idea' OR NOT EXISTS (\n  SELECT 1 FROM hamtdaa_pairs p\n  JOIN hamtdaa_pair_members own ON own.pair_id=p.id AND own.user_id=NEW.creator_id AND own.revoked_at IS NULL\n  JOIN hamtdaa_pair_members other ON other.pair_id=p.id AND other.user_id<>own.user_id AND other.revoked_at IS NULL\n  JOIN hamtdaa_profiles ap ON ap.user_id=own.user_id AND ap.account_state='active'\n  JOIN hamtdaa_profiles op ON op.user_id=other.user_id AND op.account_state='active'\n  JOIN \"user\" au ON au.id=own.user_id AND au.emailVerified=1\n  JOIN \"user\" ou ON ou.id=other.user_id AND ou.emailVerified=1\n  WHERE p.id=NEW.pair_id AND p.state='active'\n  AND NOT EXISTS(SELECT 1 FROM hamtdaa_deleted_accounts d WHERE d.user_id IN (own.user_id,other.user_id))\n  AND NOT EXISTS(SELECT 1 FROM hamtdaa_blocks b WHERE (b.blocker_id=own.user_id AND b.blocked_id=other.user_id) OR (b.blocker_id=other.user_id AND b.blocked_id=own.user_id))\n)\nBEGIN SELECT RAISE(ABORT,'wish_pair_guard'); END"
+    },
+    {
+      "type": "trigger",
+      "name": "hamtdaa_wish_like_guard",
+      "tbl_name": "hamtdaa_wish_likes",
+      "sql": "CREATE TRIGGER hamtdaa_wish_like_guard BEFORE INSERT ON hamtdaa_wish_likes\nWHEN NOT EXISTS(SELECT 1 FROM hamtdaa_wishes w JOIN hamtdaa_pair_members m ON m.pair_id=w.pair_id AND m.user_id=NEW.user_id AND m.revoked_at IS NULL WHERE w.id=NEW.wish_id AND w.status='idea')\nBEGIN SELECT RAISE(ABORT,'wish_like_scope'); END"
+    },
+    {
+      "type": "trigger",
+      "name": "hamtdaa_wish_pair_unlink",
+      "tbl_name": "hamtdaa_pairs",
+      "sql": "CREATE TRIGGER hamtdaa_wish_pair_unlink AFTER UPDATE OF state ON hamtdaa_pairs\nWHEN NEW.state='unlinked' AND OLD.state<>'unlinked'\nBEGIN\n  DELETE FROM hamtdaa_wishes WHERE pair_id=NEW.id;\n  DELETE FROM hamtdaa_wish_receipts WHERE pair_id=NEW.id;\nEND"
+    }
+  ]
+}

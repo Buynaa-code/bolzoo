@@ -40,6 +40,13 @@ async function unlink(actor:string,pair:string) {
   expect(result.ok).toBe(true);
 }
 async function scalar(sql:string,...args:(string|number)[]) { return (await env.DB.prepare(sql).bind(...args).first<{n:number}>())!.n; }
+async function seedCalendar(actor:string,pair:string,count=51) {
+ const ids=Array.from({length:count},command).sort();
+ await env.DB.batch(ids.map(id=>env.DB.prepare(`INSERT INTO hamtdaa_calendar_events
+  (id,pair_id,creator_id,title,starts_at,created_at,updated_at) VALUES(?,?,?,'Page fixture',?,0,0)`)
+  .bind(id,pair,actor,Date.parse(event.starts_at))));
+ return ids;
+}
 
 describe('Together on migrated D1',()=>{
  it('returns honest empty unpaired state and requires verified active profiles',async()=>{
@@ -49,6 +56,56 @@ describe('Together on migrated D1',()=>{
   for(const actor of [command(),await user(false)]) expect((await state(actor)).status).toBe(401);
   await env.DB.prepare("UPDATE hamtdaa_profiles SET account_state='disabled' WHERE user_id=?").bind(a).run();
   expect((await state(a)).status).toBe(401);
+ });
+ it('bootstraps a verified user opening Together before visiting pair status',async()=>{
+  const actor=command(),created=new Date().toISOString();
+  await env.DB.prepare('INSERT INTO "user"(id,name,email,emailVerified,createdAt,updatedAt) VALUES(?,?,?,?,?,?)')
+   .bind(actor,'Нэр',`${actor}@example.test`,1,created,created).run();
+  expect(await scalar('SELECT count(*) n FROM hamtdaa_profiles WHERE user_id=?',actor)).toBe(0);
+  expect((await state(actor)).data).toMatchObject({ok:true,paired:false,events:[],next_cursor:null});
+  expect(await scalar('SELECT count(*) n FROM hamtdaa_profiles WHERE user_id=?',actor)).toBe(1);
+  expect((await state(actor)).status).toBe(200);
+  expect(await scalar('SELECT count(*) n FROM hamtdaa_profiles WHERE user_id=?',actor)).toBe(1);
+ });
+ it('paginates the calendar without duplicates when many events share a start time',async()=>{
+  const {a,b,pair}=await fixture();const ids=await seedCalendar(a,pair,103);
+  const seen:string[]=[];let cursor:unknown=null;
+  for(const expectedCount of [50,50,3]) {
+   const page=await call(b,'state',{month,cursor});
+   expect(page.status).toBe(200);
+   const rows=page.data.events as Event[];
+   expect(rows).toHaveLength(expectedCount);seen.push(...rows.map(row=>row.id));
+   cursor=page.data.next_cursor;
+   if(expectedCount===50) expect(typeof cursor).toBe('string');
+  }
+  expect(cursor).toBeNull();expect(seen).toEqual(ids);
+ });
+ it.each(['edit','delete','move'] as const)('rejects a calendar cursor after a concurrent %s',async(change)=>{
+  const {a,b,pair}=await fixture();const ids=await seedCalendar(a,pair);
+  const first=(await state(b)).data;
+  expect(typeof first.next_cursor).toBe('string');
+  const id=ids.at(-1)!;
+  const action=change==='delete'?'calendar/delete':'calendar/update';
+  const payload={command_id:command(),expected_pair_id:pair,id,expected_version:1,
+   ...(change==='delete'?{}:{...event,title:'Changed',...(change==='move'?{starts_at:'2026-11-01T10:00:00Z',ends_at:null}:{})})};
+  expect((await call(a,action,payload)).status).toBe(200);
+  const stale=await call(b,'state',{month,cursor:first.next_cursor});
+  expect(stale.status).toBe(409);expect(stale.data.code).toBe('calendar_changed');
+ });
+ it('rejects a former pair calendar cursor after relinking to a new partner',async()=>{
+  const {a,pair}=await fixture();await seedCalendar(a,pair);
+  const first=(await state(a)).data;await unlink(a,pair);
+  const c=await user();await link(a,c);
+  const stale=await call(a,'state',{month,cursor:first.next_cursor});
+  expect(stale.status).toBe(409);expect(stale.data).toEqual({ok:false,code:'pair_changed'});
+  expect((await state(a)).data.events).toEqual([]);
+ });
+ it('rejects malformed, oversized and cross-month calendar cursors',async()=>{
+  const {a,pair}=await fixture();await seedCalendar(a,pair);
+  const first=(await state(a)).data;
+  for(const cursor of ['',1,'x'.repeat(516),'not-base64',btoa('{}')])
+   expect((await call(a,'state',{month,cursor})).status).toBe(400);
+  expect((await call(a,'state',{month:'2026-11',cursor:first.next_cursor})).status).toBe(400);
  });
  it('shares created events, restricts author edits, lets partner respond and resets consent after edits',async()=>{
   const {a,b,pair}=await fixture();
@@ -96,6 +153,18 @@ describe('Together on migrated D1',()=>{
   expect((await call(b,'calendar/create',payload)).status).toBe(200);
   expect((await events(a)).length).toBe(2);
   expect(await scalar('SELECT mutations n FROM hamtdaa_together_quotas WHERE user_id=?',a)).toBe(1);
+ });
+ it('keeps infrastructure failures retryable when replaying a saved command',async()=>{
+  const {a,pair}=await fixture();const payload={command_id:command(),expected_pair_id:pair,...event};
+  expect((await call(a,'calendar/create',payload)).status).toBe(200);
+  const unavailable=new Proxy(env.DB,{get(target,key){
+   if(key==='batch')return async()=>{throw new Error('temporary D1 connection failure');};
+   const value=Reflect.get(target,key);return typeof value==='function'?value.bind(target):value;
+  }});
+  const retry=await call(a,'calendar/create',payload,unavailable);
+  expect(retry.status).toBe(503);expect(retry.data).toEqual({ok:false,code:'temporarily_unavailable'});
+  expect((await call(a,'calendar/create',payload)).status).toBe(200);
+  expect(await events(a)).toHaveLength(1);
  });
  it('competing versions atomically save one change and roll back loser receipt and quota',async()=>{
   const {a,b,pair}=await fixture();await create(a,pair);const e=(await events(a))[0];

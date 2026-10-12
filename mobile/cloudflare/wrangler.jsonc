@@ -1,0 +1,107 @@
+// Recovered from the deployed 2026-10-08 configuration.
+// Default environment is staging. Production must be explicitly selected.
+{
+  "name": "hamtdaa-api-staging",
+  "account_id": "4bf67f274347735ca73e54d2ddb00a6c",
+  "main": "src/index.ts",
+  "workers_dev": true,
+  "preview_urls": false,
+  "compatibility_date": "2026-10-05",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 0.1,
+    "redact_query_string": false,
+    "logs": {
+      "enabled": true,
+      "head_sampling_rate": 0.1,
+      "persist": true,
+      "invocation_logs": false
+    },
+    "traces": {
+      "enabled": false,
+      "persist": true,
+      "head_sampling_rate": 0.1
+    }
+  },
+  "vars": {
+    "APPLE_STORE_ENVIRONMENT": "Sandbox",
+    "AUTH_BASE_URL": "https://hamtdaa-api-staging.mendmedey.workers.dev",
+    "BILLING_ALLOW_SANDBOX": "false",
+    "BILLING_ENABLED": "false",
+    "BILLING_WEB_ENABLED": "false",
+    "BILLING_WIRE_MODE": "live",
+    "EMAIL_FROM": "noreply@auth.moch.mn",
+    "ENVIRONMENT": "staging",
+    "GOOGLE_STORE_ENVIRONMENT": "Sandbox",
+    "LEGAL_OPERATOR_NAME": "moch",
+    "LEGAL_SUPPORT_EMAIL": "gbuyandelger277@gmail.com",
+    "SIGNUP_ENABLED": "true"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_id": "e796d2c0-8f21-4cf4-90b1-f02821449440",
+      "database_name": "hamtdaa-staging",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "send_email": [
+    {
+      "name": "EMAIL",
+      "allowed_sender_addresses": [
+        "noreply@auth.moch.mn"
+      ]
+    }
+  ],
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "env": {
+    "production": {
+      "name": "hamtdaa-api-production",
+      "workers_dev": true,
+      "preview_urls": false,
+      "vars": {
+        "APPLE_STORE_ENVIRONMENT": "Production",
+        "AUTH_BASE_URL": "https://hamtdaa-api-production.mendmedey.workers.dev",
+        "BILLING_ALLOW_SANDBOX": "false",
+        "BILLING_ENABLED": "false",
+        "BILLING_WEB_ENABLED": "false",
+        "BILLING_WIRE_MODE": "live",
+        "EMAIL_FROM": "noreply@auth.moch.mn",
+        "ENVIRONMENT": "production",
+        "GOOGLE_STORE_ENVIRONMENT": "Production",
+        "LEGAL_OPERATOR_NAME": "moch",
+        "LEGAL_SUPPORT_EMAIL": "gbuyandelger277@gmail.com",
+        "SIGNUP_ENABLED": "true"
+      },
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_id": "77035e1d-5b59-4be4-8e6e-52b616c8f472",
+          "database_name": "hamtdaa-production",
+          "migrations_dir": "migrations"
+        }
+      ],
+      "send_email": [
+        {
+          "name": "EMAIL",
+          "allowed_sender_addresses": [
+            "noreply@auth.moch.mn"
+          ]
+        }
+      ],
+      "secrets": {
+        "required": [
+          "BETTER_AUTH_SECRET"
+        ]
+      }
+    }
+  },
+  "secrets": {
+    "required": [
+      "BETTER_AUTH_SECRET"
+    ]
+  }
+}

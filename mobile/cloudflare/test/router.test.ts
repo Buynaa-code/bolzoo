@@ -116,6 +116,21 @@ describe('native HTTP API with real auth and D1', () => {
     await a.data('/v1/auth/sign-out', {});
   });
 
+  it('deletes an account using its exact freshly authenticated session and revokes that token', async () => {
+    const a = client(); const user = await a.login();
+    await a.data('/v1/pair/status');
+    const session = await a.data('/v1/auth/session');
+    expect(typeof session.session_id).toBe('string');
+    expect(Number.isFinite(Date.parse(session.session_created_at as string))).toBe(true);
+    const stored = await env.DB.prepare('SELECT createdAt FROM "session" WHERE id=? AND userId=?')
+      .bind(session.session_id, user.id).first<{ createdAt: string }>();
+    expect(stored?.createdAt).toBe(session.session_created_at);
+    expect((await a.data('/v1/account/delete', { confirmation: 'УСТГАХ' })).deleted).toBe(true);
+    expect(await env.DB.prepare('SELECT 1 FROM "session" WHERE userId=?').bind(user.id).first()).toBeNull();
+    expect((await a.call('/v1/auth/session')).status).toBe(401);
+    expect((await a.call('/v1/pair/status')).status).toBe(401);
+  });
+
   it('exposes only the native facade and rejects foreign origins, query tokens, oversized and non-JSON bodies', async () => {
     const a = client();
     expect((await a.call('/api/auth/get-session')).status).toBe(404);

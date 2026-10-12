@@ -1,0 +1,33 @@
+{
+  "name": "hamtdaa-cloudflare",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev --env=\"\"",
+    "types": "wrangler types",
+    "check": "tsc --noEmit",
+    "test": "vitest run",
+    "test:schema": "python3 test/schema/check_schema.py",
+    "deploy:check": "wrangler deploy --dry-run --env=\"\"",
+    "deploy:check:production": "wrangler deploy --dry-run --env production",
+    "db:local": "wrangler d1 migrations apply DB --local --env=\"\""
+  },
+  "engines": { "node": ">=22" },
+  "dependencies": { "better-auth": "1.7.6" },
+  "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "0.22.0",
+    "@cloudflare/workers-types": "5.20261005.1",
+    "@types/node": "^24.0.0",
+    "typescript": "5.9.3",
+    "vitest": "4.1.11",
+    "wrangler": "4.147.0"
+  },
+  "overrides": {
+    "sharp": "0.35.5",
+    "undici@7.29.0": "7.29.1",
+    "@cloudflare/vitest-pool-workers": {
+      "wrangler": "$wrangler",
+      "miniflare": "5.20261001.0-alpha"
+    }
+  }
+}

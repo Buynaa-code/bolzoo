@@ -13,17 +13,21 @@ CREATE TABLE hamtdaa_billing_orders (
   description TEXT NOT NULL,
   provider_id TEXT UNIQUE,
   state TEXT NOT NULL DEFAULT 'reserved' CHECK(state IN ('reserved','new','requires_payment_method','requires_action','requires_capture','processing','succeeded','canceled','refunded')),
+  checkout_url TEXT,
   next_action TEXT CHECK(next_action IS NULL OR json_valid(next_action)),
   expires_at INTEGER,
   created_at INTEGER NOT NULL,
   updated_at INTEGER NOT NULL,
-  UNIQUE(user_id,command_id)
+  UNIQUE(user_id,command_id),
+  CHECK((plan='monthly' AND duration_seconds=2592000 AND amount_minor=990000)
+    OR (plan='yearly' AND duration_seconds=31536000 AND amount_minor=7990000))
 );
 CREATE INDEX hamtdaa_billing_orders_owner ON hamtdaa_billing_orders(user_id,created_at);
 
 CREATE TABLE hamtdaa_billing_grants (
   provider TEXT NOT NULL CHECK(provider IN ('wire','apple','google')),
   source_id TEXT NOT NULL,
+  environment TEXT NOT NULL DEFAULT 'Production' CHECK(environment IN ('Production','Sandbox') AND (provider<>'wire' OR environment='Production')),
   user_id TEXT NOT NULL REFERENCES "user"(id) ON DELETE RESTRICT,
   transaction_id TEXT NOT NULL,
   product_id TEXT NOT NULL,
@@ -31,16 +35,19 @@ CREATE TABLE hamtdaa_billing_grants (
   expires_at INTEGER NOT NULL CHECK(expires_at>starts_at),
   revoked_at INTEGER,
   auto_renew INTEGER NOT NULL DEFAULT 0 CHECK(auto_renew IN (0,1)),
-  observed_at INTEGER NOT NULL,
+  observed_at INTEGER NOT NULL, -- UTC milliseconds; entitlement periods above use seconds.
+  refresh_cipher TEXT,
+  is_active INTEGER NOT NULL DEFAULT 1 CHECK(is_active IN (0,1)),
   PRIMARY KEY(provider,source_id)
 );
 CREATE INDEX hamtdaa_billing_grants_owner ON hamtdaa_billing_grants(user_id,expires_at);
 CREATE TABLE hamtdaa_billing_transactions (
   provider TEXT NOT NULL CHECK(provider IN ('apple','google')),
+  environment TEXT NOT NULL CHECK(environment IN ('Production','Sandbox')),
   transaction_id TEXT NOT NULL,
   source_id TEXT NOT NULL,
   user_id TEXT NOT NULL REFERENCES "user"(id) ON DELETE RESTRICT,
-  PRIMARY KEY(provider,transaction_id)
+  PRIMARY KEY(provider,environment,transaction_id)
 );
 CREATE TABLE hamtdaa_billing_events (
   provider TEXT NOT NULL CHECK(provider='wire'),
@@ -61,7 +68,8 @@ WHEN NEW.user_id<>OLD.user_id OR NEW.command_id<>OLD.command_id OR NEW.plan<>OLD
   OR NEW.return_url<>OLD.return_url OR NEW.description<>OLD.description
   OR NEW.created_at<>OLD.created_at
   OR (OLD.provider_id IS NOT NULL AND NEW.provider_id IS NOT OLD.provider_id)
+  OR (OLD.checkout_url IS NOT NULL AND NEW.checkout_url IS NOT OLD.checkout_url)
 BEGIN SELECT RAISE(ABORT,'billing_order_immutable'); END;
 CREATE TRIGGER hamtdaa_billing_grant_owner_immutable BEFORE UPDATE ON hamtdaa_billing_grants
-WHEN NEW.user_id<>OLD.user_id OR NEW.provider<>OLD.provider OR NEW.source_id<>OLD.source_id
+WHEN NEW.user_id<>OLD.user_id OR NEW.provider<>OLD.provider OR NEW.source_id<>OLD.source_id OR NEW.environment<>OLD.environment
 BEGIN SELECT RAISE(ABORT,'billing_grant_owner_immutable'); END;

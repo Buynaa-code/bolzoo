@@ -49,9 +49,7 @@ function afterVerificationConsume(database: D1Database, pause: () => Promise<voi
     get(target, key) {
       if (key === 'bind') return (...values: unknown[]) => wrapStatement(target.bind(...values), sql);
       if (key === 'all') return async () => {
-        if (sql.includes('verification')) console.info('AUTH_RACE_SQL', sql);
         const result = await target.all();
-        if (sql.includes('verification')) console.info('AUTH_RACE_RETURN', sql);
         if (/delete from "verification"/i.test(sql) && /returning/i.test(sql)) await pause();
         return result;
       };
@@ -182,7 +180,6 @@ describe('Cloudflare OTP authentication with real D1 storage', () => {
     const database = afterVerificationConsume(env.DB, async () => {
       if (paused) return;
       paused = true;
-      console.info('AUTH_RACE_PAUSED');
       consumed.resolve();
       await finishConsume.promise;
     });
@@ -191,10 +188,16 @@ describe('Cloudflare OTP authentication with real D1 storage', () => {
     const verifying = f.verify(f.code());
     await Promise.race([consumed.promise, verifying.then(async (response) => { throw new Error(`Verification finished before pause: ${response.status} ${await response.text()}`); })]);
     try {
-      console.info('AUTH_RACE_RESENDING');
       await env.DB.prepare('UPDATE "rateLimit" SET "lastRequest" = "lastRequest" - 61_000').run();
-      console.info('AUTH_RACE_RATE_UPDATED');
-      expect((await f.send()).status).toBe(200);
+      // The router creates an auth instance per HTTP request. Reusing f.auth
+      // would queue the resend behind its deliberately paused Kysely connection
+      // and deadlock the fixture instead of exercising a concurrent request.
+      const resend = createAuth({ ...f.testEnv, DB: env.DB });
+      const response = await resend.handler(new Request('https://auth.test/api/auth/email-otp/send-verification-otp', {
+        method: 'POST', headers: { 'content-type': 'application/json', 'cf-connecting-ip': f.ip },
+        body: JSON.stringify({ email: f.email, type: 'sign-in' }),
+      }));
+      expect(response.status).toBe(200);
     } finally {
       finishConsume.resolve();
     }

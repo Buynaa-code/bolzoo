@@ -104,6 +104,44 @@ jobs:
         if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
         run: flutter test --no-pub --timeout 2m
 
+  auth-worker:
+    name: Auth, pairing, account and billing recovery checks
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: mobile/cloudflare
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '22'
+          package-manager-cache: false
+      - name: Install locked worker dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Check dependency resolution
+        run: npm ls --all
+      - name: Check generated binding types
+        run: |
+          npm run types
+          git diff --exit-code -- worker-configuration.d.ts
+      - name: Type-check worker and integration tests
+        run: npm run check
+      - name: Rebuild and compare the recovered database schema offline
+        run: npm run test:schema
+      - name: Test auth, pairing, account, calendar and payment flows locally
+        run: npm test
+      # These commands only bundle locally. No account credentials are provided,
+      # no live migration is run, and billing remains disabled in both configs.
+      - name: Validate staging bundle without deployment
+        run: npm run deploy:check -- --outdir dist
+      - name: Validate production bundle without deployment
+        run: npm run deploy:check:production -- --outdir dist-production
+
   memories-worker:
     name: Memories worker checks and local dry runs
     runs-on: ubuntu-24.04

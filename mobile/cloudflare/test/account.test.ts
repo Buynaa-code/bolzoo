@@ -9,11 +9,11 @@ type Json = Record<string, unknown>;
 const id = () => crypto.randomUUID();
 async function user(age = 0): Promise<AccountActor> {
   const actor = { id: id(), email: `${id()}@example.test`, sessionId: id(), sessionCreatedAt: new Date(Date.now() - age).toISOString() };
-  const created = Date.parse(actor.sessionCreatedAt);
+  const created = actor.sessionCreatedAt;
   await env.DB.prepare('INSERT INTO "user"(id,name,email,emailVerified,image,createdAt,updatedAt) VALUES(?,?,?,?,?,?,?)')
     .bind(actor.id, 'Private Name', actor.email, 1, 'https://example.test/private-avatar.png', created, created).run();
   await env.DB.prepare('INSERT INTO "session"(id,token,userId,createdAt,updatedAt,expiresAt,ipAddress,userAgent) VALUES(?,?,?,?,?,?,?,?)')
-    .bind(actor.sessionId, id(), actor.id, created, created, Date.now() + 86400000, '203.0.113.8', 'Private device').run();
+    .bind(actor.sessionId, id(), actor.id, created, created, new Date(Date.now() + 86400000).toISOString(), '203.0.113.8', 'Private device').run();
   await new PairService(env.DB).status(actor.id);
   return actor;
 }
@@ -240,9 +240,9 @@ describe('Cloudflare account export and deletion on real D1', () => {
     expect(await count('hamtdaa_together_receipts', 'user_id=?', a.id)).toBe(0);
   });
   it('cannot substitute another live session created in the same millisecond', async () => {
-    const a = await user(); const created = Date.parse(a.sessionCreatedAt); const secondId = id();
+    const a = await user(); const created = a.sessionCreatedAt; const secondId = id();
     await env.DB.prepare('INSERT INTO "session"(id,token,userId,createdAt,updatedAt,expiresAt) VALUES(?,?,?,?,?,?)')
-      .bind(secondId, id(), a.id, created, created, Date.now() + 3600000).run();
+      .bind(secondId, id(), a.id, created, created, new Date(Date.now() + 3600000).toISOString()).run();
     const revoked = beforeBatch(async () => { await env.DB.prepare('DELETE FROM "session" WHERE id=?').bind(a.sessionId).run(); });
     expect((await erase(a, revoked)).data.code).toBe('reauthentication_required');
     expect(await count('hamtdaa_deleted_accounts', 'user_id=?', a.id)).toBe(0);

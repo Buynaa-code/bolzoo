@@ -1,20 +1,25 @@
 import { createAuthRateStorage, type AuthEnvironment } from './auth';
+import { verifyStorePurchase, refreshStorePurchase, STORE_PRODUCT_IDS, storeReadiness, storeAccountBinding, StoreVerificationError, type StoreVerificationEnv, type StorePurchaseInput, type VerifiedStorePurchase } from './store_verification';
 
-export type BillingEnvironment = AuthEnvironment & {
+export type BillingEnvironment = AuthEnvironment & StoreVerificationEnv & {
   BILLING_ENABLED?: string;
+  BILLING_ALLOW_SANDBOX?: string;
+  ENVIRONMENT?: string;
   BILLING_WEB_ENABLED?: string;
   BILLING_WIRE_MODE?: string;
   BILLING_WEB_ORIGIN?: string;
   BILLING_WEB_RETURN_URL?: string;
   WIRE_API_KEY?: string;
   WIRE_WEBHOOK_SECRET?: string;
+  LEGAL_OPERATOR_NAME?: string;
+  LEGAL_SUPPORT_EMAIL?: string;
 };
 type Json = Record<string, unknown>;
 type Order = {
   id: string; user_id: string; command_id: string; plan: 'monthly' | 'yearly';
   duration_seconds: number; amount_minor: number; currency: string; livemode: number;
   return_url: string; description: string; provider_id: string | null; state: string;
-  next_action: string | null; expires_at: number | null; created_at: number; updated_at: number;
+  checkout_url: string | null; next_action: string | null; expires_at: number | null; created_at: number; updated_at: number;
 };
 const PLANS = {
   monthly: { amount_mnt: 9900, duration_days: 30 },
@@ -46,19 +51,26 @@ async function requireActor(env: BillingEnvironment, actor: string | null): Prom
 }
 function webConfig(env: BillingEnvironment) {
   try {
-    const origin = new URL(env.BILLING_WEB_ORIGIN ?? '');
-    const returnURL = new URL(env.BILLING_WEB_RETURN_URL ?? '');
+    const origin = new URL(env.BILLING_WEB_ORIGIN ?? env.AUTH_BASE_URL);
+    const returnURL = new URL(env.BILLING_WEB_RETURN_URL ?? '/plans', origin);
     const mode = env.BILLING_WIRE_MODE;
-    if (origin.protocol !== 'https:' || origin.origin !== env.BILLING_WEB_ORIGIN ||
+    if (origin.protocol !== 'https:' || origin.origin !== (env.BILLING_WEB_ORIGIN ?? env.AUTH_BASE_URL) ||
       returnURL.protocol !== 'https:' || returnURL.origin !== origin.origin || returnURL.username || returnURL.password ||
       (mode !== 'live' && mode !== 'test') || !env.WIRE_API_KEY?.startsWith(mode === 'live' ? 'sk_live_' : 'sk_test_') ||
       !env.WIRE_WEBHOOK_SECRET?.startsWith('whsec_')) return null;
     return { origin: origin.origin, returnURL: returnURL.href, live: mode === 'live' };
   } catch { return null; }
 }
-function requireWire(env: BillingEnvironment, request?: Request) {
+export function billingLegalReady(env: Pick<BillingEnvironment, 'LEGAL_OPERATOR_NAME' | 'LEGAL_SUPPORT_EMAIL'>): boolean {
+  const name = env.LEGAL_OPERATOR_NAME?.trim() ?? '';
+  const email = env.LEGAL_SUPPORT_EMAIL?.trim() ?? '';
+  return name.length >= 2 && name.length <= 200 && email.length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+function requireWire(env: BillingEnvironment, request?: Request, purchase = false) {
   const config = webConfig(env);
-  if (env.BILLING_ENABLED !== 'true' || env.BILLING_WEB_ENABLED !== 'true' || !config) fail(503, 'billing_unavailable');
+  if (!config || (purchase && (env.BILLING_ENABLED !== 'true' || env.BILLING_WEB_ENABLED !== 'true'))) fail(503, 'billing_unavailable');
+  if (purchase && !billingLegalReady(env)) fail(503, 'legal_not_ready');
+  if (purchase && config.live && nativeEnvironment(env) === 'Sandbox') fail(503, 'billing_mode_changed');
   // The separate web checkout only accepts its configured first-party origin.
   // Native screens contain no route/link to this checkout.
   if (request && request.headers.get('Origin') !== config.origin) fail(403, 'web_origin_required');
@@ -85,7 +97,7 @@ async function boundedText(stream: ReadableStream<Uint8Array> | null, limit: num
   const all = new Uint8Array(length);
   let offset = 0;
   for (const chunk of chunks) { all.set(chunk, offset); offset += chunk.length; }
-  return new TextDecoder('utf-8', { fatal: true }).decode(all);
+  return new TextDecoder('utf-8', { fatal: true, ignoreBOM: true }).decode(all);
 }
 async function wire(env: BillingEnvironment, method: 'GET' | 'POST', path: string, body?: Json, idempotency?: string): Promise<Json> {
   const headers = new Headers({ Authorization: `Bearer ${env.WIRE_API_KEY}`, 'Content-Type': 'application/json' });
@@ -124,6 +136,7 @@ function publicOrder(row: Order) {
   return { order_id: row.id, plan: row.plan, amount_mnt: row.amount_minor / 100, currency: row.currency,
     state: row.state, auto_renew: false, duration_days: row.duration_seconds / 86400,
     mode: row.livemode ? 'live' : 'test', expires_at: iso(row.expires_at),
+    checkout_url: ['succeeded', 'canceled', 'refunded'].includes(row.state) ? null : row.checkout_url,
     next_action: ['succeeded', 'canceled', 'refunded'].includes(row.state) ? null : row.next_action ? JSON.parse(row.next_action) as unknown : null };
 }
 async function chargeState(env: BillingEnvironment, row: Order): Promise<{ paid: boolean; refunded: boolean }> {
@@ -152,7 +165,7 @@ async function reconcile(env: BillingEnvironment, row: Order, remote: Json, even
   if (state === 'succeeded' || row.state === 'succeeded' || row.state === 'refunded') {
     const charges = await chargeState(env, row);
     if (charges.refunded) state = 'refunded';
-    else if (state === 'succeeded' && !charges.paid) fail(502, 'payment_not_settled');
+    else if ((state === 'succeeded' || row.state === 'succeeded') && state !== 'canceled' && !charges.paid) fail(502, 'payment_not_settled');
   }
   const now = seconds();
   const nextAction = object(remote.next_action);
@@ -174,12 +187,18 @@ async function reconcile(env: BillingEnvironment, row: Order, remote: Json, even
         MAX(?,COALESCE((SELECT MAX(expires_at) FROM hamtdaa_billing_grants g
           WHERE g.user_id=o.user_id AND g.provider='wire' AND g.revoked_at IS NULL),0))+o.duration_seconds,?
       FROM hamtdaa_billing_orders o WHERE o.id=? AND o.state='succeeded'
-      ON CONFLICT(provider,source_id) DO NOTHING`).bind(now, now, now, row.id));
+      ON CONFLICT(provider,source_id) DO NOTHING`).bind(now, now, Date.now(), row.id));
   }
   if (state === 'canceled' || state === 'refunded') {
     statements.push(env.DB.prepare(`UPDATE hamtdaa_billing_grants SET revoked_at=COALESCE(revoked_at,?),observed_at=?
-      WHERE provider='wire' AND source_id=?`).bind(now, now, row.provider_id));
+      WHERE provider='wire' AND source_id=?`).bind(now, Date.now(), row.provider_id));
   }
+  // Refresh only the observation time after authoritative intent + charge checks.
+  // Never recompute a prepaid grant's start or expiry on a replay.
+  statements.push(env.DB.prepare(`UPDATE hamtdaa_billing_grants SET observed_at=?
+    WHERE provider='wire' AND source_id=? AND revoked_at IS NULL
+      AND EXISTS(SELECT 1 FROM hamtdaa_billing_orders WHERE id=? AND state='succeeded')`)
+    .bind(Date.now(), row.provider_id, row.id));
   if (eventId) statements.push(env.DB.prepare(`INSERT INTO hamtdaa_billing_events(provider,event_id,order_id,processed_at)
     VALUES('wire',?,?,?) ON CONFLICT(provider,event_id) DO NOTHING`).bind(eventId, row.id, now));
   await env.DB.batch(statements);
@@ -192,7 +211,7 @@ async function refresh(env: BillingEnvironment, row: Order, eventId?: string) {
   return reconcile(env, row, await wire(env, 'GET', `/v1/payment_intents/${encodeURIComponent(row.provider_id)}`), eventId);
 }
 async function checkout(request: Request, env: BillingEnvironment, actor: string, body: Json | null) {
-  const config = requireWire(env, request);
+  const config = requireWire(env, request, true);
   const input = exact(body, ['plan', 'command_id']);
   if ((input.plan !== 'monthly' && input.plan !== 'yearly') || typeof input.command_id !== 'string' || !UUID.test(input.command_id)) fail(400, 'invalid_request');
   await rate(env, actor, 'checkout', 10);
@@ -226,36 +245,161 @@ async function checkout(request: Request, env: BillingEnvironment, actor: string
     if (row.provider_id !== remote.id) fail(502, 'payment_mismatch');
   }
   row = await refresh(env, row);
-  if (row.state === 'new' || row.state === 'requires_payment_method') {
+  if (!row.checkout_url && (row.state === 'new' || row.state === 'requires_payment_method')) {
     if (now - row.created_at > 47 * 3600) fail(409, 'checkout_expired');
-    await wire(env, 'POST', `/v1/payment_intents/${encodeURIComponent(row.provider_id!)}/confirm`,
-      { operator: row.livemode ? 'qpay' : 'sandbox', return_url: row.return_url }, `hamtdaa-plus-confirm-${row.id}`);
-    row = await refresh(env, row);
+    // Hosted checkout performs confirm itself. Never also dispatch /confirm:
+    // Wire only accepts a session for an unconfirmed PaymentIntent.
+    const session = await wire(env, 'POST', '/v1/checkout/sessions',
+      { payment_intent: row.provider_id, success_url: row.return_url, cancel_url: row.return_url }, `hamtdaa-plus-session-${row.id}`);
+    if (session.object !== 'checkout.session' || session.payment_intent !== row.provider_id || typeof session.url !== 'string') fail(502, 'payment_mismatch');
+    let checkoutURL: URL;
+    try { checkoutURL = new URL(session.url); } catch { fail(502, 'payment_mismatch'); }
+    if (checkoutURL.origin !== 'https://pay.wire.mn' || checkoutURL.username || checkoutURL.password ||
+      !/^\/c\/[A-Za-z0-9_-]{1,300}$/.test(checkoutURL.pathname) || checkoutURL.search || checkoutURL.hash) fail(502, 'payment_mismatch');
+    await env.DB.prepare('UPDATE hamtdaa_billing_orders SET checkout_url=? WHERE id=? AND checkout_url IS NULL')
+      .bind(checkoutURL.href, row.id).run();
+    row = await readOrder(env, row.id);
+    if (row.checkout_url !== checkoutURL.href) fail(502, 'payment_mismatch');
   }
   return json({ ok: true, order: publicOrder(row) });
 }
 
+const eligibleGrantOwner = `(g.user_id=? OR EXISTS(SELECT 1 FROM hamtdaa_pair_members mine
+  JOIN hamtdaa_pairs p ON p.id=mine.pair_id AND p.state='active'
+  JOIN hamtdaa_pair_members partner ON partner.pair_id=p.id AND partner.user_id=g.user_id
+  WHERE mine.user_id=? AND mine.revoked_at IS NULL AND partner.revoked_at IS NULL
+    AND NOT EXISTS(SELECT 1 FROM hamtdaa_blocks b WHERE
+      (b.blocker_id=? AND b.blocked_id=g.user_id) OR (b.blocker_id=g.user_id AND b.blocked_id=?))))`;
+async function refreshKey(env: BillingEnvironment) {
+  const material = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(`hamtdaa-store-refresh-v1\0${env.BETTER_AUTH_SECRET}`));
+  return crypto.subtle.importKey('raw', material, 'AES-GCM', false, ['encrypt', 'decrypt']);
+}
+async function encryptRefresh(env: BillingEnvironment, actor: string, input: StorePurchaseInput) {
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv,
+    additionalData: new TextEncoder().encode(actor) }, await refreshKey(env), new TextEncoder().encode(JSON.stringify(input)));
+  return `${btoa(String.fromCharCode(...iv))}.${btoa(String.fromCharCode(...new Uint8Array(encrypted)))}`;
+}
+async function decryptRefresh(env: BillingEnvironment, actor: string, value: string): Promise<StorePurchaseInput> {
+  const [nonce, cipher] = value.split('.');
+  const decode = (text: string) => Uint8Array.from(atob(text), (char) => char.charCodeAt(0));
+  const plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: decode(nonce),
+    additionalData: new TextEncoder().encode(actor) }, await refreshKey(env), decode(cipher));
+  return JSON.parse(new TextDecoder().decode(plain)) as StorePurchaseInput;
+}
+function nativeEnvironment(env: BillingEnvironment): 'Production' | 'Sandbox' {
+  return env.BILLING_ALLOW_SANDBOX === 'true' && env.ENVIRONMENT === 'staging' &&
+    env.AUTH_BASE_URL === 'https://hamtdaa-api-staging.mendmedey.workers.dev' ? 'Sandbox' : 'Production';
+}
+async function persistStore(env: BillingEnvironment, actor: string, value: VerifiedStorePurchase) {
+  if (value.accountId !== actor) fail(403, 'purchase_owner_mismatch');
+  const now = seconds();
+  const start = Math.floor(value.startedAt / 1000);
+  const expiry = Math.floor(value.expiresAt / 1000);
+  const observed = value.observedAt;
+  if (![start, expiry, observed].every(Number.isSafeInteger) || expiry <= start || observed > Date.now() + 60000 ||
+      typeof value.purchaseId !== 'string' || !value.purchaseId || typeof value.originalPurchaseId !== 'string' || !value.originalPurchaseId) fail(502, 'invalid_store_response');
+  // Sandbox access exists only in the explicitly opted-in, fixed staging realm.
+  // Persisting its realm prevents an accidental shared DB from granting prod access.
+  if (value.environment !== nativeEnvironment(env)) fail(400, 'purchase_environment_mismatch');
+  const source = `${value.environment}:${value.originalPurchaseId}`;
+  const revoked = value.revoked ? now : null;
+  const cipher = await encryptRefresh(env, actor, value.refresh);
+  const guard = crypto.randomUUID();
+  await env.DB.batch([
+    env.DB.prepare(`INSERT INTO hamtdaa_billing_guards(id,allowed) SELECT ?, CASE WHEN
+      NOT EXISTS(SELECT 1 FROM hamtdaa_billing_grants WHERE provider=? AND source_id=? AND user_id<>?)
+      AND NOT EXISTS(SELECT 1 FROM hamtdaa_billing_transactions WHERE provider=? AND environment=? AND transaction_id=?
+        AND (user_id<>? OR source_id<>?)) THEN 1 ELSE 0 END`).bind(guard, value.provider, source,
+      actor, value.provider, value.environment, value.purchaseId, actor, source),
+    env.DB.prepare(`INSERT INTO hamtdaa_billing_transactions(provider,environment,transaction_id,source_id,user_id)
+      VALUES(?,?,?,?,?) ON CONFLICT(provider,environment,transaction_id) DO NOTHING`).bind(value.provider, value.environment, value.purchaseId, source, actor),
+    env.DB.prepare(`INSERT INTO hamtdaa_billing_grants
+      (provider,source_id,environment,user_id,transaction_id,product_id,starts_at,expires_at,revoked_at,auto_renew,observed_at,refresh_cipher,is_active)
+      VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(provider,source_id) DO UPDATE SET
+      transaction_id=excluded.transaction_id, product_id=excluded.product_id,
+      starts_at=excluded.starts_at, expires_at=excluded.expires_at,
+      revoked_at=CASE WHEN hamtdaa_billing_grants.transaction_id=excluded.transaction_id
+        AND hamtdaa_billing_grants.revoked_at IS NOT NULL THEN hamtdaa_billing_grants.revoked_at ELSE excluded.revoked_at END,
+      auto_renew=excluded.auto_renew,observed_at=excluded.observed_at,refresh_cipher=excluded.refresh_cipher,is_active=excluded.is_active
+      WHERE hamtdaa_billing_grants.user_id=excluded.user_id
+        AND excluded.observed_at>=hamtdaa_billing_grants.observed_at
+        AND (excluded.expires_at>=hamtdaa_billing_grants.expires_at OR excluded.transaction_id=hamtdaa_billing_grants.transaction_id)`)
+      .bind(value.provider, source, value.environment, actor, value.purchaseId, value.productId, start, expiry,
+        revoked, Number(value.autoRenew), observed, cipher, Number(value.active)),
+    env.DB.prepare('DELETE FROM hamtdaa_billing_guards WHERE id=?').bind(guard),
+  ]);
+}
+async function refreshEntitlements(env: BillingEnvironment, actor: string) {
+  const now = seconds();
+  // Include expired/revoked subscriptions: an authoritative renewal can restore
+  // access. Tokens remain encrypted and are never sent back to either partner.
+  const stale = await env.DB.prepare(`SELECT g.provider,g.source_id,g.user_id,g.refresh_cipher FROM hamtdaa_billing_grants g
+    JOIN "user" u ON u.id=g.user_id LEFT JOIN hamtdaa_profiles profile ON profile.user_id=g.user_id
+    WHERE g.environment=? AND g.observed_at<?
+      AND ((g.provider IN ('apple','google') AND g.refresh_cipher IS NOT NULL)
+        OR (g.provider='wire' AND g.revoked_at IS NULL AND g.starts_at<=? AND g.expires_at>?))
+      AND u.emailVerified=1 AND (profile.user_id IS NULL OR profile.account_state='active')
+      AND ${eligibleGrantOwner} ORDER BY g.expires_at DESC LIMIT 8`).bind(nativeEnvironment(env), (now - 240) * 1000, now, now, actor, actor, actor, actor)
+    .all<{ provider: string; source_id: string; user_id: string; refresh_cipher: string | null }>();
+  await Promise.all(stale.results.map(async (row) => {
+    try {
+      if (row.provider === 'wire') {
+        const order = await env.DB.prepare('SELECT * FROM hamtdaa_billing_orders WHERE provider_id=? AND user_id=?')
+          .bind(row.source_id, row.user_id).first<Order>();
+        if (order) await refresh(env, order);
+      } else if (row.refresh_cipher) {
+        const input = await decryptRefresh(env, row.user_id, row.refresh_cipher);
+        await persistStore(env, row.user_id, await refreshStorePurchase(env, row.user_id, input));
+      }
+    } catch {
+      // A provider outage cannot extend freshness. The access query below
+      // excludes stale grants after the bounded five-minute window.
+    }
+  }));
+}
 /** Evaluates current pair membership every time; unlinking instantly stops sharing. */
 export async function getBillingStatus(env: BillingEnvironment, actorId: string) {
   const actor = await requireActor(env, actorId);
+  await refreshEntitlements(env, actor);
   const now = seconds();
-  const grant = await env.DB.prepare(`SELECT g.provider,g.user_id,g.expires_at,g.auto_renew FROM hamtdaa_billing_grants g
+  const grant = await env.DB.prepare(`SELECT g.provider,g.environment,g.user_id,g.expires_at,g.auto_renew FROM hamtdaa_billing_grants g
     JOIN "user" u ON u.id=g.user_id LEFT JOIN hamtdaa_profiles profile ON profile.user_id=g.user_id
-    WHERE g.revoked_at IS NULL AND g.starts_at<=? AND g.expires_at>? AND u.emailVerified=1
-      AND (profile.user_id IS NULL OR profile.account_state='active')
-      AND (g.user_id=? OR EXISTS(SELECT 1 FROM hamtdaa_pair_members mine
-        JOIN hamtdaa_pairs p ON p.id=mine.pair_id AND p.state='active'
-        JOIN hamtdaa_pair_members partner ON partner.pair_id=p.id AND partner.user_id=g.user_id
-        WHERE mine.user_id=? AND mine.revoked_at IS NULL AND partner.revoked_at IS NULL
-          AND NOT EXISTS(SELECT 1 FROM hamtdaa_blocks b WHERE
-            (b.blocker_id=? AND b.blocked_id=g.user_id) OR (b.blocker_id=g.user_id AND b.blocked_id=?))))
-    ORDER BY g.expires_at DESC LIMIT 1`).bind(now, now, actor, actor, actor, actor)
-    .first<{ provider: string; user_id: string; expires_at: number; auto_renew: number }>();
+    WHERE g.environment=? AND g.revoked_at IS NULL AND g.is_active=1 AND g.starts_at<=? AND g.expires_at>? AND u.emailVerified=1
+      AND g.observed_at>=?
+      AND (profile.user_id IS NULL OR profile.account_state='active') AND ${eligibleGrantOwner}
+      AND EXISTS(SELECT 1 FROM \"user\" actor_user LEFT JOIN hamtdaa_profiles actor_profile ON actor_profile.user_id=actor_user.id
+        WHERE actor_user.id=? AND actor_user.emailVerified=1 AND (actor_profile.user_id IS NULL OR actor_profile.account_state='active'))
+    ORDER BY g.expires_at DESC LIMIT 1`).bind(nativeEnvironment(env), now, now, (now - 300) * 1000, actor, actor, actor, actor, actor)
+    .first<{ provider: string; environment: string; user_id: string; expires_at: number; auto_renew: number }>();
+  const source = grant ? grant.user_id === actor ? 'self' : 'partner' : null;
   return { ok: true, tier: grant ? 'plus' : 'free', plus_active: Boolean(grant),
-    source: grant ? grant.user_id === actor ? 'own' : 'partner' : null,
-    expires_at: grant ? iso(grant.expires_at) : null,
+    source: source === 'self' ? 'own' : source, expires_at: grant ? iso(grant.expires_at) : null,
     auto_renew: grant?.user_id === actor ? Boolean(grant.auto_renew) : null,
-    features: { premium_cards: Boolean(grant) } };
+    features: { premium_cards: Boolean(grant) },
+    entitlement: { tier: grant ? 'plus' : 'free', premium_cards: Boolean(grant), source, environment: grant?.environment ?? null,
+      expires_at: grant ? iso(grant.expires_at) : null, provider: grant ? grant.provider === 'wire' ? 'qpay' : grant.provider : null },
+    store_account: await storeAccountBinding(env, actor) };
+}
+async function verifyNative(env: BillingEnvironment, actor: string, body: Json | null) {
+  if (env.BILLING_ENABLED !== 'true') fail(503, 'billing_unavailable');
+  if (!billingLegalReady(env)) fail(503, 'legal_not_ready');
+  const value = exact(body, ['provider', 'product_id', 'transaction_id', 'purchase_token']);
+  if (typeof value.product_id !== 'string' || value.product_id.length > 160) fail(400, 'invalid_request');
+  let input: StorePurchaseInput;
+  if (value.provider === 'apple' && typeof value.transaction_id === 'string' && value.transaction_id.length <= 200 && value.purchase_token === undefined) {
+    input = { provider: 'apple', productId: value.product_id, transactionId: value.transaction_id };
+  } else if (value.provider === 'google' && typeof value.purchase_token === 'string' && value.purchase_token.length <= 4096 && value.transaction_id === undefined) {
+    input = { provider: 'google', productId: value.product_id, purchaseToken: value.purchase_token };
+  } else fail(400, 'invalid_request');
+  await rate(env, actor, 'store-verify', 15);
+  const verified = await verifyStorePurchase(env, actor, input);
+  try { await persistStore(env, actor, verified); }
+  catch (error) {
+    if (error instanceof Error && error.message.includes('CHECK constraint failed')) fail(409, 'purchase_already_linked');
+    throw error;
+  }
+  return json(await getBillingStatus(env, actor));
 }
 async function validSignature(request: Request, raw: string, secret: string) {
   const header = request.headers.get('WirePayment-Signature');
@@ -305,13 +449,23 @@ export async function handleBillingRequest(request: Request, env: BillingEnviron
   try {
     if (path === '/v1/billing/wire/webhook' && request.method === 'POST') return await webhook(request, env);
     if (path === '/v1/billing/catalog' && request.method === 'GET') {
-      return json({ ok: true, enabled: env.BILLING_ENABLED === 'true', plus: { shared_with_current_partner: true,
+      const ready = storeReadiness(env);
+      return json({ ok: true, enabled: env.BILLING_ENABLED === 'true',
+        native_enabled: { apple: env.BILLING_ENABLED === 'true' && billingLegalReady(env) && ready.apple && env.APPLE_STORE_ENVIRONMENT === nativeEnvironment(env),
+          google: env.BILLING_ENABLED === 'true' && billingLegalReady(env) && ready.google && env.GOOGLE_STORE_ENVIRONMENT === nativeEnvironment(env) },
+        products: (['apple', 'google'] as const).flatMap((provider) => STORE_PRODUCT_IDS.map((id) => ({
+          id, provider, period: id.endsWith('.monthly') ? 'month' : 'year', amount_mnt: id.endsWith('.monthly') ? 9900 : 79900,
+        }))), prices_mnt: { monthly: 9900, yearly: 79900 }, plus: { shared_with_current_partner: true,
         features: ['premium_cards'], prices_mnt: { monthly: 9900, yearly: 79900 } },
-        web: { ready: env.BILLING_ENABLED === 'true' && env.BILLING_WEB_ENABLED === 'true' && webConfig(env) !== null,
+        web: { ready: env.BILLING_ENABLED === 'true' && env.BILLING_WEB_ENABLED === 'true' && webConfig(env) !== null && billingLegalReady(env) && !(webConfig(env)?.live && nativeEnvironment(env) === 'Sandbox'),
           auto_renew: false, monthly_days: 30, yearly_days: 365 } });
     }
     const actor = await requireActor(env, actorId);
-    if (path === '/v1/billing/status' && request.method === 'GET') return json(await getBillingStatus(env, actor));
+    if (path === '/v1/billing/status' && request.method === 'GET') {
+      await rate(env, actor, 'status', 30);
+      return json(await getBillingStatus(env, actor));
+    }
+    if (path === '/v1/billing/store/verify' && request.method === 'POST') return await verifyNative(env, actor, body);
     if (path === '/v1/billing/web/checkout' && request.method === 'POST') return await checkout(request, env, actor, body);
     if (path === '/v1/billing/web/status' && request.method === 'POST') {
       requireWire(env, request);
@@ -324,7 +478,7 @@ export async function handleBillingRequest(request: Request, env: BillingEnviron
     }
     return json({ ok: false, code: 'not_found' }, 404);
   } catch (error) {
-    if (error instanceof BillingError) return json({ ok: false, code: error.code }, error.status);
+    if (error instanceof BillingError || error instanceof StoreVerificationError) return json({ ok: false, code: error.code }, error.status);
     // Never return/log provider errors, bearer credentials, receipts or tokens.
     return json({ ok: false, code: 'billing_unavailable' }, 503);
   }

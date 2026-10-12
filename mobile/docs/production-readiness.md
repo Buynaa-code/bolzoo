@@ -1,8 +1,17 @@
-# Production readiness — 2026-10-08
+# Production readiness — updated 2026-10-12
 
 **Status: not ready for unrestricted public or paid launch.** The current Cloudflare app has working local checks and live photo/wish services, but this is not an App Store/Google Play release certification. Do not enable paid plans or submit the restored legacy UI based solely on a debug build.
 
-## Completed in this audit
+## Backend recovery completed on 2026-10-12
+
+- Restored the missing Cloudflare auth build/configuration/types and complete historical migration definitions. All ten application modules match the preserved deployed logic; the four billing modules emit identical module bytes. No authentication Worker was deployed and no live migration, email or payment was performed.
+- Read-only schema comparisons confirmed staging/production equality. Empty local databases reproduce all 57 auth objects and all 91 application objects after the separate memories/wishes migrations, including keys, indexes and triggers. Three offline schema tests pass.
+- Reconstructed the missing dependency lock from recorded versions/overrides, then installed from scratch. `npm ls --all` and TypeScript pass. The original historical lock remains unavailable; whole-bundle byte equality is not claimed.
+- Final combined backend suite on Node **22.23.3**: **171 tests passed in 9 files**, with no skipped tests. Staging and production build dry runs pass. These are local checks, not real-device or store payment acceptance.
+- Added an auth CI job enforcing dependency resolution, generated types, schema parity, every backend test and both dry runs. CI uses no deployment credentials; its GitHub execution remains unverified.
+- See [`../cloudflare/README.md`](../cloudflare/README.md) and the schema recovery evidence for reproducible commands and limits. Changes are local; billing remains disabled.
+
+## Completed in the 2026-10-08 audit
 
 - Applied the additive wish migration and deployed the isolated memories/wishes Worker to staging and production. Production version: `038b45ef-6f8c-40ef-a552-b4f17e744625`. Both environments return healthy responses, reject missing/invalid credentials, and have clean foreign keys. Production's photo deletion queue was empty at inspection. No live account, email, photo, or payment was created by this audit.
 - Fixed authentication service-binding client-IP forwarding, preventing photo/wish users from sharing the same fallback auth rate-limit bucket. All 32 backend tests and type checks pass. Authentication Worker was not redeployed.
@@ -28,13 +37,13 @@
 
 | Priority | Gate | Evidence / required result |
 | --- | --- | --- |
-| 1 — blocker | Reproducible authentication backend | `cloudflare/` lacks its package/lock/config/types/initial migration and contains older billing/account/calendar implementations than the deployed bundle. Follow `cloudflare/README.md`. Recover the exact source and schema, run backend integration tests, prove fresh staging rebuilds before any auth redeployment. These are source recovery issues, not confirmed live billing/account outages. |
+| 1 — local recovery passed; release acceptance pending | Reproducible authentication backend | Missing source/build inputs and schema drift are repaired; 171 backend tests, three schema checks, type checking and both build dry runs pass. The original historical dependency lock is unavailable. Validate a rebuilt candidate in staging before any subsequent production auth release; do not reapply already-recorded historical migrations. See `cloudflare/README.md`. |
 | 2 — blocker | Finish the restored application/test boundary | The complete restored Flutter test run reached 305 passes, 4 skips and 40 failure entries before it was stopped on a stalled legacy places test. The failures include missing legacy APIs/assets and UI regressions; see `restored-test-audit.md`. Two shared authentication failures are now fixed; 38 recorded legacy/recovery failures remain unresolved. Repair or explicitly archive unsupported legacy screens/tests with a product scope decision; never silently suppress them to claim all features work. |
 | 3 — blocker | Signed native builds and store identity | Configure the existing Google Play upload key, complete Android licenses, install/select full Xcode, and use the existing Apple team/profile. Produce and validate an AAB and iOS archive. See `native-release-readiness.md`. |
 | 4 — blocker | Authenticated two-phone acceptance test | Test both real accounts through signup, consent-based pairing, date approval, wishes, photo sharing, relaunch/offline/reconnect, export, unlink, account deletion and lost access after unlink. Neither unit tests nor public health checks prove this. Use designated test accounts and synthetic photos. |
 | 5 — paid-launch blocker | Store payment setup and proof | Live native and web billing are disabled. Verify products, pricing, keys, ownership, purchase/restore, renewal, cancellation, expiry, refund and provider downtime. Preserve the agreed 9,900₮ monthly / 79,900₮ yearly per-pair offer; native displayed prices come from the store. Do not take a real payment just to test. |
 | 6 — paid-launch blocker | Apple review/sandbox routing | Deployed verification accepts Production transactions only. Apple reviews IAP in sandbox and TestFlight uses sandbox. Design and test a secure, server-verified sandbox/review path without granting real paid entitlements from fabricated client environment flags. A staging-only purchase test does not prove the submitted production build works. |
-| 7 — release requirement | Privacy and account-deletion disclosures | Update live policy/deletion pages to describe private photo storage, wishes, unlink loss, retention/cleanup and exports. Existing operator is `moch`, support is `gbuyandelger277@gmail.com`. Match App Store privacy and Play Data Safety answers to actual data use. Current source pages must not be deployed alone via the incomplete auth snapshot. |
+| 7 — release requirement | Privacy and account-deletion disclosures | Update live policy/deletion pages to describe private photo storage, wishes, unlink loss, retention/cleanup and exports. Existing operator is `moch`, support is `gbuyandelger277@gmail.com`. Match App Store privacy and Play Data Safety answers to actual data use. Ship these as a separately tested change after backend recovery acceptance. |
 | 8 — operational requirement | Capacity, alerts and recovery | Live auth limits all OTP sends to 100/day. Review sender capacity/abuse controls before increasing it. Verify dependency health, auth failures and deletion backlog alerts (alert API audit was denied by available scopes, not evidence that alerts are absent). D1 Time Travel responds, but a restore/photo-recovery drill remains unverified. |
 
 ## Current product boundary

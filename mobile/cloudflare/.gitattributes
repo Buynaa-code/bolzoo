@@ -1,0 +1,2 @@
+# Preserve Wrangler's generated runtime definitions verbatim for the CI check.
+worker-configuration.d.ts linguist-generated=true -whitespace
