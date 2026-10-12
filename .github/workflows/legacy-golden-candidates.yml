@@ -1,0 +1,46 @@
+name: Review Linux golden candidates
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/legacy-golden-candidates.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  candidates:
+    name: Render synthetic review fixtures on Linux
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Flutter
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          channel: stable
+          flutter-version: '3.41.6'
+          cache: 'false'
+          pub-cache: 'false'
+      - name: Resolve locked dependencies
+        run: flutter pub get --enforce-lockfile
+      # Candidate generation is for human/visual review only. It never replaces
+      # the normal exact-comparison job, changes repository files, or approves UI.
+      # This specific fixture uses hard-coded sample data and fallback artwork;
+      # no accounts, network content, device screenshots or private files load.
+      - name: Render candidate snapshots
+        run: flutter test --no-pub --update-goldens test/gift_design_capture_test.dart
+      - name: Upload only synthetic comparison candidates
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: linux-legacy-golden-candidates
+          path: mobile/test/goldens/legacy/**/*.png
+          if-no-files-found: error
+          retention-days: 3
