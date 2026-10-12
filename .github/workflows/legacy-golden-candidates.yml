@@ -32,7 +32,7 @@ jobs:
       - name: Resolve locked dependencies
         run: flutter pub get --enforce-lockfile
       # Candidate generation is for human/visual review only. It never replaces
-      # the normal exact-comparison job, changes repository files, or approves UI.
+      # the normal exact-comparison job, commits repository files, or approves UI.
       # This specific fixture uses hard-coded sample data and fallback artwork;
       # no accounts, network content, device screenshots or private files load.
       - name: Render candidate snapshots

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -19,66 +21,81 @@ void main() {
       ..addFont(rootBundle.load('assets/fonts/NotoSansSymbols2-Regular.ttf'));
     await symbols.load();
   });
-  testWidgets('render native gift design review', (tester) async {
-    tester.view.devicePixelRatio = 1;
-    tester.view.physicalSize = const Size(390, 844);
-    final now = DateTime(2026, 9, 28, 12);
-    final c = AppController(
-      MemoryAppStore(
-        AppData(
-          profile: UserProfile(
-            name: 'Ану',
-            togetherSince: now.subtract(const Duration(days: 424)),
-          ),
-          events: [
-            DateEvent(
-              id: 'preview-event',
-              title: 'Кофе уух уу?',
-              startsAt: now.add(const Duration(days: 1)),
-              createdAt: now,
-              place: 'Little Heaven',
+  for (final screenName in const [
+    'home',
+    'ideas',
+    'flower-editor',
+    'flower-preview',
+    'invite-editor',
+  ]) {
+    testWidgets('render native gift design review: $screenName', (
+      tester,
+    ) async {
+      tester.view.devicePixelRatio = 1;
+      tester.view.physicalSize = const Size(390, 844);
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final now = DateTime(2026, 9, 28, 12);
+      final c = AppController(
+        MemoryAppStore(
+          AppData(
+            profile: UserProfile(
+              name: 'Ану',
+              togetherSince: now.subtract(const Duration(days: 424)),
             ),
-          ],
+            events: [
+              DateEvent(
+                id: 'preview-event',
+                title: 'Кофе уух уу?',
+                startsAt: now.add(const Duration(days: 1)),
+                createdAt: now,
+                place: 'Little Heaven',
+              ),
+            ],
+          ),
         ),
-      ),
-    );
-    await c.load();
-    final greeting = FlowerGreeting(
-      id: 'preview-flower',
-      templateId: 'bloom',
-      colorId: 'rose',
-      occasion: 'Зүгээр л',
-      recipientName: 'Ану',
-      senderName: 'Тэмүүлэн',
-      message: 'Чамтай өдөр бүр илүү гоё.',
-      createdAt: now,
-    );
-    final screens = <String, Widget>{
-      'home': Scaffold(
-        body: HomeScreen(controller: c, onTab: (_) {}, clock: () => now),
-      ),
-      'ideas': IdeasScreen(controller: c),
-      'flower-editor': FlowerEditor(controller: c),
-      'flower-preview': FlowerPreview(controller: c, greeting: greeting),
-      'invite-editor': InvitationEditor(controller: c, clock: () => now),
-    };
-    for (final screen in screens.entries) {
+      );
+      addTearDown(() async {
+        await tester.pumpWidget(const SizedBox.shrink());
+        c.dispose();
+      });
+      await c.load();
+      final greeting = FlowerGreeting(
+        id: 'preview-flower',
+        templateId: 'bloom',
+        colorId: 'rose',
+        occasion: 'Зүгээр л',
+        recipientName: 'Ану',
+        senderName: 'Тэмүүлэн',
+        message: 'Чамтай өдөр бүр илүү гоё.',
+        createdAt: now,
+      );
+      final screens = <String, Widget>{
+        'home': Scaffold(
+          body: HomeScreen(controller: c, onTab: (_) {}, clock: () => now),
+        ),
+        'ideas': IdeasScreen(controller: c),
+        'flower-editor': FlowerEditor(controller: c),
+        'flower-preview': FlowerPreview(controller: c, greeting: greeting),
+        'invite-editor': InvitationEditor(controller: c, clock: () => now),
+      };
       await tester.pumpWidget(
         MaterialApp(
           theme: buildAppTheme(),
-          home: RepaintBoundary(key: const Key('capture'), child: screen.value),
+          home: RepaintBoundary(
+            key: const Key('capture'),
+            child: screens[screenName]!,
+          ),
         ),
       );
       await tester.pumpAndSettle();
-      expect(tester.takeException(), isNull, reason: screen.key);
+      expect(tester.takeException(), isNull, reason: screenName);
       await expectLater(
         find.byKey(const Key('capture')),
-        matchesGoldenFile('goldens/legacy/${screen.key}.png'),
+        matchesGoldenFile(
+          'goldens/legacy/${Platform.operatingSystem}/$screenName.png',
+        ),
       );
-    }
-    await tester.pumpWidget(const SizedBox.shrink());
-    c.dispose();
-    tester.view.resetPhysicalSize();
-    tester.view.resetDevicePixelRatio();
-  });
+    });
+  }
 }
