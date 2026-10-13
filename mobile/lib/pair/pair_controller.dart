@@ -227,6 +227,11 @@ class PairController extends ChangeNotifier {
       if (_disposed || !_authorized) return;
       succeeded = true;
       _pending = null;
+      // Resume can start a status read while this command is still in flight.
+      // Its snapshot may predate the mutation even if it arrives afterwards.
+      // Invalidate it so reconciliation reads the acknowledged server state.
+      _readSerial++;
+      _loading = false;
       if (command.kind == PairCommandKind.create) {
         final invitation = result['invitation'];
         if (invitation is Map && invitation['id'] is String) {

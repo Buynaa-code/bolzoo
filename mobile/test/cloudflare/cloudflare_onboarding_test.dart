@@ -9,6 +9,7 @@ import 'package:http/testing.dart';
 import 'package:hamtdaa/auth/auth_models.dart';
 import 'package:hamtdaa/billing/subscription_controller.dart';
 import 'package:hamtdaa/features/account/cloudflare_account_screen.dart';
+import 'package:hamtdaa/features/florists/nearby_florists_screen.dart';
 import 'package:hamtdaa/features/premium_cards/premium_cards_screen.dart';
 import 'package:hamtdaa/features/subscription/subscription_screen.dart';
 import 'package:hamtdaa/cloudflare/cloudflare_auth_repository.dart';
@@ -471,7 +472,7 @@ void main() {
   );
 
   testWidgets(
-    'Cloudflare home opens account, subscription and premium card routes',
+    'Cloudflare home opens florists, account, subscription and premium cards',
     (tester) async {
       await tester.runAsync(() => login());
       await tester.pumpWidget(
@@ -486,6 +487,7 @@ void main() {
         'Нандин мөч',
       );
       for (final destination in <String, Type>{
+        'cloudflareOpenFlorists': NearbyFloristsScreen,
         'cloudflareOpenAccount': CloudflareAccountScreen,
         'cloudflareOpenSubscription': SubscriptionScreen,
         'cloudflareOpenPremiumCards': PremiumCardsScreen,

@@ -30,6 +30,16 @@ Sign in with a different email address on each phone. Staging and production hav
 
 Invitation codes expire after 24 hours. Do not log or attach codes, session tokens or private screenshots to bug reports. Report the on-screen error and whether each build is production or staging instead.
 
+### Nearby flower shops
+
+Open **Нүүр → Ойрхон цэцгийн дэлгүүр**. Choose **Ойролцоох дэлгүүр олох**
+to request approximate foreground location, or use **Газрын зураг дээр сонгох**
+without location permission. Flower pins and the nearest-first list use a bundled
+Mongolian OpenStreetMap catalog; select 5 or 10 km and tap **Чиглэл** to open
+directions. Coverage is incomplete and operating hours are not live. Device
+coordinates are not sent to the couple/auth backend. See
+[provider, privacy and native details](docs/florist-map.md).
+
 ## Recovery scope
 
 This source was reconstructed on 2026-10-08 from saved editing records after the original `mobile/` folder was omitted from Git. Immutable recovery material is in `../recovery/2026-10-08/`.

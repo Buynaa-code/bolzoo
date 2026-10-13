@@ -59,7 +59,30 @@
 
 ## Current product boundary
 
-The shipped entry point is `lib/main.dart` → `main_cloudflare.dart`: email login, profile/pairing, shared calendar/date proposals, daily questions, photo memories, wishes, opt-in local calendar reminders, account controls, and conditional Plus/cards.
+The shipped entry point is `lib/main.dart` → `main_cloudflare.dart`: email login, profile/pairing, shared calendar/date proposals, daily questions, photo memories, wishes, opt-in local calendar reminders, nearby florist map, account controls, and conditional Plus/cards.
+
+### Pairing and florist follow-up — 2026-10-13
+
+Fixed a reproduced invitation lifecycle race: a status read started during app
+resume could overwrite successful invite creation. Regression tests now preserve
+the newly issued code and verify polling, mutual consent, and uncertain-command
+behavior. These tests do not replace the iPhone + Android acceptance gate.
+
+The current home now opens a florist map with flower markers, foreground-only
+location, manual point selection, 5/10 km search, nearest-first results and
+external directions. A source-attributed OSM Mongolia extract supplies 21 public
+shop records; searches run locally, with no runtime Overpass dependency. This is
+not the older photo/travel map. See [florist details](florist-map.md).
+
+Validation: 472 Flutter tests passed, four existing optional capture tests stayed
+skipped; no analyzer errors/warnings (58 existing informational lints). Pairing
+backend/router checks passed 26 tests. Android debug APK built with production
+endpoints; its merged manifest requests COARSE location only, with no fine,
+background or foreground-service location permission. Native location prompts
+and an iOS archive remain unverified without devices/full Xcode. Before Store
+release, update live privacy and Data Safety disclosures for optional approximate
+location, tile-provider viewport requests/cache, and user-triggered Google Maps
+directions; the app does not share the location with the partner/auth server.
 
 The earlier reference UI's flower/gift/invitation, map, ideas, home-icon and notification screens remain in the disconnected legacy entry point and are not complete current-app features. Avoid screenshots or Store copy promising those until connected and tested. The current calendar now has opt-in local reminders. Cross-device changes are reconciled while the app is open; this is not a background push service. Physical-device permission, reboot, killed-app delivery and unlink behavior remain acceptance gates.
 

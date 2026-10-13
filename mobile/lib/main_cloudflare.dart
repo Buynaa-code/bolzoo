@@ -23,6 +23,7 @@ import 'together/together_repository.dart';
 import 'together/together_reminders.dart';
 import 'notifications/reminders.dart';
 import 'features/pair/pair_screen.dart';
+import 'features/florists/nearby_florists_screen.dart';
 import 'ui/components.dart';
 import 'ui/theme.dart';
 
@@ -449,6 +450,13 @@ class _CloudflareHomeState extends State<_CloudflareHome>
                     reminders: _reminders,
                   ),
                 ),
+              ),
+              _HomeDestination(
+                id: 'cloudflareOpenFlorists',
+                icon: Icons.local_florist_outlined,
+                title: 'Ойрхон цэцгийн дэлгүүр',
+                description: 'Цэцгэн газрын зураг дээрээс бэлгээ олоорой.',
+                onTap: () => _open(() => const NearbyFloristsScreen()),
               ),
               _HomeDestination(
                 id: 'cloudflareOpenSubscription',

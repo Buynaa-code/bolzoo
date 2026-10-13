@@ -1,0 +1,252 @@
+{
+  "version": 0.6,
+  "generator": "Overpass API 0.7.62.11 87bfad18",
+  "osm3s": {
+    "timestamp_osm_base": "2026-10-13T06:20:50Z",
+    "timestamp_areas_base": "2026-10-11T17:41:06Z",
+    "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+  },
+  "elements": [
+    {
+      "type": "node",
+      "id": 1732841308,
+      "lat": 47.922269,
+      "lon": 106.9168387,
+      "tags": {
+        "name": "Flora Цэцгийн дэлгүүр",
+        "shop": "florist"
+      }
+    },
+    {
+      "type": "node",
+      "id": 3900867177,
+      "lat": 47.9143722,
+      "lon": 106.9087618,
+      "tags": {
+        "name": "Төгс Тоо",
+        "shop": "florist"
+      }
+    },
+    {
+      "type": "node",
+      "id": 3902581292,
+      "lat": 47.9222268,
+      "lon": 106.916342,
+      "tags": {
+        "name": "Green world цэцгийн дэлгүүр",
+        "shop": "florist"
+      }
+    },
+    {
+      "type": "node",
+      "id": 3904182797,
+      "lat": 47.9247163,
+      "lon": 106.9125181,
+      "tags": {
+        "name": "Цэцгийн дэлгүүр",
+        "shop": "florist"
+      }
+    },
+    {
+      "type": "node",
+      "id": 3904361579,
+      "lat": 47.9227765,
+      "lon": 106.9111959,
+      "tags": {
+        "name": "Цэцгийн дэлгүүр",
+        "shop": "florist"
+      }
+    },
+    {
+      "type": "node",
+      "id": 3912500452,
+      "lat": 47.9230415,
+      "lon": 106.8735565,
+      "tags": {
+        "addr:city": "Улаанбаатар (Ulaanbaatar)",
+        "addr:housenumber": "1 давхарт",
+        "addr:street": "Ард аюушийн өргөн чөлөө",
+        "name": "Амьд Цэцгийн Дэлгүүр",
+        "shop": "florist"
+      }
+    },
+    {
+      "type": "node",
+      "id": 3913034775,
+      "lat": 47.9181587,
+      "lon": 106.94601,
+      "tags": {
+        "name": "Соёолж",
+        "shop": "florist"
+      }
+    },
+    {
+      "type": "node",
+      "id": 3913317299,
+      "lat": 47.9171537,
+      "lon": 106.9122124,
+      "tags": {
+        "name": "Flower Center",
+        "shop": "florist",
+        "toilets:wheelchair": "no",
+        "wheelchair": "no",
+        "wheelchair:description": "Налуу байхгүй, хаалганы өргөн 86"
+      }
+    },
+    {
+      "type": "node",
+      "id": 4512240889,
+      "lat": 49.4653914,
+      "lon": 105.9604717,
+      "tags": {
+        "addr:housenumber": "11",
+        "addr:street": "Шинэ хороолол",
+        "name": "Flora Цэцгийн дэлгүүр",
+        "name:en": "Flora Florist",
+        "opening_hours": "Mo-Su 10:00-19:00",
+        "shop": "florist"
+      }
+    },
+    {
+      "type": "node",
+      "id": 5222721911,
+      "lat": 47.5463026,
+      "lon": 101.5226723,
+      "tags": {
+        "name": "tsetsegt nuga",
+        "shop": "florist"
+      }
+    },
+    {
+      "type": "node",
+      "id": 5856724290,
+      "lat": 48.3908051,
+      "lon": 105.8155497,
+      "tags": {
+        "name": "Urgamal 2 HL",
+        "shop": "florist"
+      }
+    },
+    {
+      "type": "node",
+      "id": 5856742291,
+      "lat": 48.5169764,
+      "lon": 106.1345478,
+      "tags": {
+        "name": "Urgamal 1 HL",
+        "shop": "florist"
+      }
+    },
+    {
+      "type": "node",
+      "id": 5856742292,
+      "lat": 48.5827617,
+      "lon": 106.0153817,
+      "tags": {
+        "name": "Gory po lewej str pelne roslin HL",
+        "shop": "florist"
+      }
+    },
+    {
+      "type": "node",
+      "id": 8223730980,
+      "lat": 49.029474,
+      "lon": 104.0529689,
+      "tags": {
+        "addr:city": "Erdenet",
+        "addr:country": "MN",
+        "addr:housenumber": "3-17",
+        "shop": "florist",
+        "wheelchair": "no"
+      }
+    },
+    {
+      "type": "node",
+      "id": 8265544333,
+      "lat": 47.7370592,
+      "lon": 96.8523376,
+      "tags": {
+        "name": "Flower Shop",
+        "shop": "florist"
+      }
+    },
+    {
+      "type": "node",
+      "id": 9873624117,
+      "lat": 47.9194098,
+      "lon": 106.9321383,
+      "tags": {
+        "name": "Таримал Ургамал үрийн дэлгүүр",
+        "opening_hours": "Mo-Su 10:00-18:00",
+        "phone": "7272 0808",
+        "shop": "florist"
+      }
+    },
+    {
+      "type": "node",
+      "id": 10185583812,
+      "lat": 49.0313611,
+      "lon": 104.0569181,
+      "tags": {
+        "addr:city": "Эрдэнэт",
+        "addr:country": "MN",
+        "addr:district": "Баян-Өндөр",
+        "addr:street": "Эрх чөлөөний гудамж",
+        "deaf:description": "no",
+        "elevator": "no",
+        "name": "FLORA",
+        "shop": "florist",
+        "tactile_paving": "no",
+        "toilets:wheelchair": "no",
+        "wheelchair": "no"
+      }
+    },
+    {
+      "type": "node",
+      "id": 13723896112,
+      "lat": 47.8985461,
+      "lon": 106.9274087,
+      "tags": {
+        "shop": "florist"
+      }
+    },
+    {
+      "type": "node",
+      "id": 13723896119,
+      "lat": 47.8980588,
+      "lon": 106.9260711,
+      "tags": {
+        "shop": "florist"
+      }
+    },
+    {
+      "type": "node",
+      "id": 13912154800,
+      "lat": 47.6518686,
+      "lon": 106.8218856,
+      "tags": {
+        "airside": "no",
+        "level": "0",
+        "name": "Flora",
+        "opening_hours": "Mo-Su 09:00-21:00",
+        "shop": "florist"
+      }
+    },
+    {
+      "type": "node",
+      "id": 14003594126,
+      "lat": 47.9161558,
+      "lon": 106.9081316,
+      "tags": {
+        "name": "Jarden",
+        "shop": "florist"
+      }
+    }
+  ],
+  "source": "OpenStreetMap",
+  "sourceUrl": "https://www.openstreetmap.org/",
+  "license": "ODbL-1.0",
+  "licenseUrl": "https://opendatacommons.org/licenses/odbl/1-0/",
+  "fetchedAt": "2026-10-13T06:20:50Z",
+  "query": "[out:json][timeout:30];area[\"ISO3166-1\"=\"MN\"][\"admin_level\"=\"2\"]->.mn;nwr[\"shop\"=\"florist\"](area.mn);out center tags;"
+}

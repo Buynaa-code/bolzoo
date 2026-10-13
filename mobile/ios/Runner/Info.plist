@@ -70,5 +70,7 @@
 	<string>Дурсамж болон хосын зураг нэмэхэд зураг сонгоно.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Дурсамжийн зураг авахад камер ашиглана.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>«Ойрхон цэцгийн дэлгүүр» дээр байршлаа ашиглахыг сонгоход ойр байгаа дэлгүүрүүдийг газрын зурагт харуулна.</string>
 </dict>
 </plist>
