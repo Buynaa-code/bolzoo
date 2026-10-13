@@ -14,6 +14,22 @@ flutter run -d <device-id>
 Android requires JDK 17 and the Android SDK. On this Mac the JDK is `/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home`.
 iOS requires the full Xcode application, an available device or simulator, and appropriate signing. Only the launcher assets and project configuration have been prepared here; iOS has not been rebuilt on this machine.
 
+### Connect two phones
+
+Install the same current production build on both phones. When running from Flutter, use the production configuration explicitly on each device:
+
+```sh
+flutter run -d <device-id> --dart-define-from-file=config/cloudflare.production.json
+```
+
+Sign in with a different email address on each phone. Staging and production have separate accounts, sessions and invitations: a code from one environment cannot connect to the other, and using one account on two phones does not create a couple.
+
+1. The first person opens **Хосоор холбогдох**, creates a code and copies it to the other person. A replacement code invalidates the previous one.
+2. The second person pastes the full code, checks the inviter's name, then taps **Зөвшөөрч хүсэлт илгээх**. Previewing alone does not send a request.
+3. The first person reopens **Хосоор холбогдох** and approves **Танд хүсэлт ирлээ**. Both phones then show the connection; refresh is available if needed.
+
+Invitation codes expire after 24 hours. Do not log or attach codes, session tokens or private screenshots to bug reports. Report the on-screen error and whether each build is production or staging instead.
+
 ## Recovery scope
 
 This source was reconstructed on 2026-10-08 from saved editing records after the original `mobile/` folder was omitted from Git. Immutable recovery material is in `../recovery/2026-10-08/`.
@@ -48,4 +64,4 @@ Next feature sequence: (1) shared wishes and mutual date choice (implemented and
 
 ## Release gate
 
-The current production-readiness findings are in `docs/production-readiness.md`. Android release builds require the existing upload key and refuse debug signing. The recovered `cloudflare/` authentication source is incomplete and older than the deployed Worker; read its recovery warning before touching deployments. The complete restored Flutter suite still has failing legacy tests; scoped current-app checks must not be presented as a passing full repository. GitHub Actions checks both scopes separately and never deploys.
+The current production-readiness findings are in `docs/production-readiness.md`. Android release builds require the existing upload key and refuse debug signing. The recovered `cloudflare/` authentication source is reproducible; read its recovery and staging-acceptance notes before deployment. The 2026-10-12 full Flutter audit, current-app Android debug build and both backend checks passed in [GitHub Actions run 38229271500](https://github.com/Buynaa-code/bolzoo/actions/runs/38229271500). GitHub Actions checks the current and restored scopes separately and never deploys. Real two-phone acceptance, signed Store builds and billing verification remain release gates.

@@ -69,7 +69,7 @@ class FakeTransport implements CloudflareTransport {
 }
 
 Map<String, dynamic> session(String id, String email, {String? token}) => {
-  if (token != null) 'token': token,
+  'token': ?token,
   'expires_at': DateTime.now()
       .add(const Duration(hours: 1))
       .toUtc()
@@ -107,6 +107,102 @@ void main() {
     transport.handle = (_) async =>
         CloudflareResponse(200, session(id, email, token: token));
     await auth.verifyEmailCode(email, '123456');
+  }
+
+  test('default app build points to the production API', () {
+    expect(
+      cloudflareDefaultApiUrl,
+      'https://hamtdaa-api-production.mendmedey.workers.dev',
+    );
+  });
+
+  for (final origin in [
+    'https://hamtdaa-api-staging.mendmedey.workers.dev',
+    'https://custom.example',
+    'https://hamtdaa-api-production.mendmedey.workers.dev:8443',
+    cloudflareProductionApiUrl,
+  ]) {
+    testWidgets('login and home identify the configured server at $origin', (
+      tester,
+    ) async {
+      final requests = <Uri>[];
+      late HttpCloudflareTransport api;
+      final environmentAuth = (await tester.runAsync(() async {
+        api = HttpCloudflareTransport(
+          Uri.parse(origin),
+          client: MockClient((request) async {
+            requests.add(request.url);
+            return http.Response(
+              jsonEncode({
+                'ok': true,
+                ...session(
+                  'environment-user',
+                  'compare@example.com',
+                  token: 'test-bearer',
+                ),
+              }),
+              200,
+            );
+          }),
+        );
+        return CloudflareAuthRepository(
+          transport: api,
+          storage: MemoryStorage(),
+        );
+      }))!;
+      addTearDown(() async {
+        await environmentAuth.dispose();
+        api.close();
+      });
+      tester.view.physicalSize = const Size(390, 700);
+      tester.view.devicePixelRatio = 1;
+      tester.platformDispatcher.textScaleFactorTestValue = 2;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+      await tester.pumpWidget(
+        CloudflareOnboardingApp(
+          repository: environmentAuth,
+          subscriptionControllerFactory: shellBilling,
+        ),
+      );
+      await tester.pumpAndSettle();
+      final production = origin == cloudflareProductionApiUrl;
+      expect(
+        find.byKey(const Key('cloudflareBuildEnvironmentNotice')),
+        production ? findsNothing : findsOneWidget,
+      );
+      if (!production) {
+        expect(
+          find.textContaining('Урилгын код зөвхөн ижил серверт ажиллана.'),
+          findsOneWidget,
+        );
+        expect(find.text('Сервер: $origin'), findsOneWidget);
+      }
+      expect(find.byKey(const Key('cloudflareSignedInEmail')), findsNothing);
+      // Keyboard-sized insets must leave both the notice and login scrollable.
+      tester.view.viewInsets = const FakeViewPadding(bottom: 280);
+      await tester.pump();
+      expect(tester.takeException(), isNull);
+      tester.view.resetViewInsets();
+      await tester.runAsync(
+        () => environmentAuth.verifyEmailCode('compare@example.com', '123456'),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const Key('cloudflareBuildEnvironmentNotice')),
+        production ? findsNothing : findsOneWidget,
+      );
+      await tester.scrollUntilVisible(
+        find.byKey(const Key('cloudflareSignedInEmail')),
+        200,
+      );
+      expect(find.text('Нэвтэрсэн имэйл: compare@example.com'), findsOneWidget);
+      expect(requests, isNotEmpty);
+      expect(requests.map((uri) => uri.origin), everyElement(origin));
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox.shrink());
+    });
   }
 
   test(
@@ -350,17 +446,26 @@ void main() {
         ),
       );
       expect(find.text('Хоёулаа хамтдаа эхэлье'), findsOneWidget);
+      expect(find.text('Нэвтэрсэн имэйл: a@example.com'), findsOneWidget);
       await tester.tap(find.byKey(const Key('cloudflareOpenPair')));
       await tester.pumpAndSettle();
       expect(find.text('Хосоор холбогдох'), findsOneWidget);
       expect(
-        find.text('Урилга → хүсэлт → хоёр дахь зөвшөөрөл'),
+        find.text(
+          '1. Нэг нь код үүсгээд нөгөөдөө илгээнэ.\n2. Нөгөө нь кодыг шалгаж, хүсэлт илгээнэ.\n3. Код илгээсэн хүн хүсэлтийг зөвшөөрнө.',
+        ),
         findsOneWidget,
       );
       await tester.runAsync(auth.signOut);
       await tester.pumpAndSettle();
-      expect(find.text('Урилга → хүсэлт → хоёр дахь зөвшөөрөл'), findsNothing);
+      expect(
+        find.text(
+          '1. Нэг нь код үүсгээд нөгөөдөө илгээнэ.\n2. Нөгөө нь кодыг шалгаж, хүсэлт илгээнэ.\n3. Код илгээсэн хүн хүсэлтийг зөвшөөрнө.',
+        ),
+        findsNothing,
+      );
       expect(find.byKey(const Key('cloudflareOpenPair')), findsNothing);
+      expect(find.byKey(const Key('cloudflareSignedInEmail')), findsNothing);
       await tester.pumpWidget(const SizedBox());
     },
   );
@@ -425,6 +530,8 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byType(CloudflareAccountScreen), findsNothing);
       expect(find.byKey(const Key('cloudflareHome')), findsOneWidget);
+      expect(find.text('Нэвтэрсэн имэйл: b@example.com'), findsOneWidget);
+      expect(find.text('Нэвтэрсэн имэйл: a@example.com'), findsNothing);
       expect(billing, hasLength(2));
       expect(billing.first.isCurrent, isFalse);
       expect(billing.last.isCurrent, isTrue);

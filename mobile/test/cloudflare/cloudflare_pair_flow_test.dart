@@ -211,7 +211,10 @@ void main() {
 
       await open(second);
       await tester.ensureVisible(find.byKey(const Key('pairTokenField')));
-      await tester.enterText(find.byKey(const Key('pairTokenField')), code);
+      await tester.enterText(
+        find.byKey(const Key('pairTokenField')),
+        '  \n$code\n  ',
+      );
       await tapKey('pairPreview');
       expect(server.phase, 1);
       expect(find.byKey(const Key('pairPartnerName')), findsNothing);

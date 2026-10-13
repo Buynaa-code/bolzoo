@@ -234,7 +234,9 @@ class _PairScreenState extends State<PairScreen>
               ),
               const SizedBox(height: 10),
               const Text(
-                'Урилга → хүсэлт → хоёр дахь зөвшөөрөл',
+                '1. Нэг нь код үүсгээд нөгөөдөө илгээнэ.\n'
+                '2. Нөгөө нь кодыг шалгаж, хүсэлт илгээнэ.\n'
+                '3. Код илгээсэн хүн хүсэлтийг зөвшөөрнө.',
                 textAlign: TextAlign.center,
                 style: TextStyle(color: AppColors.muted),
               ),
@@ -584,7 +586,8 @@ class _PairScreenState extends State<PairScreen>
           ),
           const SizedBox(height: 10),
           const Text(
-            'Кодыг шалгах нь холбогдох зөвшөөрөл биш.',
+            'Хоёулаа өөр өөр имэйлээр нэвтэрсэн байх ёстой. '
+            'Кодыг шалгасны дараа нэрийг нь нягтлаад хүсэлтээ илгээнэ.',
             style: TextStyle(color: AppColors.muted, fontSize: 13),
           ),
           const SizedBox(height: 16),
@@ -595,7 +598,8 @@ class _PairScreenState extends State<PairScreen>
               enabled: _controller.canAct,
               autocorrect: false,
               enableSuggestions: false,
-              maxLength: 43,
+              // Validate the complete paste after trimming outer whitespace;
+              // a length formatter would silently cut off part of the code.
               textInputAction: TextInputAction.done,
               decoration: const InputDecoration(
                 labelText: 'Урилгын код',

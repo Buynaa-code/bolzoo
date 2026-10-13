@@ -26,6 +26,13 @@ import 'features/pair/pair_screen.dart';
 import 'ui/components.dart';
 import 'ui/theme.dart';
 
+const cloudflareProductionApiUrl =
+    'https://hamtdaa-api-production.mendmedey.workers.dev';
+const cloudflareDefaultApiUrl = String.fromEnvironment(
+  'CLOUDFLARE_API_URL',
+  defaultValue: cloudflareProductionApiUrl,
+);
+
 /// Default Cloudflare entrypoint. Private routes belong to one login session.
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -64,11 +71,7 @@ class _CloudflareBootstrapState extends State<CloudflareBootstrap> {
       final environment =
           widget.environment ??
           CloudflareEnvironment(
-            apiUrl: const String.fromEnvironment(
-              'CLOUDFLARE_API_URL',
-              defaultValue:
-                  'https://hamtdaa-api-production.mendmedey.workers.dev',
-            ),
+            apiUrl: cloudflareDefaultApiUrl,
             allowLoopback:
                 !kReleaseMode &&
                 const bool.fromEnvironment('CLOUDFLARE_ALLOW_LOOPBACK'),
@@ -163,6 +166,8 @@ class _CloudflareOnboardingAppState extends State<CloudflareOnboardingApp> {
   String? _signOutMessage;
   int _reminderGeneration = 0;
 
+  Uri? get _customOrigin => _nonProductionOrigin(widget.repository);
+
   @override
   void initState() {
     super.initState();
@@ -236,6 +241,15 @@ class _CloudflareOnboardingAppState extends State<CloudflareOnboardingApp> {
         : Scaffold(
             body: Column(
               children: [
+                if (_customOrigin case final origin?)
+                  Flexible(
+                    child: SafeArea(
+                      bottom: false,
+                      child: SingleChildScrollView(
+                        child: _BuildEnvironmentNotice(origin: origin),
+                      ),
+                    ),
+                  ),
                 if (_signOutMessage != null)
                   SafeArea(
                     bottom: false,
@@ -250,7 +264,10 @@ class _CloudflareOnboardingAppState extends State<CloudflareOnboardingApp> {
                       ],
                     ),
                   ),
-                Expanded(child: AuthScreen(repository: widget.repository)),
+                Expanded(
+                  flex: 2,
+                  child: AuthScreen(repository: widget.repository),
+                ),
               ],
             ),
           ),
@@ -382,6 +399,14 @@ class _CloudflareHomeState extends State<_CloudflareHome>
             key: const Key('cloudflareHome'),
             padding: const EdgeInsets.all(24),
             children: [
+              if (_nonProductionOrigin(widget.repository)
+                  case final origin?) ...[
+                _BuildEnvironmentNotice(
+                  origin: origin,
+                  padding: EdgeInsets.zero,
+                ),
+                const SizedBox(height: 20),
+              ],
               const Center(child: HamtdaaMark(size: 72)),
               const SizedBox(height: 24),
               const Text(
@@ -392,6 +417,12 @@ class _CloudflareHomeState extends State<_CloudflareHome>
               const Text(
                 'Хамтын төлөвлөгөө, өдөр тутмын яриа, дурсах нандин мөчүүд.',
                 style: TextStyle(color: AppColors.muted, height: 1.6),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Нэвтэрсэн имэйл: ${widget.repository.current.email ?? ''}',
+                key: const Key('cloudflareSignedInEmail'),
+                style: const TextStyle(color: AppColors.muted, height: 1.5),
               ),
               const SizedBox(height: 24),
               _HomeDestination(
@@ -456,6 +487,68 @@ class _CloudflareHomeState extends State<_CloudflareHome>
       ),
     ),
   );
+}
+
+Uri? _nonProductionOrigin(CloudflareAuthRepository repository) {
+  final transport = repository.transport;
+  if (transport is! HttpCloudflareTransport) return null;
+  final origin = transport.baseUri.origin;
+  return origin == Uri.parse(cloudflareProductionApiUrl).origin
+      ? null
+      : Uri.parse(origin);
+}
+
+class _BuildEnvironmentNotice extends StatelessWidget {
+  const _BuildEnvironmentNotice({
+    required this.origin,
+    this.padding = const EdgeInsets.all(16),
+  });
+  final Uri origin;
+  final EdgeInsetsGeometry padding;
+
+  @override
+  Widget build(BuildContext context) {
+    final staging =
+        origin.origin == 'https://hamtdaa-api-staging.mendmedey.workers.dev';
+    final colors = Theme.of(context).colorScheme;
+    return Padding(
+      padding: padding,
+      child: Container(
+        key: const Key('cloudflareBuildEnvironmentNotice'),
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: colors.tertiaryContainer,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: colors.tertiary),
+        ),
+        child: DefaultTextStyle(
+          style: TextStyle(color: colors.onTertiaryContainer, height: 1.5),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                staging ? 'Туршилтын хувилбар' : 'Өөр сервертэй хувилбар',
+                style: const TextStyle(
+                  fontWeight: FontWeight.w800,
+                  fontSize: 16,
+                ),
+              ),
+              const SizedBox(height: 6),
+              const Text(
+                'Урилгын код зөвхөн ижил серверт ажиллана. Хоёр утсандаа ижил хувилбарын апп ашиглаарай.',
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Сервер: ${origin.origin}',
+                style: const TextStyle(fontSize: 12),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class _HomeDestination extends StatelessWidget {

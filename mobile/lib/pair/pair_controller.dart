@@ -140,7 +140,7 @@ class PairController extends ChangeNotifier {
     final token = input.trim();
     if (!RegExp(r'^[A-Za-z0-9_-]{43}$').hasMatch(token)) {
       _clearPreview();
-      _failure = const PairFailure('not_found');
+      _failure = const PairFailure('invalid_code_format');
       _emit();
       return;
     }
