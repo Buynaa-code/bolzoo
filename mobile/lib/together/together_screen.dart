@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import '../cloudflare/cloudflare_auth_repository.dart';
 import '../ui/components.dart';
@@ -19,6 +20,8 @@ import 'together_models.dart';
 import 'together_repository.dart';
 import 'together_reminders.dart';
 
+enum TogetherSection { calendar, memories, daily, wishes }
+
 class TogetherScreen extends StatefulWidget {
   const TogetherScreen({
     super.key,
@@ -28,6 +31,12 @@ class TogetherScreen extends StatefulWidget {
     this.memoryPhotoPicker,
     this.wishes,
     this.reminders,
+    this.initialSection = TogetherSection.calendar,
+    this.embedded = false,
+    this.onHome,
+    this.onPair,
+    this.initialMemoryId,
+    this.initialEventId,
   });
   final CloudflareAuthRepository auth;
 
@@ -39,11 +48,15 @@ class TogetherScreen extends StatefulWidget {
 
   /// The signed-in home owns reminders across calendar route navigation.
   final TogetherReminderCoordinator? reminders;
+  final TogetherSection initialSection;
+  final bool embedded;
+  final VoidCallback? onHome, onPair;
+  final String? initialMemoryId, initialEventId;
   @override
-  State<TogetherScreen> createState() => _TogetherScreenState();
+  TogetherScreenState createState() => TogetherScreenState();
 }
 
-class _TogetherScreenState extends State<TogetherScreen>
+class TogetherScreenState extends State<TogetherScreen>
     with WidgetsBindingObserver {
   late final TogetherController _controller;
   MemoryController? _memories;
@@ -57,9 +70,19 @@ class _TogetherScreenState extends State<TogetherScreen>
   int _tab = 0;
   String? _eventId, _panePair;
   bool _editing = false, _creating = false, _foreground = true;
+  bool _leaving = false, _initialLinkHandled = false;
+  bool _pickingMemoryDate = false;
+
+  int _sectionTab(TogetherSection section) => switch (section) {
+    TogetherSection.calendar => 0,
+    TogetherSection.daily => 1,
+    TogetherSection.wishes => 2,
+    TogetherSection.memories => 3,
+  };
   @override
   void initState() {
     super.initState();
+    _tab = _sectionTab(widget.initialSection);
     _controller =
         widget.controller ??
         TogetherController(
@@ -85,7 +108,44 @@ class _TogetherScreenState extends State<TogetherScreen>
   }
 
   void _memoryUpdated() {
-    if (mounted) setState(() {});
+    if (mounted) {
+      _resolveInitialLink();
+      setState(() {});
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant TogetherScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // The shell asks requestLeave before selecting another tab. Never silently
+    // discard a local editor if a caller forgets that contract.
+    if (oldWidget.initialSection != widget.initialSection && !_inPane) {
+      _tab = _sectionTab(widget.initialSection);
+    }
+  }
+
+  void _resolveInitialLink() {
+    if (_initialLinkHandled ||
+        !_foreground ||
+        !_controller.paired ||
+        !_controller.current ||
+        _controller.loading) {
+      return;
+    }
+    final memoryId = widget.initialMemoryId;
+    if (memoryId != null &&
+        (_memories == null ||
+            _memories!.loading ||
+            !_memories!.current ||
+            _memories!.pairId != _controller.data?.pairId ||
+            _memories!.month != togetherMonth(_controller.month))) {
+      return;
+    }
+    _initialLinkHandled = true;
+    if (memoryId == null && widget.initialEventId == null) return;
+    _panePair = _controller.data!.pairId;
+    _memoryId = memoryId;
+    _eventId = memoryId == null ? widget.initialEventId : null;
   }
 
   void _wishUpdated() {
@@ -118,6 +178,7 @@ class _TogetherScreenState extends State<TogetherScreen>
       _memories?.bind(pair, month);
       if (bound && changed) unawaited(_memories?.refresh());
     }
+    _resolveInitialLink();
     setState(() {});
   }
 
@@ -149,6 +210,58 @@ class _TogetherScreenState extends State<TogetherScreen>
       _addingMemory ||
       _memoryId != null ||
       (_tab == 2 && _wishBoardKey.currentState?.hasPane == true);
+
+  /// The shell must await this before removing this body or changing sections.
+  /// Editor-specific guards retain uploads and ask before discarding drafts.
+  Future<bool> requestLeave() async {
+    if (!mounted ||
+        _leaving ||
+        _pickingMemoryDate ||
+        _controller.saving ||
+        _memories?.saving == true ||
+        _wishes?.saving == true) {
+      return false;
+    }
+    _leaving = true;
+    try {
+      if (_tab == 2 && _wishBoardKey.currentState?.hasPane == true) {
+        await _wishBoardKey.currentState!.requestBack();
+        return mounted && _wishBoardKey.currentState?.hasPane != true;
+      }
+      if (_addingMemory) {
+        final editor = _memoryEditorKey.currentState;
+        if (editor == null) return false;
+        await editor.requestCancel();
+        return mounted && !_addingMemory;
+      }
+      if (_creating || _editing) {
+        final discard = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Болзоогоо хадгалахгүй гарах уу?'),
+            content: const Text('Оруулсан өөрчлөлт тань хадгалагдахгүй.'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Үргэлжлүүлэх'),
+              ),
+              TextButton(
+                key: const Key('togetherDiscard'),
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text('Гарах'),
+              ),
+            ],
+          ),
+        );
+        if (!mounted || discard != true) return false;
+      }
+      if (_inPane) _closePane();
+      return mounted;
+    } finally {
+      _leaving = false;
+    }
+  }
+
   void _back() {
     if (_tab == 2 && _wishBoardKey.currentState?.hasPane == true) {
       unawaited(_wishBoardKey.currentState!.requestBack());
@@ -156,6 +269,10 @@ class _TogetherScreenState extends State<TogetherScreen>
     }
     if (_addingMemory && _memoryEditorKey.currentState != null) {
       unawaited(_memoryEditorKey.currentState!.requestCancel());
+      return;
+    }
+    if (_creating || _editing) {
+      unawaited(requestLeave());
       return;
     }
     _closePane();
@@ -169,7 +286,11 @@ class _TogetherScreenState extends State<TogetherScreen>
         _memoryId = null;
       });
     } else {
-      Navigator.of(context).maybePop();
+      if (widget.onHome != null) {
+        widget.onHome!();
+      } else {
+        Navigator.of(context).maybePop();
+      }
     }
   }
 
@@ -292,7 +413,7 @@ class _TogetherScreenState extends State<TogetherScreen>
 
   @override
   Widget build(BuildContext context) => PopScope(
-    canPop: !_inPane,
+    canPop: !_inPane && !widget.embedded,
     onPopInvokedWithResult: (didPop, _) {
       if (!didPop) _back();
     },
@@ -309,13 +430,23 @@ class _TogetherScreenState extends State<TogetherScreen>
               ? 'Болзоо засах'
               : _eventId != null
               ? 'Бидний болзоо'
+              : widget.embedded || _tab == 3
+              ? switch (_tab) {
+                  1 => 'Өдрийн асуулт',
+                  2 => 'Бидний хүслүүд',
+                  3 => 'Бидний дурсамж',
+                  _ => 'Бидний хуанли',
+                }
               : 'Бид хоёр',
         ),
-        leading: IconButton(
-          onPressed: _back,
-          tooltip: 'Буцах',
-          icon: const Icon(Icons.arrow_back_rounded),
-        ),
+        automaticallyImplyLeading: false,
+        leading: widget.embedded && !_inPane
+            ? null
+            : IconButton(
+                onPressed: _back,
+                tooltip: 'Буцах',
+                icon: const Icon(Icons.arrow_back_rounded),
+              ),
         actions: [
           if (widget.reminders != null && !_inPane)
             IconButton(
@@ -406,7 +537,11 @@ class _TogetherScreenState extends State<TogetherScreen>
         title: 'Хосоороо холбогдоорой',
         message:
             'Хоёр тал зөвшөөрч холбогдсоны дараа хуанли болон өдөр тутмын асуултаа хамт ашиглана.',
-        action: OutlinedButton(onPressed: _back, child: const Text('Буцах')),
+        action: OutlinedButton(
+          key: const Key('togetherConnectPair'),
+          onPressed: widget.onPair ?? _back,
+          child: Text(widget.onPair == null ? 'Буцах' : 'Хосоо урих'),
+        ),
       );
     }
     if (_addingMemory && _memories != null) {
@@ -478,7 +613,8 @@ class _TogetherScreenState extends State<TogetherScreen>
     }
     return Column(
       children: [
-        if (!(_tab == 2 && _wishBoardKey.currentState?.hasPane == true))
+        if (!widget.embedded &&
+            !(_tab == 2 && _wishBoardKey.currentState?.hasPane == true))
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
             child: SizedBox(
@@ -504,6 +640,8 @@ class _TogetherScreenState extends State<TogetherScreen>
                   ),
                   if (_wishes != null)
                     const ButtonSegment(value: 2, label: Text('Хүслүүд')),
+                  if (_tab == 3)
+                    const ButtonSegment(value: 3, label: Text('Дурсамж')),
                 ],
                 selected: {_tab},
                 showSelectedIcon: false,
@@ -513,7 +651,9 @@ class _TogetherScreenState extends State<TogetherScreen>
             ),
           ),
         Expanded(
-          child: _tab == 0
+          child: _tab == 3
+              ? _album()
+              : _tab == 0
               ? TogetherCalendar(
                   controller: _controller,
                   memories: _memories,
@@ -558,6 +698,291 @@ class _TogetherScreenState extends State<TogetherScreen>
     action: OutlinedButton(
       onPressed: _back,
       child: const Text('Хуанли руу буцах'),
+    ),
+  );
+
+  Future<void> _addAlbumMemory() async {
+    final memories = _memories;
+    if (_pickingMemoryDate ||
+        !_foreground ||
+        !_controller.paired ||
+        _controller.loading ||
+        _controller.saving ||
+        memories == null ||
+        !memories.current ||
+        memories.saving) {
+      return;
+    }
+    final pair = _controller.data!.pairId;
+    final actor = _controller.actorId;
+    final month = togetherMonth(_controller.month);
+    if (memories.pairId != pair || memories.month != month) return;
+    final first = DateTime(_controller.month.year, _controller.month.month);
+    final last = DateTime(first.year, first.month + 1, 0);
+    final selected = _controller.selectedDay;
+    final initial = selected.year == first.year && selected.month == first.month
+        ? DateTime(selected.year, selected.month, selected.day)
+        : first;
+    setState(() => _pickingMemoryDate = true);
+    DateTime? day;
+    try {
+      day = await showDatePicker(
+        context: context,
+        initialDate: initial,
+        firstDate: first,
+        lastDate: last,
+        helpText: 'Дурсамжийн өдөр',
+        cancelText: 'Болих',
+        confirmText: 'Сонгох',
+      );
+    } finally {
+      if (mounted) setState(() => _pickingMemoryDate = false);
+    }
+    if (day == null ||
+        !mounted ||
+        !_foreground ||
+        ModalRoute.of(context)?.isCurrent != true ||
+        _tab != 3 ||
+        _inPane ||
+        !_controller.paired ||
+        _controller.actorId != actor ||
+        _controller.data?.pairId != pair ||
+        togetherMonth(_controller.month) != month ||
+        !memories.current ||
+        memories.pairId != pair ||
+        memories.month != month) {
+      return;
+    }
+    _controller.selectDay(day);
+    setState(() {
+      _panePair = pair;
+      _addingMemory = true;
+    });
+  }
+
+  Widget _album() {
+    final memories = _memories;
+    final month = _controller.month;
+    return ListView(
+      key: const Key('togetherMemoryAlbum'),
+      padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
+      children: [
+        Row(
+          children: [
+            IconButton(
+              key: const Key('albumPreviousMonth'),
+              onPressed: _controller.loading
+                  ? null
+                  : () => _controller.browseMonth(-1),
+              tooltip: 'Өмнөх сар',
+              icon: const Icon(Icons.chevron_left),
+            ),
+            Expanded(
+              child: Text(
+                '${month.year} · ${month.month} сар',
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
+            IconButton(
+              key: const Key('albumNextMonth'),
+              onPressed: _controller.loading
+                  ? null
+                  : () => _controller.browseMonth(1),
+              tooltip: 'Дараах сар',
+              icon: const Icon(Icons.chevron_right),
+            ),
+          ],
+        ),
+        const Padding(
+          padding: EdgeInsets.only(top: 4, bottom: 20),
+          child: Text(
+            'Хамтдаа өнгөрүүлсэн жижигхэн, нандин мөчүүд.',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: AppColors.muted),
+          ),
+        ),
+        if (memories?.loading == true)
+          const LinearProgressIndicator(minHeight: 2),
+        if (memories?.failure case final failure?) ...[
+          _Feedback(text: failure.message, error: true),
+          TextButton(
+            onPressed: memories!.loading ? null : memories.refresh,
+            child: const Text('Дахин шалгах'),
+          ),
+        ],
+        if (memories != null && memories.items.isNotEmpty)
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final scale = MediaQuery.textScalerOf(context).scale(14) / 14;
+              final columns = constraints.maxWidth < 290 || scale > 1.5 ? 1 : 2;
+              return GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: memories.items.length,
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: columns,
+                  crossAxisSpacing: 12,
+                  mainAxisSpacing: 16,
+                  mainAxisExtent:
+                      (constraints.maxWidth - (columns - 1) * 12) / columns +
+                      70 * scale,
+                ),
+                itemBuilder: (context, index) {
+                  final memory = memories.items[index];
+                  return InkWell(
+                    key: Key('albumMemory${memory.id}'),
+                    borderRadius: BorderRadius.circular(20),
+                    onTap: () => setState(() {
+                      _panePair = memory.pairId;
+                      _memoryId = memory.id;
+                    }),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: LayoutBuilder(
+                            builder: (context, constraints) => _AlbumCover(
+                              key: ValueKey(
+                                'album:${memory.pairId}:${memory.id}:${memory.version}',
+                              ),
+                              controller: memories,
+                              memory: memory,
+                              size: constraints.maxWidth,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          memory.title,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontWeight: FontWeight.w800),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          memory.day.replaceAll('-', '.'),
+                          style: const TextStyle(
+                            color: AppColors.muted,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              );
+            },
+          )
+        else if (memories?.loading != true)
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 42),
+            child: Column(
+              children: [
+                Icon(
+                  Icons.photo_library_outlined,
+                  size: 54,
+                  color: AppColors.pink,
+                ),
+                SizedBox(height: 16),
+                Text(
+                  'Энэ сарын анхны дурсамжаа нэмье',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                ),
+                SizedBox(height: 8),
+                Text(
+                  'Нэг зураг, хэдхэн үг. Хоёуланд чинь үлдэнэ.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: AppColors.muted),
+                ),
+              ],
+            ),
+          ),
+        const SizedBox(height: 20),
+        if (memories != null)
+          FilledButton.icon(
+            key: const Key('albumAddMemory'),
+            onPressed:
+                !memories.current ||
+                    memories.saving ||
+                    _controller.loading ||
+                    _pickingMemoryDate
+                ? null
+                : _addAlbumMemory,
+            icon: const Icon(Icons.add_photo_alternate_outlined),
+            label: const Text('Дурсамж нэмэх'),
+          ),
+      ],
+    );
+  }
+}
+
+/// Album rows can contain several pictures from the same day, while the
+/// calendar only preloads that day's cover. Fetch other thumbnails lazily and
+/// reject results if the authenticated pair or visible month changed.
+class _AlbumCover extends StatefulWidget {
+  const _AlbumCover({
+    super.key,
+    required this.controller,
+    required this.memory,
+    required this.size,
+  });
+  final MemoryController controller;
+  final SharedMemory memory;
+  final double size;
+  @override
+  State<_AlbumCover> createState() => _AlbumCoverState();
+}
+
+class _AlbumCoverState extends State<_AlbumCover> {
+  late final Future<Uint8List?> _photo = _load();
+  Future<Uint8List?> _load() async {
+    final c = widget.controller, memory = widget.memory;
+    final month = c.month;
+    if (!c.current || c.pairId != memory.pairId) return null;
+    final cached = c.thumbnails[memory.id];
+    if (cached != null) return cached;
+    try {
+      final bytes = await c.repository.photo(memory, thumbnail: true);
+      if (!mounted ||
+          !c.current ||
+          c.pairId != memory.pairId ||
+          c.month != month ||
+          bytes.length > 64 * 1024) {
+        return null;
+      }
+      return bytes;
+    } on MemoryFailure catch (failure) {
+      if (mounted &&
+          c.pairId == memory.pairId &&
+          c.month == month &&
+          [
+            'unauthenticated',
+            'pair_changed',
+            'pair_required',
+            'forbidden',
+          ].contains(failure.code)) {
+        c.bind(null, null);
+      }
+      return null;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => FutureBuilder<Uint8List?>(
+    future: _photo,
+    builder: (context, snapshot) => MemorySticker(
+      bytes:
+          widget.controller.current &&
+              widget.controller.pairId == widget.memory.pairId
+          ? snapshot.data
+          : null,
+      style: widget.memory.sticker,
+      size: widget.size,
     ),
   );
 }

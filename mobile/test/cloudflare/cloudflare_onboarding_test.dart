@@ -19,7 +19,9 @@ import 'package:hamtdaa/cloudflare/cloudflare_session_storage.dart';
 import 'package:hamtdaa/cloudflare/cloudflare_transport.dart';
 import 'package:hamtdaa/main_cloudflare.dart';
 import 'package:hamtdaa/pair/pair_models.dart';
+import 'package:hamtdaa/together/together_screen.dart';
 
+import '../billing/billing_fakes.dart' as billing;
 import 'shell_fakes.dart';
 
 class MemoryStorage implements CloudflareSessionStorage {
@@ -108,6 +110,12 @@ void main() {
     transport.handle = (_) async =>
         CloudflareResponse(200, session(id, email, token: token));
     await auth.verifyEmailCode(email, '123456');
+    transport.handle = (request) async => CloudflareResponse(
+      200,
+      request.path == '/v1/pair/status'
+          ? snapshot(id)
+          : {'ok': true, 'paired': false},
+    );
   }
 
   test('default app build points to the production API', () {
@@ -194,6 +202,8 @@ void main() {
         find.byKey(const Key('cloudflareBuildEnvironmentNotice')),
         production ? findsNothing : findsOneWidget,
       );
+      await tester.tap(find.byKey(const Key('navUs')));
+      await tester.pumpAndSettle();
       await tester.scrollUntilVisible(
         find.byKey(const Key('cloudflareSignedInEmail')),
         200,
@@ -447,6 +457,14 @@ void main() {
         ),
       );
       expect(find.text('Хоёулаа хамтдаа эхэлье'), findsOneWidget);
+      await tester.pumpAndSettle();
+      expect(find.text('Сайн уу, Ану ♡'), findsOneWidget);
+      expect(
+        find.byKey(const Key('cloudflareBottomNavigation')),
+        findsOneWidget,
+      );
+      await tester.tap(find.byKey(const Key('navUs')));
+      await tester.pumpAndSettle();
       expect(find.text('Нэвтэрсэн имэйл: a@example.com'), findsOneWidget);
       await tester.tap(find.byKey(const Key('cloudflareOpenPair')));
       await tester.pumpAndSettle();
@@ -483,6 +501,8 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('navUs')));
+      await tester.pumpAndSettle();
       await tester.scrollUntilVisible(
         find.byKey(const Key('cloudflareOpenAccount')),
         240,
@@ -518,13 +538,142 @@ void main() {
         'cloudflareOpenSubscription': SubscriptionScreen,
         'cloudflareOpenPremiumCards': PremiumCardsScreen,
       }.entries) {
-        await tester.scrollUntilVisible(find.byKey(Key(destination.key)), 240);
+        await tester.tap(
+          find.byKey(
+            Key(
+              destination.key == 'cloudflareOpenFlorists' ? 'navHome' : 'navUs',
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        await tester.scrollUntilVisible(
+          find.byKey(Key(destination.key)).hitTestable(),
+          200,
+        );
         await tester.tap(find.byKey(Key(destination.key)));
         await tester.pumpAndSettle();
         expect(find.byType(destination.value), findsOneWidget);
         await tester.tap(find.byType(BackButton));
         await tester.pumpAndSettle();
       }
+      await tester.pumpWidget(const SizedBox());
+    },
+  );
+
+  testWidgets(
+    'active Plus opens cards from subscription and returns through both routes',
+    (tester) async {
+      await tester.runAsync(() => login());
+      final repository = billing.FakeBillingRepository()
+        ..value = billing.snapshot(plus: true);
+      final store = billing.FakeStoreGateway(provider: null);
+      await tester.pumpWidget(
+        CloudflareOnboardingApp(
+          repository: auth,
+          paidFeaturesEnabled: true,
+          subscriptionControllerFactory: (_) => SubscriptionController(
+            repository: repository,
+            store: store,
+            now: () => billing.testNow,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('navUs')));
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(
+        find.byKey(const Key('cloudflareOpenSubscription')).hitTestable(),
+        240,
+      );
+      await tester.tap(find.byKey(const Key('cloudflareOpenSubscription')));
+      await tester.pumpAndSettle();
+      expect(find.byType(SubscriptionScreen), findsOneWidget);
+      await tester.scrollUntilVisible(
+        find.byKey(const Key('subscriptionOpenCards')).hitTestable(),
+        240,
+      );
+      await tester.tap(find.byKey(const Key('subscriptionOpenCards')));
+      await tester.pumpAndSettle();
+      expect(find.byType(PremiumCardsScreen), findsOneWidget);
+      expect(find.byType(SubscriptionScreen), findsNothing);
+      expect(find.byKey(const Key('cloudflareUs')), findsNothing);
+      await tester.tap(find.byType(BackButton));
+      await tester.pumpAndSettle();
+      expect(find.byType(PremiumCardsScreen), findsNothing);
+      expect(find.byType(SubscriptionScreen), findsOneWidget);
+      expect(find.byKey(const Key('cloudflareUs')), findsNothing);
+      await tester.tap(find.byType(BackButton));
+      await tester.pumpAndSettle();
+      expect(find.byType(SubscriptionScreen), findsNothing);
+      expect(find.byKey(const Key('cloudflareUs')), findsOneWidget);
+      await tester.tap(find.byKey(const Key('navHome')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('cloudflareHome')), findsOneWidget);
+      expect(find.text('Сайн уу, Ану ♡'), findsOneWidget);
+      expect(store.buys, isEmpty);
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox());
+    },
+  );
+
+  testWidgets(
+    'five bottom destinations preserve server-backed pair gating and return home',
+    (tester) async {
+      await tester.runAsync(() => login());
+      await tester.pumpWidget(
+        CloudflareOnboardingApp(
+          repository: auth,
+          subscriptionControllerFactory: shellBilling,
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Сайн уу, Ану ♡'), findsOneWidget);
+      expect(find.byKey(const Key('homeTogetherCard')), findsOneWidget);
+      for (final key in [
+        'navHome',
+        'navCalendar',
+        'navMemories',
+        'navGifts',
+        'navUs',
+      ]) {
+        expect(find.byKey(Key(key)), findsOneWidget);
+      }
+      for (final (key, section) in [
+        ('navCalendar', TogetherSection.calendar),
+        ('navMemories', TogetherSection.memories),
+      ]) {
+        await tester.tap(find.byKey(Key(key)));
+        await tester.pumpAndSettle();
+        final screen = tester.widget<TogetherScreen>(
+          find.byType(TogetherScreen),
+        );
+        expect(screen.embedded, isTrue);
+        expect(screen.initialSection, section);
+        expect(find.text('Хосоороо холбогдоорой'), findsOneWidget);
+        expect(find.byKey(const Key('togetherConnectPair')), findsOneWidget);
+        expect(find.byKey(const Key('cloudflareHome')), findsNothing);
+      }
+      expect(
+        transport.requests.where((r) => r.path == '/v1/together/state'),
+        isNotEmpty,
+      );
+      await tester.tap(find.byKey(const Key('navGifts')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('cloudflareGifts')), findsOneWidget);
+      expect(find.byKey(const Key('cloudflareOpenFlorists')), findsOneWidget);
+      expect(find.byKey(const Key('cloudflareOpenSubscription')), findsNothing);
+      expect(find.byKey(const Key('cloudflareOpenPremiumCards')), findsNothing);
+      await tester.tap(find.byKey(const Key('navUs')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('cloudflareUs')), findsOneWidget);
+      expect(find.text('Нэвтэрсэн имэйл: a@example.com'), findsOneWidget);
+      await tester.tap(find.byKey(const Key('navHome')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('cloudflareHome')), findsOneWidget);
+      expect(find.text('Сайн уу, Ану ♡'), findsOneWidget);
+      expect(find.byKey(const Key('cloudflareSignedInEmail')), findsNothing);
+      expect(find.byKey(const Key('cloudflareGifts')), findsNothing);
+      expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox());
     },
   );
@@ -545,6 +694,8 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('navUs')));
+      await tester.pumpAndSettle();
       await tester.scrollUntilVisible(
         find.byKey(const Key('cloudflareOpenAccount')),
         240,
@@ -558,6 +709,8 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byType(CloudflareAccountScreen), findsNothing);
       expect(find.byKey(const Key('cloudflareHome')), findsOneWidget);
+      await tester.tap(find.byKey(const Key('navUs')));
+      await tester.pumpAndSettle();
       expect(find.text('Нэвтэрсэн имэйл: b@example.com'), findsOneWidget);
       expect(find.text('Нэвтэрсэн имэйл: a@example.com'), findsNothing);
       expect(billing, hasLength(2));
@@ -578,6 +731,8 @@ void main() {
           subscriptionControllerFactory: shellBilling,
         ),
       );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('navUs')));
       await tester.pumpAndSettle();
       await tester.runAsync(() async {
         await tester.tap(find.byKey(const Key('cloudflareSignOut')));

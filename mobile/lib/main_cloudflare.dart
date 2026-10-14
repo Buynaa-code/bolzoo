@@ -24,6 +24,10 @@ import 'together/together_reminders.dart';
 import 'notifications/reminders.dart';
 import 'features/pair/pair_screen.dart';
 import 'features/florists/nearby_florists_screen.dart';
+import 'features/home/cloudflare_dashboard.dart';
+import 'features/home/cloudflare_home_controller.dart';
+import 'memories/memory_controller.dart';
+import 'memories/memory_repository.dart';
 import 'ui/components.dart';
 import 'ui/theme.dart';
 
@@ -155,6 +159,7 @@ class CloudflareOnboardingApp extends StatefulWidget {
     required this.repository,
     this.subscriptionControllerFactory,
     this.reminderCoordinatorFactory,
+    this.homeControllerFactory,
     this.paidFeaturesEnabled = cloudflarePaidFeaturesEnabled,
   });
   final CloudflareAuthRepository repository;
@@ -163,6 +168,8 @@ class CloudflareOnboardingApp extends StatefulWidget {
   subscriptionControllerFactory;
   final TogetherReminderCoordinator Function(CloudflareAuthRepository)?
   reminderCoordinatorFactory;
+  final CloudflareHomeController Function(CloudflareAuthRepository)?
+  homeControllerFactory;
 
   @override
   State<CloudflareOnboardingApp> createState() =>
@@ -246,6 +253,7 @@ class _CloudflareOnboardingAppState extends State<CloudflareOnboardingApp> {
             onSignOut: _signOut,
             subscriptionControllerFactory: widget.subscriptionControllerFactory,
             reminderCoordinatorFactory: widget.reminderCoordinatorFactory,
+            homeControllerFactory: widget.homeControllerFactory,
             paidFeaturesEnabled: widget.paidFeaturesEnabled,
           )
         : Scaffold(
@@ -290,6 +298,7 @@ class _CloudflareHome extends StatefulWidget {
     required this.onSignOut,
     this.subscriptionControllerFactory,
     this.reminderCoordinatorFactory,
+    this.homeControllerFactory,
     required this.paidFeaturesEnabled,
   });
   final CloudflareAuthRepository repository;
@@ -299,6 +308,8 @@ class _CloudflareHome extends StatefulWidget {
   subscriptionControllerFactory;
   final TogetherReminderCoordinator Function(CloudflareAuthRepository)?
   reminderCoordinatorFactory;
+  final CloudflareHomeController Function(CloudflareAuthRepository)?
+  homeControllerFactory;
 
   @override
   State<_CloudflareHome> createState() => _CloudflareHomeState();
@@ -309,12 +320,30 @@ class _CloudflareHomeState extends State<_CloudflareHome>
   late final SubscriptionController _billing;
   late final CloudflareCredential? _credential;
   late final TogetherReminderCoordinator _reminders;
+  late final CloudflareHomeController _home;
+  final _togetherKey = GlobalKey<TogetherScreenState>();
   bool _signingOut = false;
+  bool _foreground = true, _changingTab = false;
+  int _openRoutes = 0;
+  int _tab = 0;
 
   @override
   void initState() {
     super.initState();
     _credential = widget.repository.credential;
+    _foreground =
+        WidgetsBinding.instance.lifecycleState == null ||
+        WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed;
+    _home =
+        widget.homeControllerFactory?.call(widget.repository) ??
+        CloudflareHomeController(
+          pairs: CloudflarePairRepository(widget.repository),
+          together: CloudflareTogetherRepository(widget.repository),
+          memories: widget.repository.transport is HttpCloudflareTransport
+              ? MemoryController(CloudflareMemoryRepository(widget.repository))
+              : null,
+        );
+    _home.setVisible(_foreground);
     WidgetsBinding.instance.addObserver(this);
     _reminders =
         widget.reminderCoordinatorFactory?.call(widget.repository) ??
@@ -346,6 +375,7 @@ class _CloudflareHomeState extends State<_CloudflareHome>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _home.dispose();
     _reminders.dispose();
     _billing.dispose();
     super.dispose();
@@ -353,7 +383,28 @@ class _CloudflareHomeState extends State<_CloudflareHome>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    _reminders.setForeground(state == AppLifecycleState.resumed);
+    _foreground = state == AppLifecycleState.resumed;
+    _reminders.setForeground(_foreground);
+    _updateHomeVisibility();
+    if (mounted) setState(() {});
+  }
+
+  void _updateHomeVisibility() =>
+      _home.setVisible(_foreground && _openRoutes == 0 && _tab == 0);
+
+  Future<void> _selectTab(int tab) async {
+    if (!_current || _signingOut || _changingTab || tab == _tab) return;
+    _changingTab = true;
+    try {
+      if (_togetherKey.currentState case final screen?) {
+        if (!await screen.requestLeave()) return;
+      }
+      if (!mounted || !_current) return;
+      setState(() => _tab = tab);
+      _updateHomeVisibility();
+    } finally {
+      _changingTab = false;
+    }
   }
 
   bool get _current =>
@@ -362,11 +413,17 @@ class _CloudflareHomeState extends State<_CloudflareHome>
   void _open(Widget Function() screen) {
     if (!_current || _signingOut) return;
     final page = screen();
+    setState(() => _openRoutes++);
+    _updateHomeVisibility();
     unawaited(
       Navigator.of(
         context,
       ).push(MaterialPageRoute<void>(builder: (_) => page)).then((_) {
-        if (mounted && _current) unawaited(_reminders.refresh());
+        if (mounted && _current) {
+          setState(() => _openRoutes--);
+          _updateHomeVisibility();
+          unawaited(_reminders.refresh());
+        }
       }),
     );
   }
@@ -374,12 +431,35 @@ class _CloudflareHomeState extends State<_CloudflareHome>
   void _pairConnected() {
     if (!mounted || !_current || _signingOut) return;
     Navigator.of(context).pop();
+    setState(() => _tab = 0);
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Та хоёр холбогдлоо. Хамтын мөчүүдээ эхлүүлээрэй.'),
       ),
     );
   }
+
+  void _openPair() => _open(
+    () => PairScreen(
+      repository: CloudflarePairRepository(widget.repository),
+      onPairChanged: (_) => _reminders.observe(null),
+      onConnected: _pairConnected,
+    ),
+  );
+
+  void _openTogether(
+    TogetherSection section, {
+    String? memoryId,
+    String? eventId,
+  }) => _open(
+    () => TogetherScreen(
+      auth: widget.repository,
+      reminders: _reminders,
+      initialSection: section,
+      initialMemoryId: memoryId,
+      initialEventId: eventId,
+    ),
+  );
 
   SubscriptionLegalLinks get _legalLinks {
     final transport = widget.repository.transport;
@@ -405,122 +485,284 @@ class _CloudflareHomeState extends State<_CloudflareHome>
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(
-      title: const Text('Нандин мөч'),
-      actions: [
-        TextButton(
-          key: const Key('cloudflareSignOut'),
-          onPressed: _signingOut ? null : _signOut,
-          child: const Text('Гарах'),
-        ),
-      ],
-    ),
-    body: SafeArea(
-      child: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 680),
-          child: ListView(
-            key: const Key('cloudflareHome'),
-            padding: const EdgeInsets.all(24),
-            children: [
-              if (_nonProductionOrigin(widget.repository)
-                  case final origin?) ...[
-                _BuildEnvironmentNotice(
-                  origin: origin,
-                  padding: EdgeInsets.zero,
-                ),
-                const SizedBox(height: 20),
-              ],
-              const Center(child: HamtdaaMark(size: 72)),
-              const SizedBox(height: 24),
-              const Text(
-                'Хоёулаа хамтдаа эхэлье',
-                style: TextStyle(fontSize: 26, fontWeight: FontWeight.w900),
-              ),
-              const SizedBox(height: 12),
-              const Text(
-                'Хамтын төлөвлөгөө, өдөр тутмын яриа, дурсах нандин мөчүүд.',
-                style: TextStyle(color: AppColors.muted, height: 1.6),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'Нэвтэрсэн имэйл: ${widget.repository.current.email ?? ''}',
-                key: const Key('cloudflareSignedInEmail'),
-                style: const TextStyle(color: AppColors.muted, height: 1.5),
-              ),
-              const SizedBox(height: 24),
-              _HomeDestination(
-                id: 'cloudflareOpenPair',
-                icon: Icons.favorite_border,
-                title: 'Хосоор холбогдох',
-                description:
-                    'Нэрээ тохируулж, хоёр талын зөвшөөрлөөр холбогдоорой.',
-                onTap: () => _open(
-                  () => PairScreen(
-                    repository: CloudflarePairRepository(widget.repository),
-                    onPairChanged: (_) => _reminders.observe(null),
-                    onConnected: _pairConnected,
-                  ),
-                ),
-              ),
-              _HomeDestination(
-                id: 'cloudflareOpenTogether',
-                icon: Icons.calendar_month_outlined,
-                title: 'Бид хоёр',
-                description: 'Хамтын хуанли, хүслүүд, болзоо, өдрийн асуулт.',
-                onTap: () => _open(
-                  () => TogetherScreen(
-                    auth: widget.repository,
-                    reminders: _reminders,
-                  ),
-                ),
-              ),
-              _HomeDestination(
-                id: 'cloudflareOpenFlorists',
-                icon: Icons.local_florist_outlined,
-                title: 'Ойрхон цэцгийн дэлгүүр',
-                description: 'Цэцгэн газрын зураг дээрээс бэлгээ олоорой.',
-                onTap: () => _open(() => const NearbyFloristsScreen()),
-              ),
-              if (widget.paidFeaturesEnabled)
-                _HomeDestination(
-                  id: 'cloudflareOpenSubscription',
-                  icon: Icons.auto_awesome_outlined,
-                  title: 'Нандин мөч Plus',
-                  description: 'Багц, худалдан авалт болон эрхээ сэргээх.',
-                  onTap: () => _open(
-                    () => SubscriptionScreen(
-                      controller: _billing,
-                      legalLinks: _legalLinks,
-                      onOpenCards: _openCards,
+  Widget build(BuildContext context) => PopScope(
+    canPop: _tab == 0 || _tab == 1 || _tab == 2,
+    onPopInvokedWithResult: (didPop, _) {
+      if (!didPop && _tab > 2) unawaited(_selectTab(0));
+    },
+    child: Scaffold(
+      appBar: _tab == 1 || _tab == 2
+          ? null
+          : AppBar(
+              centerTitle: false,
+              title: const Text.rich(
+                TextSpan(
+                  children: [
+                    TextSpan(
+                      text: 'Нандин ',
+                      style: TextStyle(fontWeight: FontWeight.w900),
                     ),
-                  ),
-                ),
-              if (widget.paidFeaturesEnabled)
-                _HomeDestination(
-                  id: 'cloudflareOpenPremiumCards',
-                  icon: Icons.style_outlined,
-                  title: 'Хосын карт',
-                  description:
-                      'Plus эрхээрээ хоёуланд зориулсан карт бүтээгээрэй.',
-                  onTap: _openCards,
-                ),
-              _HomeDestination(
-                id: 'cloudflareOpenAccount',
-                icon: Icons.person_outline,
-                title: 'Миний бүртгэл',
-                description:
-                    'Мэдээллээ татах, нууцлал болон бүртгэлийн тохиргоо.',
-                onTap: () => _open(
-                  () => CloudflareAccountScreen(auth: widget.repository),
+                    TextSpan(
+                      text: 'мөч',
+                      style: TextStyle(
+                        color: AppColors.pink,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ],
+              actions: [
+                if (_tab != 4)
+                  IconButton(
+                    tooltip: 'Бидний мэдээлэл',
+                    icon: const Icon(
+                      Icons.favorite_border,
+                      color: AppColors.pink,
+                    ),
+                    onPressed: () => _selectTab(4),
+                  ),
+                if (_tab == 4)
+                  TextButton(
+                    key: const Key('cloudflareSignOut'),
+                    onPressed: _signingOut ? null : _signOut,
+                    child: const Text('Гарах'),
+                  ),
+              ],
+            ),
+      body: SafeArea(
+        top: _tab != 1 && _tab != 2,
+        bottom: false,
+        child: Visibility(
+          visible: _foreground,
+          maintainState: true,
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 680),
+              child: _body(),
+            ),
           ),
         ),
       ),
+      bottomNavigationBar: DecoratedBox(
+        decoration: const BoxDecoration(
+          border: Border(top: BorderSide(color: AppColors.line)),
+        ),
+        child: NavigationBar(
+          key: const Key('cloudflareBottomNavigation'),
+          selectedIndex: _tab,
+          onDestinationSelected: _selectTab,
+          height: 72,
+          destinations: const [
+            NavigationDestination(
+              key: Key('navHome'),
+              icon: Icon(Icons.home_outlined),
+              selectedIcon: Icon(Icons.home_rounded),
+              label: 'Нүүр',
+            ),
+            NavigationDestination(
+              key: Key('navCalendar'),
+              icon: Icon(Icons.calendar_today_outlined),
+              selectedIcon: Icon(Icons.calendar_today),
+              label: 'Хуанли',
+            ),
+            NavigationDestination(
+              key: Key('navMemories'),
+              icon: Icon(Icons.photo_library_outlined),
+              selectedIcon: Icon(Icons.photo_library_rounded),
+              label: 'Дурсамж',
+            ),
+            NavigationDestination(
+              key: Key('navGifts'),
+              icon: Icon(Icons.card_giftcard_outlined),
+              selectedIcon: Icon(Icons.card_giftcard),
+              label: 'Бэлэг',
+            ),
+            NavigationDestination(
+              key: Key('navUs'),
+              icon: Icon(Icons.people_outline),
+              selectedIcon: Icon(Icons.people),
+              label: 'Бид',
+            ),
+          ],
+        ),
+      ),
     ),
+  );
+
+  Widget _body() {
+    if (_tab == 1 || _tab == 2) {
+      return TogetherScreen(
+        key: _togetherKey,
+        auth: widget.repository,
+        reminders: _reminders,
+        embedded: true,
+        initialSection: _tab == 1
+            ? TogetherSection.calendar
+            : TogetherSection.memories,
+        onHome: () => _selectTab(0),
+        onPair: _openPair,
+      );
+    }
+    if (_tab == 3) return _gifts();
+    if (_tab == 4) return _profile();
+    return CloudflareDashboard(
+      controller: _home,
+      onPair: _openPair,
+      onCalendar: () => _openTogether(TogetherSection.calendar),
+      onMemories: () => _selectTab(2),
+      onFlorists: () => _open(() => const NearbyFloristsScreen()),
+      onDaily: () => _openTogether(TogetherSection.daily),
+      onWishes: () => _openTogether(TogetherSection.wishes),
+      onEvent: (event) =>
+          _openTogether(TogetherSection.calendar, eventId: event.id),
+      onMemory: (memory) =>
+          _openTogether(TogetherSection.memories, memoryId: memory.id),
+      environmentNotice: _environmentNotice,
+    );
+  }
+
+  Widget? get _environmentNotice {
+    final origin = _nonProductionOrigin(widget.repository);
+    return origin == null
+        ? null
+        : _BuildEnvironmentNotice(origin: origin, padding: EdgeInsets.zero);
+  }
+
+  Widget _gifts() => ListView(
+    key: const Key('cloudflareGifts'),
+    padding: const EdgeInsets.fromLTRB(22, 8, 22, 28),
+    children: [
+      const PageHeading(
+        'Жижигхэн бэлэг,\nтомхон инээмсэглэл',
+        subtitle: 'Хайртай хүндээ цаг, сэтгэлээ зориулъя.',
+      ),
+      SoftCard(
+        color: AppColors.blush,
+        child: Column(
+          children: [
+            const SizedBox(height: 16),
+            const FlowerMark(size: 100),
+            const SizedBox(height: 24),
+            const Text(
+              'Сэтгэлийн цэцэг',
+              style: TextStyle(fontSize: 25, fontWeight: FontWeight.w900),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Ойрхон цэцгийн дэлгүүрээс\nтүүнд таалагдах баглааг олоорой.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: AppColors.muted, height: 1.5),
+            ),
+            const SizedBox(height: 20),
+            FilledButton.icon(
+              key: const Key('cloudflareOpenFlorists'),
+              onPressed: () => _open(() => const NearbyFloristsScreen()),
+              icon: const Icon(Icons.location_on_outlined),
+              label: const Text('Цэцгийн дэлгүүрүүд'),
+            ),
+          ],
+        ),
+      ),
+      const SizedBox(height: 16),
+      HomeActionCard(
+        icon: Icons.send_outlined,
+        title: 'Болзоонд урья',
+        subtitle: 'Кофе, кино эсвэл хамтдаа алхах цаг.',
+        onTap: () => _openTogether(TogetherSection.calendar),
+      ),
+      const SizedBox(height: 12),
+      HomeActionCard(
+        icon: Icons.auto_awesome_outlined,
+        title: 'Хүслийг нь мэдье',
+        subtitle: 'Хамтын хүслийн жагсаалтаасаа санаа аваарай.',
+        onTap: () => _openTogether(TogetherSection.wishes),
+      ),
+      if (widget.paidFeaturesEnabled) ..._paidDestinations(),
+    ],
+  );
+
+  List<Widget> _paidDestinations() => [
+    const SizedBox(height: 16),
+    _HomeDestination(
+      id: 'cloudflareOpenSubscription',
+      icon: Icons.auto_awesome_outlined,
+      title: 'Нандин мөч Plus',
+      description: 'Багц болон эрхээ сэргээх.',
+      onTap: () => _open(
+        () => SubscriptionScreen(
+          controller: _billing,
+          legalLinks: _legalLinks,
+          onOpenCards: _openCards,
+        ),
+      ),
+    ),
+    _HomeDestination(
+      id: 'cloudflareOpenPremiumCards',
+      icon: Icons.style_outlined,
+      title: 'Хосын карт',
+      description: 'Хоёуланд зориулсан карт бүтээгээрэй.',
+      onTap: _openCards,
+    ),
+  ];
+
+  Widget _profile() => ListView(
+    key: const Key('cloudflareUs'),
+    padding: const EdgeInsets.fromLTRB(22, 10, 22, 28),
+    children: [
+      const PageHeading(
+        'Бидний булан',
+        subtitle: 'Хамтын орон зай, өөрийн тохиргоо.',
+      ),
+      SoftCard(
+        color: AppColors.blush,
+        child: Column(
+          children: [
+            const HamtdaaMark(size: 64),
+            const SizedBox(height: 12),
+            Text(
+              'Нэвтэрсэн имэйл: ${widget.repository.current.email ?? ''}',
+              key: const Key('cloudflareSignedInEmail'),
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: AppColors.muted),
+            ),
+          ],
+        ),
+      ),
+      const SizedBox(height: 18),
+      _HomeDestination(
+        id: 'cloudflareOpenPair',
+        icon: Icons.favorite_border,
+        title: 'Бидний холболт',
+        description: 'Хосоо урих, нэр болон холболтоо тохируулах.',
+        onTap: _openPair,
+      ),
+      _HomeDestination(
+        id: 'cloudflareOpenDaily',
+        icon: Icons.chat_bubble_outline,
+        title: 'Өдрийн асуулт',
+        description: 'Бие биенээ илүү сайн танья.',
+        onTap: () => _openTogether(TogetherSection.daily),
+      ),
+      _HomeDestination(
+        id: 'cloudflareOpenWishes',
+        icon: Icons.auto_awesome_outlined,
+        title: 'Бидний хүслүүд',
+        description: 'Хамтдаа биелүүлэх хүслүүдээ нэмье.',
+        onTap: () => _openTogether(TogetherSection.wishes),
+      ),
+      _HomeDestination(
+        id: 'cloudflareOpenAccount',
+        icon: Icons.person_outline,
+        title: 'Миний бүртгэл',
+        description: 'Мэдээллээ татах, нууцлал, бүртгэлээ удирдах.',
+        onTap: () =>
+            _open(() => CloudflareAccountScreen(auth: widget.repository)),
+      ),
+      if (widget.paidFeaturesEnabled) ..._paidDestinations(),
+      if (_nonProductionOrigin(widget.repository) case final origin?)
+        _BuildEnvironmentNotice(origin: origin),
+    ],
   );
 }
 

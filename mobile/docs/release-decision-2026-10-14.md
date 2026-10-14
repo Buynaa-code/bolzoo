@@ -57,11 +57,41 @@ debug build succeeded and upgraded the running emulator without clearing app
 data. Its existing signed-in session restored and the home screen was visually
 verified. This is not a new live two-phone pairing acceptance run.
 
-Latest development APK: `../../output/nandin-moch-pair-home.apk`.
+Pair-navigation development APK: `../../output/nandin-moch-pair-home.apk`.
 SHA-256: `c80b63fa22ab1ccd57dfb7eae7db04b94a5dff0a5312a1d3c6b615a648469dd7`.
 This supersedes the earlier development APK below; the earlier binary-specific
 inspection results remain historical evidence, not a fresh release audit.
 No backend was deployed by this navigation follow-up. Store gates remain open.
+
+## Cloudflare UI restoration follow-up
+
+The native entrypoint retains Cloudflare authentication and now shows the pink
+couple dashboard and five bottom destinations: Home, Calendar, Memories, Gifts
+and Us. The home summary verifies pair/calendar identities before showing real
+names, this month's next date and memories. No sample photos, anniversary date
+or day count is invented. Backgrounding, invalidation and network failures clear
+the private home projection. Pair completion still returns home.
+
+Calendar and the new monthly photo album use the existing shared repositories.
+Album additions choose a date in the displayed month, and switching tabs cannot
+silently discard photo, calendar or wish drafts. Gifts links to working florist,
+calendar invitation and wishes flows. The legacy local-only greeting editor was
+not relabeled as shared; paid entrypoints remain disabled in production.
+
+Verification: the complete Flutter suite passed **505 tests**, with four opt-in
+capture tests skipped. The final date-picker/nested-route refinements then passed
+all **55 targeted tests**; changed code/tests have no analysis findings. The
+production-configured debug APK built and upgraded the existing Android emulator
+without clearing its signed-in data. Home, calendar, album, gifts and account-tab
+rendering were inspected on the emulator; no live pairing, photo upload, purchase
+or account deletion was performed for this UI follow-up.
+
+Latest development APK: `../../output/nandin-moch-restored-ui.apk`.
+SHA-256: `4415267ef9dbc5120f2fd6d871702ce1bed08964ad49d43ce0c5b70026d0b605`.
+Logs: `../../output/ui-restoration-full-tests.log`,
+`../../output/ui-restoration-final-tests.log`, `../../output/ui-restoration-build.log`.
+This supersedes the previous debug APKs. It does not close the signing, iOS,
+16 KB or Store gates, and no backend was changed or deployed.
 
 ## Verified locally
 

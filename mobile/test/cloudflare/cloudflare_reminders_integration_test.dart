@@ -25,7 +25,28 @@ void main() {
     );
     await auth.verifyEmailCode('a@example.com', '123456');
     calendar = stateJson(events: [eventJson(status: 'accepted')]);
-    transport.onCall = (path, body) async => CloudflareResponse(200, calendar);
+    transport.onCall = (path, body) async => CloudflareResponse(
+      200,
+      path == '/v1/pair/status'
+          ? {
+              'ok': true,
+              'server_time': today.toIso8601String(),
+              'profile': {
+                'user_id': auth.current.userId,
+                'display_name': 'Ану',
+                'version': 1,
+              },
+              'pair': calendar['paired'] == true
+                  ? {
+                      'id': pairId,
+                      'version': 1,
+                      'partner': {'user_id': 'b', 'display_name': 'Тэмүүлэн'},
+                    }
+                  : null,
+              'invitations': <Object>[],
+            }
+          : calendar,
+    );
     scheduler = _Scheduler();
     preferences = _Preferences();
     coordinators.clear();
@@ -55,7 +76,10 @@ void main() {
   }
 
   Future<void> openTogether(WidgetTester tester) async {
-    await tester.ensureVisible(find.byKey(const Key('cloudflareOpenTogether')));
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('cloudflareOpenTogether')),
+      180,
+    );
     await tester.tap(find.byKey(const Key('cloudflareOpenTogether')));
     await tester.pumpAndSettle();
   }
@@ -109,7 +133,9 @@ void main() {
       await mount(tester);
       expect(scheduler.notices, hasLength(1));
       await openTogether(tester);
-      await tester.runAsync(() => auth.verifyEmailCode('b@example.com', '123456'));
+      await tester.runAsync(
+        () => auth.verifyEmailCode('b@example.com', '123456'),
+      );
       await tester.pumpAndSettle();
       expect(find.byKey(const Key('cloudflareHome')), findsOneWidget);
       expect(find.byKey(const Key('togetherReminders')), findsNothing);
