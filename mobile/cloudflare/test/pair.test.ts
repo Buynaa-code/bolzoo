@@ -181,6 +181,67 @@ describe('PairService using migrated D1', () => {
     expect((await request(b, second)).invitation.id).toBe(second.invitation.id);
   });
 
+  it.each(['disabled', 'unverified', 'blocked'] as const)(
+    'permits a new request after an earlier pending invite becomes invisible because its creator is %s', async (reason) => {
+      const a = await user(); const b = await user(); const c = await user();
+      const first = await create(a); const oldPending = await request(b, first);
+      if (reason === 'disabled') {
+        await env.DB.prepare("UPDATE hamtdaa_profiles SET account_state='disabled' WHERE user_id=?").bind(a).run();
+      } else if (reason === 'unverified') {
+        await env.DB.prepare('UPDATE "user" SET emailVerified=0 WHERE id=?').bind(a).run();
+      } else {
+        await env.DB.prepare('INSERT INTO hamtdaa_blocks(blocker_id,blocked_id) VALUES(?,?)').bind(a, b).run();
+      }
+      expect(await service().status(b)).toMatchObject({ pair: null, invitations: [] });
+      const replacement = await create(c);
+      expect((await service().preview(b, replacement.secret)).ok).toBe(true);
+      const pending = await request(b, replacement);
+      expect(pending.invitation.id).toBe(replacement.invitation.id);
+      expect(await env.DB.prepare('SELECT state,version FROM hamtdaa_pair_invitations WHERE id=?')
+        .bind(first.invitation.id).first()).toEqual({ state: 'revoked', version: oldPending.invitation.version + 1 });
+      expect(await service().execute(b, 'hamtdaa_request_pair', oldPending.params))
+        .toMatchObject({ ok: false, code: 'invalid_state' });
+      await confirm(c, pending.invitation);
+    },
+  );
+
+  it('does not replace another live pending request or consume the new invite', async () => {
+    const a = await user(); const b = await user(); const c = await user();
+    const first = await create(a); const pending = await request(b, first);
+    const replacement = await create(c);
+    expect(await service().execute(b, 'hamtdaa_request_pair', {
+      p_command_id: command(), p_token: replacement.secret, p_expected_version: replacement.invitation.version,
+    })).toMatchObject({ ok: false, code: 'invalid_state' });
+    expect(await service().status(b)).toMatchObject({ invitations: [{ id: first.invitation.id, state: 'awaiting_creator' }] });
+    expect(await service().status(c)).toMatchObject({ invitations: [{ id: replacement.invitation.id, state: 'open' }] });
+    await confirm(a, pending.invitation);
+  });
+
+  it('preserves a hidden pending request that becomes eligible again before the replacement commits', async () => {
+    const a = await user(); const b = await user(); const c = await user();
+    const first = await create(a); await request(b, first);
+    await env.DB.prepare("UPDATE hamtdaa_profiles SET account_state='disabled' WHERE user_id=?").bind(a).run();
+    const replacement = await create(c);
+    let intercepted = false;
+    const racingDb = new Proxy(env.DB, { get(target, key) {
+      if (key === 'batch') return async (statements: D1PreparedStatement[]) => {
+        if (!intercepted) {
+          intercepted = true;
+          await target.prepare("UPDATE hamtdaa_profiles SET account_state='active' WHERE user_id=?").bind(a).run();
+        }
+        return target.batch(statements);
+      };
+      const value = Reflect.get(target, key); return typeof value === 'function' ? value.bind(target) : value;
+    } });
+    const params = { p_command_id: command(), p_token: replacement.secret, p_expected_version: 1 };
+    expect(await new PairService(racingDb).execute(b, 'hamtdaa_request_pair', params))
+      .toMatchObject({ ok: false, code: 'conflict', retryable: true });
+    expect(await receiptCount(b, params.p_command_id)).toBe(0);
+    expect(await service().status(b)).toMatchObject({ invitations: [{ id: first.invitation.id, version: 2, state: 'awaiting_creator' }] });
+    expect(await service().status(c)).toMatchObject({ invitations: [{ id: replacement.invitation.id, version: 1, state: 'open' }] });
+    expect((await env.DB.prepare('SELECT id FROM hamtdaa_pair_transition_guards').all()).results).toHaveLength(0);
+  });
+
   it('unlink immediately removes both members access; replay never resurrects the old pair', async () => {
     const a = await user(); const b = await user(); const c = await user();
     const { pair } = await linked(a, b);

@@ -472,6 +472,31 @@ void main() {
   );
 
   testWidgets(
+    'release home hides paid routes while free destinations remain usable',
+    (tester) async {
+      expect(cloudflarePaidFeaturesEnabled, isFalse);
+      await tester.runAsync(() => login());
+      await tester.pumpWidget(
+        CloudflareOnboardingApp(
+          repository: auth,
+          subscriptionControllerFactory: shellBilling,
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(
+        find.byKey(const Key('cloudflareOpenAccount')),
+        240,
+      );
+      expect(find.byKey(const Key('cloudflareOpenSubscription')), findsNothing);
+      expect(find.byKey(const Key('cloudflareOpenPremiumCards')), findsNothing);
+      await tester.tap(find.byKey(const Key('cloudflareOpenAccount')));
+      await tester.pumpAndSettle();
+      expect(find.byType(CloudflareAccountScreen), findsOneWidget);
+      await tester.pumpWidget(const SizedBox());
+    },
+  );
+
+  testWidgets(
     'Cloudflare home opens florists, account, subscription and premium cards',
     (tester) async {
       await tester.runAsync(() => login());
@@ -479,6 +504,7 @@ void main() {
         CloudflareOnboardingApp(
           repository: auth,
           subscriptionControllerFactory: shellBilling,
+          paidFeaturesEnabled: true,
         ),
       );
       await tester.pumpAndSettle();

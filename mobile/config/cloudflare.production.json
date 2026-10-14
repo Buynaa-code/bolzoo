@@ -1,4 +1,5 @@
 {
   "CLOUDFLARE_API_URL": "https://hamtdaa-api-production.mendmedey.workers.dev",
-  "CLOUDFLARE_MEMORIES_API_URL": "https://nandin-moch-memories-production.mendmedey.workers.dev"
+  "CLOUDFLARE_MEMORIES_API_URL": "https://nandin-moch-memories-production.mendmedey.workers.dev",
+  "NANDIN_ENABLE_PAID_FEATURES": false
 }

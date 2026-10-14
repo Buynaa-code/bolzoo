@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show PlatformException;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hamtdaa/memories/memory_detail.dart';
 import 'package:hamtdaa/memories/memory_editor.dart';
@@ -67,6 +68,61 @@ Future<void> _choose(WidgetTester tester) async {
 }
 
 void main() {
+  testWidgets(
+    'photo permission refusal keeps the draft and permits a later selection',
+    (tester) async {
+      var picks = 0;
+      final saved = <MemoryDraft>[];
+      await _mount(
+        tester,
+        MemoryEditor(
+          day: '2026-10-14',
+          picker: () async {
+            if (++picks == 1) {
+              throw PlatformException(code: 'photo_access_denied');
+            }
+            return _photo();
+          },
+          onSave: (draft) async {
+            saved.add(draft);
+            return true;
+          },
+          onCancel: () {},
+        ),
+      );
+      await tester.enterText(
+        find.byKey(const Key('memoryTitle')),
+        'Бидний өдөр',
+      );
+      await tester.enterText(
+        find.byKey(const Key('memoryNote')),
+        'Хамтдаа алхсан.',
+      );
+      await _choose(tester);
+      expect(
+        find.text(
+          'Зураг сонгож чадсангүй. Зургийн хандалтаа шалгаад дахин оролдоорой.',
+        ),
+        findsOneWidget,
+      );
+      expect(saved, isEmpty);
+      expect(
+        tester
+            .widget<OutlinedButton>(find.byKey(const Key('memoryChoosePhoto')))
+            .onPressed,
+        isNotNull,
+      );
+      await _choose(tester);
+      expect(find.byKey(const Key('memoryEditorError')), findsNothing);
+      await _tap(tester, 'memorySave');
+      expect(saved, hasLength(1));
+      expect(saved.single.title, 'Бидний өдөр');
+      expect(saved.single.note, 'Хамтдаа алхсан.');
+      expect(saved.single.day, '2026-10-14');
+      expect(tester.takeException(), isNull);
+    },
+  );
+
   testWidgets(
     'editor validates required title and photo; picker cancel remains usable',
     (tester) async {

@@ -1,4 +1,8 @@
-# Production readiness — updated 2026-10-12
+# Production readiness — updated 2026-10-14
+
+For the latest release decision, signing/account findings, final 474-test Flutter
+audit and Store preparation, see [the native release decision](release-decision-2026-10-14.md).
+Historical entries below are not a Store-release approval.
 
 **Status: not ready for unrestricted public or paid launch.** The current Cloudflare app has working local checks and live photo/wish services, but this is not an App Store/Google Play release certification. Do not enable paid plans or submit the restored legacy UI based solely on a debug build.
 

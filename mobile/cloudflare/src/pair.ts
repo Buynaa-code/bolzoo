@@ -229,11 +229,19 @@ export class PairService {
     if (row.expires_at <= now()) return reject(operation === 'request' ? 'not_found' : 'expired');
     if (row.version !== params.p_expected_version) return reject('conflict');
     if (operation === 'request') {
-      const pending = await this.statement("SELECT 1 FROM hamtdaa_pair_invitations WHERE requester_id=? AND state='awaiting_creator' AND expires_at>?", actor, now()).first();
+      const pending = await this.statement(`SELECT 1 FROM hamtdaa_pair_invitations i
+        WHERE i.requester_id=? AND i.state='awaiting_creator' AND ${liveInvitation}`, actor).first();
       if (pending) return reject('invalid_state');
       return this.commit(actor, command, hash, { ok: true, kind: 'invitation', id: row.id }, [
         ...this.invitationGuard(row), ...this.alive([actor, row.creator_id]), ...this.free([actor, row.creator_id]), ...this.notBlocked(actor, row.creator_id),
-        this.statement("UPDATE hamtdaa_pair_invitations SET state='expired',version=version+1 WHERE requester_id=? AND state='awaiting_creator' AND expires_at<=?", actor, now()),
+        // Status omits invitations whose consent can no longer complete. Retire
+        // those in the same transaction so the unique pending-request index does
+        // not strand this actor behind a hidden invite. Recheck live eligibility
+        // here: an invitation that recovered since the read must still block.
+        this.statement(`UPDATE hamtdaa_pair_invitations
+          SET state=CASE WHEN expires_at<=CAST(strftime('%s','now') AS INTEGER) THEN 'expired' ELSE 'revoked' END,version=version+1
+          WHERE id IN (SELECT i.id FROM hamtdaa_pair_invitations i
+            WHERE i.requester_id=? AND i.state='awaiting_creator' AND NOT (${liveInvitation}))`, actor),
         this.statement("UPDATE hamtdaa_pair_invitations SET requester_id=?,state='awaiting_creator',requested_at=?,version=version+1 WHERE id=?", actor, now(), row.id),
       ]);
     }

@@ -178,6 +178,18 @@ void main() {
   ) async {
     await mount(tester);
     await openDelete(tester);
+    expect(
+      find.textContaining('бүх зурагтай дурсамж, хамтын хүсэл'),
+      findsOneWidget,
+    );
+    expect(
+      find.textContaining('хоёр талын аппд нээгдэхгүй болж устгагдана'),
+      findsOneWidget,
+    );
+    expect(
+      find.textContaining('Хэрэгтэй мэдээллээ эхлээд татаж аваарай'),
+      findsOneWidget,
+    );
     await tester.enterText(find.byType(TextField), 'DELETE');
     await tester.tap(find.text('Устгах'));
     await tester.pump();

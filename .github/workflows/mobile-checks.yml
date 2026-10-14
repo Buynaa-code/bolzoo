@@ -73,7 +73,9 @@ jobs:
             test/account/cloudflare_account_export_test.dart test/auth/auth_screen_test.dart
       - name: Build Android debug integration
         if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
-        run: flutter build apk --debug --no-pub --target-platform android-arm64
+        run: >-
+          flutter build apk --debug --no-pub --target-platform android-arm64
+          --dart-define-from-file=config/cloudflare.production.json
 
   full-flutter-audit:
     name: Full restored Flutter audit

@@ -33,6 +33,12 @@ const cloudflareDefaultApiUrl = String.fromEnvironment(
   'CLOUDFLARE_API_URL',
   defaultValue: cloudflareProductionApiUrl,
 );
+// Store release candidates hide unfinished paid surfaces. Enabling the UI
+// does not grant an entitlement or bypass the server's billing availability.
+const cloudflarePaidFeaturesEnabled = bool.fromEnvironment(
+  'NANDIN_ENABLE_PAID_FEATURES',
+  defaultValue: false,
+);
 
 /// Default Cloudflare entrypoint. Private routes belong to one login session.
 Future<void> main() async {
@@ -149,8 +155,10 @@ class CloudflareOnboardingApp extends StatefulWidget {
     required this.repository,
     this.subscriptionControllerFactory,
     this.reminderCoordinatorFactory,
+    this.paidFeaturesEnabled = cloudflarePaidFeaturesEnabled,
   });
   final CloudflareAuthRepository repository;
+  final bool paidFeaturesEnabled;
   final SubscriptionController Function(CloudflareAuthRepository)?
   subscriptionControllerFactory;
   final TogetherReminderCoordinator Function(CloudflareAuthRepository)?
@@ -238,6 +246,7 @@ class _CloudflareOnboardingAppState extends State<CloudflareOnboardingApp> {
             onSignOut: _signOut,
             subscriptionControllerFactory: widget.subscriptionControllerFactory,
             reminderCoordinatorFactory: widget.reminderCoordinatorFactory,
+            paidFeaturesEnabled: widget.paidFeaturesEnabled,
           )
         : Scaffold(
             body: Column(
@@ -281,8 +290,10 @@ class _CloudflareHome extends StatefulWidget {
     required this.onSignOut,
     this.subscriptionControllerFactory,
     this.reminderCoordinatorFactory,
+    required this.paidFeaturesEnabled,
   });
   final CloudflareAuthRepository repository;
+  final bool paidFeaturesEnabled;
   final Future<void> Function() onSignOut;
   final SubscriptionController Function(CloudflareAuthRepository)?
   subscriptionControllerFactory;
@@ -371,7 +382,10 @@ class _CloudflareHomeState extends State<_CloudflareHome>
     );
   }
 
-  void _openCards() => _open(() => PremiumCardsScreen(auth: widget.repository));
+  void _openCards() {
+    if (!widget.paidFeaturesEnabled) return;
+    _open(() => PremiumCardsScreen(auth: widget.repository));
+  }
 
   Future<void> _signOut() async {
     if (_signingOut) return;
@@ -458,27 +472,29 @@ class _CloudflareHomeState extends State<_CloudflareHome>
                 description: 'Цэцгэн газрын зураг дээрээс бэлгээ олоорой.',
                 onTap: () => _open(() => const NearbyFloristsScreen()),
               ),
-              _HomeDestination(
-                id: 'cloudflareOpenSubscription',
-                icon: Icons.auto_awesome_outlined,
-                title: 'Нандин мөч Plus',
-                description: 'Багц, худалдан авалт болон эрхээ сэргээх.',
-                onTap: () => _open(
-                  () => SubscriptionScreen(
-                    controller: _billing,
-                    legalLinks: _legalLinks,
-                    onOpenCards: _openCards,
+              if (widget.paidFeaturesEnabled)
+                _HomeDestination(
+                  id: 'cloudflareOpenSubscription',
+                  icon: Icons.auto_awesome_outlined,
+                  title: 'Нандин мөч Plus',
+                  description: 'Багц, худалдан авалт болон эрхээ сэргээх.',
+                  onTap: () => _open(
+                    () => SubscriptionScreen(
+                      controller: _billing,
+                      legalLinks: _legalLinks,
+                      onOpenCards: _openCards,
+                    ),
                   ),
                 ),
-              ),
-              _HomeDestination(
-                id: 'cloudflareOpenPremiumCards',
-                icon: Icons.style_outlined,
-                title: 'Хосын карт',
-                description:
-                    'Plus эрхээрээ хоёуланд зориулсан карт бүтээгээрэй.',
-                onTap: _openCards,
-              ),
+              if (widget.paidFeaturesEnabled)
+                _HomeDestination(
+                  id: 'cloudflareOpenPremiumCards',
+                  icon: Icons.style_outlined,
+                  title: 'Хосын карт',
+                  description:
+                      'Plus эрхээрээ хоёуланд зориулсан карт бүтээгээрэй.',
+                  onTap: _openCards,
+                ),
               _HomeDestination(
                 id: 'cloudflareOpenAccount',
                 icon: Icons.person_outline,

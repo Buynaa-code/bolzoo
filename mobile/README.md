@@ -11,6 +11,8 @@ flutter run -d <device-id>
 
 `lib/main.dart` starts Cloudflare mode. The default API is `https://hamtdaa-api-production.mendmedey.workers.dev`; override it with `--dart-define-from-file=config/cloudflare.production.json` or a staging configuration. No secret belongs in these JSON files.
 
+Store release candidates keep `NANDIN_ENABLE_PAID_FEATURES=false` (the compiled default and the production configuration). This hides Plus and premium-card entry points until their release gates are complete. The existing session-owned billing listener still reconciles unfinished transactions; the UI flag never grants access or overrides the server's disabled purchase providers. Enable the flag only in an explicitly validated paid release.
+
 Android requires JDK 17 and the Android SDK. On this Mac the JDK is `/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home`.
 iOS requires the full Xcode application, an available device or simulator, and appropriate signing. Only the launcher assets and project configuration have been prepared here; iOS has not been rebuilt on this machine.
 
@@ -73,5 +75,10 @@ The backend is an additive `0002_wishes.sql` migration and `/v1/wishes/*` routes
 Next feature sequence: (1) shared wishes and mutual date choice (implemented and deployed; paired-device validation pending); (2) future-opening letters; (3) memory reactions, partner notes and monthly album; (4) shared flower garden and home-screen widget. Later features are planned, not yet implemented.
 
 ## Release gate
+
+The latest [October 14 native release decision](docs/release-decision-2026-10-14.md)
+records 474 passing Flutter tests, 208 backend tests, the disabled paid UI, and
+the remaining account/signing/device gates. Store listing, privacy worksheets and
+reviewer/device instructions are in [store-release/](store-release/README.md).
 
 The current production-readiness findings are in `docs/production-readiness.md`. Android release builds require the existing upload key and refuse debug signing. The recovered `cloudflare/` authentication source is reproducible; read its recovery and staging-acceptance notes before deployment. The 2026-10-12 full Flutter audit, current-app Android debug build and both backend checks passed in [GitHub Actions run 38229271500](https://github.com/Buynaa-code/bolzoo/actions/runs/38229271500). GitHub Actions checks the current and restored scopes separately and never deploys. Real two-phone acceptance, signed Store builds and billing verification remain release gates.
