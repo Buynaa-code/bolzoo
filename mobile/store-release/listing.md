@@ -18,7 +18,7 @@ Only use this copy for a build that passes the corresponding acceptance checks. 
 | Account deletion URL | https://hamtdaa-api-production.mendmedey.workers.dev/delete-account |
 | Terms URL | https://hamtdaa-api-production.mendmedey.workers.dev/terms |
 
-The four API-hosted pages returned HTTP 200 in a public read-only check on 2026-10-14, but their then-current copy still used the old Хамтдаа name and omitted newer data flows. The privacy/native terms/support/deletion copy is now corrected in local source, not deployed. Recheck public content after deployment. URL success alone is not policy approval.
+The four production API-hosted pages returned HTTP 200 in a public read-only check on 2026-10-14, but their copy still used the old Хамтдаа name and omitted newer data flows. The corrected privacy/native terms/support/deletion copy is deployed to staging only, version `7d0a527a-faa3-47ac-a398-f27b70c93dca`. Recheck production content after the gated production rollout. URL success alone is not policy approval.
 
 ## Монгол тайлбар
 

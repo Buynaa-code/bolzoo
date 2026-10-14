@@ -2,7 +2,7 @@
 
 These paragraphs were applied to runtime sources, reviewed and tested, and deployed to staging by the release owner on October 14. Production policy rollout remains gated on authenticated staging acceptance. This document preserves the copy proposal and evidence. Preserve API identifiers and routes; update the visible product name to **Нандин мөч**.
 
-Status update: the release owner incorporated the main paragraphs into the privacy/native terms/support/deletion runtime sources on 2026-10-14. Cross-reading found these consistent with the implemented data flows. They remain **local and not deployed**. This proposal is retained as audit context; the runtime source is now the implementation record. Operational retention and final provider classifications still require confirmation. The separate web payment terms must also describe current free features accurately before deployment.
+Status update: the release owner incorporated the main paragraphs into the privacy/native terms/support/deletion runtime sources on 2026-10-14. Cross-reading found these consistent with the implemented data flows. They are **deployed to staging only**, together with corrected web payment terms; production remains unchanged. This proposal is retained as audit context; the runtime source is now the implementation record. Operational retention and final provider classifications still require confirmation.
 
 Source locations: `cloudflare/src/billing_pages.ts` (`privacy`, `nativeTerms`, visible document branding), `cloudflare/src/account_pages.ts` (`deletionHtml`, `support`). Mobile account-dialog copy is owned by the mobile audit agent.
 

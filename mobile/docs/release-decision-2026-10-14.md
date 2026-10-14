@@ -34,6 +34,13 @@ No App Store / Play review submission has been made.
   [Release branch CI runs](https://github.com/Buynaa-code/bolzoo/actions/workflows/mobile-checks.yml?query=branch%3Acodex%2Fnative-release-20261014)
   retain the first failure and subsequent verification results.
 
+The verification rerun for code/test commit `8f39c0a` completed successfully:
+[GitHub Actions run 38508662776](https://github.com/Buynaa-code/bolzoo/actions/runs/38508662776).
+All four jobs passed: the full Flutter audit, current app flows plus the
+production-configured Android debug build, auth/pairing/account/billing checks,
+and memories/wishes checks. This does not satisfy the device/signing/Store gates
+below. Subsequent report-only edits do not change the verified app or backend.
+
 ## Verified locally
 
 | Gate | Evidence |
