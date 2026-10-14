@@ -25,6 +25,14 @@ No App Store / Play review submission has been made.
 - Corrected account-deletion consequences and public-page source for the current
   photos, wishes, local reminders, florist map, data retention and app name.
 - CI Android builds now use the explicit production configuration.
+- The first GitHub run passed both backend jobs and the current app/Android build,
+  but exposed a timing-dependent account-deletion test in the full Flutter suite.
+  The test assumed filesystem cleanup completed within 30 ms; it now waits for
+  the repository call and drains both concurrent retries before temporary-file
+  teardown. The targeted four-test file passes locally. This is a test-only
+  synchronization fix, not a newly observed production deletion failure.
+  [Release branch CI runs](https://github.com/Buynaa-code/bolzoo/actions/workflows/mobile-checks.yml?query=branch%3Acodex%2Fnative-release-20261014)
+  retain the first failure and subsequent verification results.
 
 ## Verified locally
 

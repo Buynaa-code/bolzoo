@@ -12,11 +12,13 @@ const user = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
 class _Repository implements AccountRepository {
   int calls = 0;
   bool fail = false;
+  Completer<void>? began;
   Completer<void>? barrier;
   @override String get userId => user;
   @override bool sessionCurrent = true;
   @override Future<void> deleteAccount() async {
     calls++;
+    began?.complete();
     if (barrier != null) await barrier!.future;
     if (fail) throw const AccountOperationException('network');
   }
@@ -55,12 +57,20 @@ void main() {
     expect(await store.directory.exists(), isFalse);
     expect(controller.data.profile.name, isEmpty);
     expect(signouts, 0);
-    repository..fail = false..barrier = Completer<void>();
+    repository
+      ..fail = false
+      ..began = Completer<void>()
+      ..barrier = Completer<void>();
     final first = delete(); final second = delete();
-    await Future<void>.delayed(const Duration(milliseconds:30));
-    expect(repository.calls, 2);
-    repository.barrier!.complete();
-    await Future.wait([first, second]);
+    try {
+      // Wait for the durable local cleanup, whose filesystem latency varies
+      // under CI load, before checking that concurrent retries are coalesced.
+      await repository.began!.future.timeout(const Duration(seconds: 10));
+      expect(repository.calls, 2);
+    } finally {
+      repository.barrier!.complete();
+      await Future.wait([first, second]);
+    }
     expect(signouts, 1); expect(reminders, 2);
     expect(await coordinator.pending(user), isFalse);
     controller.dispose();
