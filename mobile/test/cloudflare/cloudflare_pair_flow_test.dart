@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hamtdaa/cloudflare/cloudflare_auth_repository.dart';
 import 'package:hamtdaa/cloudflare/cloudflare_session_storage.dart';
 import 'package:hamtdaa/cloudflare/cloudflare_transport.dart';
+import 'package:hamtdaa/features/pair/pair_screen.dart';
 import 'package:hamtdaa/main_cloudflare.dart';
 
 import 'shell_fakes.dart';
@@ -68,9 +69,9 @@ class _PairServer implements CloudflareTransport {
         'user': {'id': actor, 'email': '$actor@example.com'},
       });
     }
-    expect(token, anyOf('a', 'b'));
+    expectSync(token, anyOf('a', 'b'));
     if (path == '/v1/pair/status') {
-      expect(method, 'GET');
+      expectSync(method, 'GET');
       return CloudflareResponse(200, {
         'ok': true,
         'server_time': DateTime.now().toUtc().toIso8601String(),
@@ -94,16 +95,16 @@ class _PairServer implements CloudflareTransport {
             : [],
       });
     }
-    expect(method, 'POST');
+    expectSync(method, 'POST');
     if (path == '/v1/pair/commands/update-name') {
-      expect(body!['expected_version'], 1);
+      expectSync(body!['expected_version'], 1);
       names[token!] = body['display_name'] as String;
       return const CloudflareResponse(200, {'ok': true});
     }
     if (path == '/v1/pair/commands/create') {
-      expect(token, 'a');
-      expect(body!.containsKey('token'), isFalse);
-      expect(body['command_id'], isNotEmpty);
+      expectSync(token, 'a');
+      expectSync(body!.containsKey('token'), isFalse);
+      expectSync(body['command_id'], isNotEmpty);
       tokenHash = body['token_hash'] as String;
       phase = 1;
       return CloudflareResponse(200, {
@@ -112,21 +113,21 @@ class _PairServer implements CloudflareTransport {
       });
     }
     if (path == '/v1/pair/preview') {
-      expect(token, 'b');
-      expect(
+      expectSync(token, 'b');
+      expectSync(
         sha256.convert(utf8.encode(body!['token'] as String)).toString(),
         tokenHash,
       );
       // Preview must leave the pair untouched.
-      expect(phase, 1);
+      expectSync(phase, 1);
       return CloudflareResponse(200, {
         'ok': true,
         'invitation': invitation(token!, preview: true),
       });
     }
     if (path == '/v1/pair/commands/request') {
-      expect(token, 'b');
-      expect(body!['expected_version'], 1);
+      expectSync(token, 'b');
+      expectSync(body!['expected_version'], 1);
       phase = 2;
       version = 2;
       return CloudflareResponse(200, {
@@ -135,16 +136,16 @@ class _PairServer implements CloudflareTransport {
       });
     }
     if (path == '/v1/pair/commands/confirm') {
-      expect(token, 'a');
-      expect(body!['expected_version'], 2);
-      expect(body['invitation_id'], 'invitation-1');
+      expectSync(token, 'a');
+      expectSync(body!['expected_version'], 2);
+      expectSync(body['invitation_id'], 'invitation-1');
       phase = 3;
       return const CloudflareResponse(200, {'ok': true});
     }
     if (path == '/v1/pair/commands/unlink') {
-      expect(token, 'b');
-      expect(body!['expected_version'], 1);
-      expect(body['pair_id'], 'pair-1');
+      expectSync(token, 'b');
+      expectSync(body!['expected_version'], 1);
+      expectSync(body['pair_id'], 'pair-1');
       phase = 4;
       return const CloudflareResponse(200, {'ok': true});
     }
@@ -229,7 +230,17 @@ void main() {
       expect(server.phase, 2);
       await tester.tap(find.text('Зөвшөөрч холбогдох'));
       await tester.pumpAndSettle();
-      expect(find.text('Та хоёр холбогдлоо'), findsOneWidget);
+      expect(find.byKey(const Key('cloudflareHome')), findsOneWidget);
+      expect(find.byType(PairScreen), findsNothing);
+      expect(
+        find.text('Та хоёр холбогдлоо. Хамтын мөчүүдээ эхлүүлээрэй.'),
+        findsOneWidget,
+      );
+
+      // A newly connected route returns home, but opening an existing pair
+      // must still allow the owner to inspect and manage the connection.
+      await tester.tap(find.byKey(const Key('cloudflareOpenPair')));
+      await tester.pumpAndSettle();
       expect(
         tester.widget<Text>(find.byKey(const Key('pairPartnerName'))).data,
         'Тэмүүлэн',
@@ -255,6 +266,125 @@ void main() {
       await second.dispose();
     },
   );
+
+  for (final source in ['refresh', 'poll', 'resume']) {
+    testWidgets(
+      'requester returns home when $source observes the creator confirmation',
+      (tester) async {
+        final server = _PairServer()
+          ..phase = 2
+          ..version = 2;
+        final auth = CloudflareAuthRepository(
+          transport: server,
+          storage: _MemoryStorage(),
+        );
+        addTearDown(auth.dispose);
+        await auth.verifyEmailCode('b@example.com', '654321');
+        await tester.pumpWidget(
+          CloudflareOnboardingApp(
+            repository: auth,
+            subscriptionControllerFactory: shellBilling,
+          ),
+        );
+        await tester.tap(find.byKey(const Key('cloudflareOpenPair')));
+        await tester.pumpAndSettle();
+        expect(find.text('Зөвшөөрлийг хүлээж байна'), findsOneWidget);
+        expect(find.byKey(const Key('cloudflareHome')), findsNothing);
+
+        // The other phone accepts while the requester is waiting here.
+        if (source == 'resume') {
+          tester.binding.handleAppLifecycleStateChanged(
+            AppLifecycleState.paused,
+          );
+          await tester.pump();
+        }
+        server.phase = 3;
+        if (source == 'refresh') {
+          await tester.tap(find.byKey(const Key('pairRefresh')));
+        } else if (source == 'poll') {
+          await tester.pump(const Duration(seconds: 10));
+        } else {
+          tester.binding.handleAppLifecycleStateChanged(
+            AppLifecycleState.resumed,
+          );
+        }
+        await tester.pumpAndSettle();
+
+        expect(find.byKey(const Key('cloudflareHome')), findsOneWidget);
+        expect(find.byType(PairScreen), findsNothing);
+        expect(
+          find.text('Та хоёр холбогдлоо. Хамтын мөчүүдээ эхлүүлээрэй.'),
+          findsOneWidget,
+        );
+        expect(
+          server.requests.where(
+            (request) => request.path == '/v1/pair/commands/confirm',
+          ),
+          isEmpty,
+        );
+        await tester.pumpWidget(const SizedBox());
+        await auth.dispose();
+      },
+    );
+  }
+
+  testWidgets('existing pair stays manageable and can explicitly return home', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(430, 1600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final server = _PairServer()..phase = 3;
+    final auth = CloudflareAuthRepository(
+      transport: server,
+      storage: _MemoryStorage(),
+    );
+    addTearDown(auth.dispose);
+    await auth.verifyEmailCode('b@example.com', '654321');
+    await tester.pumpWidget(
+      CloudflareOnboardingApp(
+        repository: auth,
+        subscriptionControllerFactory: shellBilling,
+      ),
+    );
+    await tester.tap(find.byKey(const Key('cloudflareOpenPair')));
+    await tester.pumpAndSettle();
+    expect(find.byType(PairScreen), findsOneWidget);
+    expect(find.byKey(const Key('pairPartnerName')), findsOneWidget);
+    expect(find.byKey(const Key('pairUnlink')), findsOneWidget);
+    expect(find.byKey(const Key('cloudflareHome')), findsNothing);
+
+    // Repeated status reads and foreground changes must not misidentify an
+    // already active connection as a new pairing and eject this settings page.
+    await tester.tap(find.byKey(const Key('pairRefresh')));
+    await tester.pumpAndSettle();
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+    await tester.pump();
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    await tester.pumpAndSettle();
+    expect(
+      find.byKey(const Key('pairPartnerName')),
+      findsOneWidget,
+      reason: 'Active pair must reload immediately after resuming',
+    );
+    await tester.pump(const Duration(seconds: 10));
+    await tester.pumpAndSettle();
+    expect(find.byType(PairScreen), findsOneWidget);
+    expect(find.byKey(const Key('pairUnlink')), findsOneWidget);
+
+    await tester.ensureVisible(find.text('Нүүр хуудас руу'));
+    await tester.tap(find.text('Нүүр хуудас руу'));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('cloudflareHome')), findsOneWidget);
+    expect(find.byType(PairScreen), findsNothing);
+    expect(
+      server.requests.where((request) => request.path.contains('/commands/')),
+      isEmpty,
+    );
+    await tester.pumpWidget(const SizedBox());
+    await auth.dispose();
+  });
 }
 
 Finder namesOnScreen(String value) => find.text(value);

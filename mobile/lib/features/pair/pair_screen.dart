@@ -13,11 +13,20 @@ final pairRouteObserver = RouteObserver<PageRoute<dynamic>>();
 
 /// Give each route a new account-bound repository. This route owns its lifetime.
 class PairScreen extends StatefulWidget {
-  const PairScreen({super.key, required this.repository, this.onPairChanged});
+  const PairScreen({
+    super.key,
+    required this.repository,
+    this.onPairChanged,
+    this.onConnected,
+  });
   final PairRepository repository;
 
   /// Reports resolved pairing changes and cleared private state to the owner.
   final ValueChanged<PairSnapshot?>? onPairChanged;
+
+  /// Called once when this screen observes a new, server-confirmed connection.
+  /// An already-paired account may still open this screen to manage its link.
+  final VoidCallback? onConnected;
 
   @override
   State<PairScreen> createState() => _PairScreenState();
@@ -33,6 +42,9 @@ class _PairScreenState extends State<PairScreen>
   bool _appVisible = true;
   bool _editingName = false;
   bool _changingVisibility = false;
+  bool _sawUnpaired = false;
+  bool _connectionHandled = false;
+  bool _connectionReturnScheduled = false;
   (bool, String?, int?, String?)? _reportedPair;
 
   @override
@@ -49,6 +61,13 @@ class _PairScreenState extends State<PairScreen>
 
   void _pairChanged() {
     final snapshot = _controller.snapshot;
+    if (snapshot != null) {
+      if (snapshot.pair == null) {
+        _sawUnpaired = true;
+      } else if (_sawUnpaired) {
+        _returnAfterConnection(snapshot.pair!.id);
+      }
+    }
     // Hiding a private projection is not evidence that the pairing ended.
     // Existing native reminders must survive route changes and backgrounding.
     if (snapshot == null && _changingVisibility) return;
@@ -64,6 +83,32 @@ class _PairScreenState extends State<PairScreen>
     if (next == _reportedPair) return;
     _reportedPair = next;
     widget.onPairChanged?.call(snapshot);
+  }
+
+  void _returnAfterConnection(String pairId) {
+    if (widget.onConnected == null ||
+        _connectionHandled ||
+        _connectionReturnScheduled ||
+        !_appVisible ||
+        !_routeVisible) {
+      return;
+    }
+    _connectionReturnScheduled = true;
+    // Both the confirm response and the other person's polling refresh arrive
+    // through this listener. Finish the frame before changing the route stack.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _connectionReturnScheduled = false;
+      if (!mounted ||
+          !_appVisible ||
+          !_routeVisible ||
+          !_controller.authorized ||
+          _controller.snapshot?.pair?.id != pairId ||
+          ModalRoute.of(context)?.isCurrent != true) {
+        return;
+      }
+      _connectionHandled = true;
+      widget.onConnected?.call();
+    });
   }
 
   @override
@@ -664,6 +709,17 @@ class _PairScreenState extends State<PairScreen>
           'Хоёр тал зөвшөөрсөн холболт',
           style: TextStyle(color: AppColors.muted),
         ),
+        if (widget.onConnected != null && Navigator.of(context).canPop()) ...[
+          const SizedBox(height: 20),
+          FilledButton.icon(
+            key: const Key('pairGoHome'),
+            onPressed: _controller.busy
+                ? null
+                : () => Navigator.of(context).pop(),
+            icon: const Icon(Icons.home_outlined),
+            label: const Text('Нүүр хуудас руу'),
+          ),
+        ],
         const SizedBox(height: 20),
         OutlinedButton(
           key: const Key('pairUnlink'),

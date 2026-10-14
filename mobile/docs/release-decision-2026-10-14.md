@@ -39,7 +39,29 @@ The verification rerun for code/test commit `8f39c0a` completed successfully:
 All four jobs passed: the full Flutter audit, current app flows plus the
 production-configured Android debug build, auth/pairing/account/billing checks,
 and memories/wishes checks. This does not satisfy the device/signing/Store gates
-below. Subsequent report-only edits do not change the verified app or backend.
+below. That CI run predates the pair-to-home navigation fix recorded below;
+it must not be cited as verification of that later code change.
+
+## Pair-to-home follow-up
+
+After a newly confirmed connection, both the confirming person and the waiting
+person now return to the Cloudflare home screen. The waiting person's existing
+10-second refresh interval, manual refresh or foreground refresh detects the
+confirmation. Opening an already-connected pair still shows management controls
+and an explicit home button. Account invalidation and overlaid dialogs cannot
+cause a stale response to pop an unrelated screen.
+
+All 53 targeted Flutter pairing, onboarding and reminder tests passed; analysis
+of the changed code/tests found no issues. The production-configured Android
+debug build succeeded and upgraded the running emulator without clearing app
+data. Its existing signed-in session restored and the home screen was visually
+verified. This is not a new live two-phone pairing acceptance run.
+
+Latest development APK: `../../output/nandin-moch-pair-home.apk`.
+SHA-256: `c80b63fa22ab1ccd57dfb7eae7db04b94a5dff0a5312a1d3c6b615a648469dd7`.
+This supersedes the earlier development APK below; the earlier binary-specific
+inspection results remain historical evidence, not a fresh release audit.
+No backend was deployed by this navigation follow-up. Store gates remain open.
 
 ## Verified locally
 

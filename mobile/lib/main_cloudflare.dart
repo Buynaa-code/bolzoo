@@ -371,6 +371,16 @@ class _CloudflareHomeState extends State<_CloudflareHome>
     );
   }
 
+  void _pairConnected() {
+    if (!mounted || !_current || _signingOut) return;
+    Navigator.of(context).pop();
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Та хоёр холбогдлоо. Хамтын мөчүүдээ эхлүүлээрэй.'),
+      ),
+    );
+  }
+
   SubscriptionLegalLinks get _legalLinks {
     final transport = widget.repository.transport;
     final base = transport is HttpCloudflareTransport
@@ -450,6 +460,7 @@ class _CloudflareHomeState extends State<_CloudflareHome>
                   () => PairScreen(
                     repository: CloudflarePairRepository(widget.repository),
                     onPairChanged: (_) => _reminders.observe(null),
+                    onConnected: _pairConnected,
                   ),
                 ),
               ),
