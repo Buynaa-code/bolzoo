@@ -1,9 +1,10 @@
+import { parseMusic, storedMusic, displayMusic } from './music';
 /** Authentication belongs to the router; pair identity is always resolved here. */
 type Json = Record<string, unknown>;
 type Value = string | number | null;
 type Pair = { id: string; partner_id: string; display_name: string };
 type Receipt = { pair_id: string; payload_hash: string };
-type Event = { id: string; title: string; note: string; location: string; starts_at: number; ends_at: number | null; creator_id: string; status: string; version: number };
+type Event = { id: string; title: string; note: string; location: string; starts_at: number; ends_at: number | null; creator_id: string; status: string; version: number; music_json: string | null };
 type Answer = { day: string; question_id: string; my_answer: string | null; partner_answer: string | null; both_answered: number };
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const DAY = /^20\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/;
@@ -150,7 +151,7 @@ class Together {
     const monthRange = 'e.starts_at<? AND (e.ends_at>? OR (e.ends_at IS NULL AND e.starts_at>=?))';
     const result = await this.db.batch([
       ...this.guard(actorEligible, this.actor), this.q(activePair, this.actor),
-      this.q(`WITH current_pair AS (${activePair}) SELECT e.id,e.title,e.note,e.location,e.starts_at,e.ends_at,e.creator_id,e.status,e.version
+      this.q(`WITH current_pair AS (${activePair}) SELECT e.id,e.title,e.note,e.location,e.starts_at,e.ends_at,e.creator_id,e.status,e.version,e.music_json
         FROM hamtdaa_calendar_events e JOIN current_pair p ON p.id=e.pair_id
         WHERE ${monthRange} AND (? IS NULL OR p.id=?) AND (? IS NULL OR (e.starts_at,e.id)>(?,?))
         ORDER BY e.starts_at,e.id LIMIT 51`, this.actor, end, start, start, cursor?.pair ?? null, cursor?.pair ?? null, cursor?.id ?? null, cursor?.starts ?? null, cursor?.id ?? null),
@@ -172,7 +173,7 @@ class Together {
     const next = rows.length > 50 && last && pair ? btoa(JSON.stringify(['calendar-v1', pair.id, value.month, last.starts_at, last.id, revision])) : null;
     return json({ ok: true, paired: !!pair, pair_id: pair?.id ?? null,
       partner: pair ? { id: pair.partner_id, display_name: pair.display_name } : null,
-      events: page.map(e => ({ ...e, starts_at: new Date(e.starts_at).toISOString(), ends_at: e.ends_at === null ? null : new Date(e.ends_at).toISOString() })),
+      events: page.map(({ music_json, ...e }) => ({ ...e, music: displayMusic(music_json), starts_at: new Date(e.starts_at).toISOString(), ends_at: e.ends_at === null ? null : new Date(e.ends_at).toISOString() })),
       next_cursor: next,
       daily: pair ? { day: date, ...prompt(date), my_answer: answer?.my_answer ?? null, partner_answer: answer?.partner_answer ?? null, both_answered: answer?.both_answered === 1 } : null });
   }
@@ -191,12 +192,17 @@ class Together {
     const common = ['command_id', 'expected_pair_id'];
     const eventFields = ['title', 'note', 'location', 'starts_at', 'ends_at'];
     const required = operation === 'calendar/create' ? [...common, ...eventFields] : operation === 'calendar/update' ? [...common, 'id', 'expected_version', ...eventFields] : operation === 'daily/answer' ? [...common, 'question_id', 'answer'] : [...common, 'id', 'expected_version', ...(operation === 'calendar/respond' ? ['response'] : [])];
-    const value = fields(body, required);
+    const optional = ['calendar/create', 'calendar/update'].includes(operation) ? ['music'] : [];
+    const value = fields(body, required, optional);
+    let music: string | null | undefined;
+    if (Object.hasOwn(value, 'music')) {
+      try { music = storedMusic(parseMusic(value.music)); } catch { fail('validation'); }
+    }
     const command = id(value.command_id);
     const expectedPair = id(value.expected_pair_id);
     const canonical: Json = { operation };
     // Hash every accepted field in stable order, including the operation itself.
-    for (const key of required.filter(k => k !== 'command_id').sort()) canonical[key] = value[key];
+    for (const key of [...required, ...optional.filter(k => Object.hasOwn(value, k))].filter(k => k !== 'command_id').sort()) canonical[key] = value[key];
     const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(JSON.stringify(canonical)));
     const hash = [...new Uint8Array(digest)].map(b => b.toString(16).padStart(2, '0')).join('');
     const previous = await this.receipt(command);
@@ -216,8 +222,8 @@ class Together {
       if (used!.events >= 500 || used!.creates >= 30) fail('quota_exceeded', 429);
       mutations.push(...this.guard(`(SELECT count(*) FROM hamtdaa_calendar_events WHERE pair_id=?)<500 AND
         (SELECT count(*) FROM hamtdaa_together_receipts WHERE user_id=? AND day=? AND operation='calendar/create')<=30`, pair.id, this.actor, date));
-      mutations.push(this.q('INSERT INTO hamtdaa_calendar_events(id,pair_id,creator_id,title,note,location,starts_at,ends_at,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?)',
-        crypto.randomUUID(), pair.id, this.actor, event.title, event.note, event.location, event.starts_at, event.ends_at, now, now));
+      mutations.push(this.q('INSERT INTO hamtdaa_calendar_events(id,pair_id,creator_id,title,note,location,starts_at,ends_at,created_at,updated_at,music_json) VALUES(?,?,?,?,?,?,?,?,?,?,?)',
+        crypto.randomUUID(), pair.id, this.actor, event.title, event.note, event.location, event.starts_at, event.ends_at, now, now, music ?? null));
     } else if (operation === 'daily/answer') {
       const question = prompt(date);
       if (value.question_id !== question.question_id) fail('question_expired', 409);
@@ -234,7 +240,7 @@ class Together {
       if (event.version !== version) fail('conflict', 409);
       if (operation === 'calendar/update') {
         const updated = eventInput(value);
-        mutations.push(this.q("UPDATE hamtdaa_calendar_events SET title=?,note=?,location=?,starts_at=?,ends_at=?,status='pending',version=version+1,updated_at=? WHERE pair_id=? AND id=? AND version=? AND creator_id=?", updated.title, updated.note, updated.location, updated.starts_at, updated.ends_at, now, pair.id, eventId, version, this.actor));
+        mutations.push(this.q("UPDATE hamtdaa_calendar_events SET title=?,note=?,location=?,starts_at=?,ends_at=?,status='pending',version=version+1,updated_at=?,music_json=CASE WHEN ?=1 THEN ? ELSE music_json END WHERE pair_id=? AND id=? AND version=? AND creator_id=?", updated.title, updated.note, updated.location, updated.starts_at, updated.ends_at, now, music === undefined ? 0 : 1, music ?? null, pair.id, eventId, version, this.actor));
       } else if (operation === 'calendar/delete') {
         mutations.push(this.q('DELETE FROM hamtdaa_calendar_events WHERE pair_id=? AND id=? AND version=? AND creator_id=?', pair.id, eventId, version, this.actor));
       } else {

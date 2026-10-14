@@ -4,7 +4,7 @@ export type AccountActor = { id: string; email: string; sessionId: string; sessi
 type Json = Record<string, unknown>;
 type Value = string | number | null;
 const PAGE_SIZE = 50;
-const SECTIONS = ['profile', 'calendar', 'daily_answers', 'billing_orders', 'billing_subscriptions'] as const;
+const SECTIONS = ['profile', 'calendar', 'daily_answers', 'flower_gifts', 'billing_orders', 'billing_subscriptions'] as const;
 type Section = typeof SECTIONS[number];
 const activeActor = `EXISTS(SELECT 1 FROM "user" u LEFT JOIN hamtdaa_profiles p ON p.user_id=u.id
  WHERE u.id=? AND u.email=? AND u.emailVerified=1 AND (p.user_id IS NULL OR p.account_state='active')
@@ -78,7 +78,7 @@ async function exportData(env: AccountEnvironment, actor: AccountActor, body: Js
       FROM "user" u LEFT JOIN hamtdaa_profiles p ON p.user_id=u.id WHERE u.id=?`, actor.id);
   } else if (section === 'calendar') {
     statement = q(db, `WITH current_pair AS (${activePair})
-      SELECT e.id,e.pair_id,e.creator_id,e.title,e.note,e.location,e.starts_at,e.ends_at,e.status,e.version,e.created_at,e.updated_at
+      SELECT e.id,e.pair_id,e.creator_id,e.title,e.note,e.location,e.starts_at,e.ends_at,e.status,e.version,e.created_at,e.updated_at,e.music_json
       FROM hamtdaa_calendar_events e WHERE (e.creator_id=? OR e.pair_id IN(SELECT id FROM current_pair))
       AND e.id>? ORDER BY e.id LIMIT 51`, actor.id, actor.id, after[0] ?? '');
   } else if (section === 'daily_answers') {
@@ -89,6 +89,11 @@ async function exportData(env: AccountEnvironment, actor: AccountActor, body: Js
         AND own.question_id=a.question_id AND own.user_id=?)))
       AND (a.pair_id,a.day,a.user_id)>(?,?,?) ORDER BY a.pair_id,a.day,a.user_id LIMIT 51`,
       actor.id, actor.id, actor.id, after[0] ?? '', after[1] ?? '', after[2] ?? '');
+  } else if (section === 'flower_gifts') {
+    statement = q(db, `WITH current_pair AS (${activePair})
+      SELECT g.id,g.pair_id,g.sender_id,g.recipient_id,g.template_id,g.color_id,g.occasion,g.message,g.created_at
+      FROM hamtdaa_flower_gifts g WHERE (g.sender_id=? OR g.pair_id IN(SELECT id FROM current_pair))
+      AND g.id>? ORDER BY g.id LIMIT 51`, actor.id, actor.id, after[0] ?? '');
   } else if (section === 'billing_orders') {
     statement = q(db, `SELECT id,plan,duration_seconds,amount_minor,currency,livemode,provider_id,state,created_at,updated_at
       FROM hamtdaa_billing_orders WHERE user_id=? AND id>? ORDER BY id LIMIT 51`, actor.id, after[0] ?? '');
@@ -107,7 +112,7 @@ async function exportData(env: AccountEnvironment, actor: AccountActor, body: Js
       ? [last.pair_id, last.day, last.user_id] : section === 'billing_subscriptions'
       ? [last.provider, last.source_id] : [last.id]) : null;
     const exported: Json = { schema_version: 1, section, generated_at: new Date().toISOString(),
-      timestamp_units: 'calendar/daily milliseconds; billing seconds', data, next_cursor: next };
+      timestamp_units: 'calendar/daily/flower_gifts milliseconds; billing seconds', data, next_cursor: next };
     if (section === 'profile') {
       exported.account = rows[0];
       exported.pair = result[3].results[0] ?? null;
@@ -156,6 +161,10 @@ async function deleteAccount(env: AccountEnvironment, actor: AccountActor): Prom
       q(db, `UPDATE hamtdaa_pair_invitations SET state='revoked',requester_id=NULL,requested_at=NULL,confirmed_at=NULL,
         token_hash=lower(hex(randomblob(32))),version=version+1 WHERE creator_id=? OR requester_id=?`, actor.id, actor.id),
       q(db, 'DELETE FROM hamtdaa_calendar_events WHERE creator_id=?', actor.id),
+      q(db, 'DELETE FROM hamtdaa_flower_gifts WHERE sender_id=? OR recipient_id=?', actor.id, actor.id),
+      q(db, 'DELETE FROM hamtdaa_gift_receipts WHERE user_id=?', actor.id),
+      q(db, 'DELETE FROM hamtdaa_gift_quotas WHERE user_id=?', actor.id),
+      q(db, 'DELETE FROM hamtdaa_music_limits WHERE scope IN(?,?)', `user:${actor.id}:minute`, `user:${actor.id}:day`),
       q(db, 'DELETE FROM hamtdaa_daily_answers WHERE user_id=?', actor.id),
       q(db, 'DELETE FROM hamtdaa_together_receipts WHERE user_id=?', actor.id),
       q(db, 'DELETE FROM hamtdaa_together_quotas WHERE user_id=?', actor.id),

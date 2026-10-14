@@ -14,7 +14,7 @@ class CloudflareDashboard extends StatelessWidget {
     required this.onPair,
     required this.onCalendar,
     required this.onMemories,
-    required this.onFlorists,
+    required this.onFlowers,
     required this.onDaily,
     required this.onWishes,
     required this.onEvent,
@@ -26,7 +26,7 @@ class CloudflareDashboard extends StatelessWidget {
   final VoidCallback onPair,
       onCalendar,
       onMemories,
-      onFlorists,
+      onFlowers,
       onDaily,
       onWishes;
   final ValueChanged<TogetherEvent> onEvent;
@@ -237,8 +237,8 @@ class CloudflareDashboard extends StatelessWidget {
                 const SizedBox(width: 10),
                 Expanded(
                   child: OutlinedButton.icon(
-                    key: const Key('cloudflareOpenFlorists'),
-                    onPressed: onFlorists,
+                    key: const Key('cloudflareOpenFlowers'),
+                    onPressed: onFlowers,
                     icon: const Icon(Icons.local_florist_outlined, size: 19),
                     label: const Text('Цэцэг'),
                   ),

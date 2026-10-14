@@ -67,6 +67,7 @@ CloudflareResponse _page(
   String? cursor,
   String actor = 'a',
   List<Object> data = const [],
+  List<String>? sections,
 }) => CloudflareResponse(200, {
   'ok': true,
   'export': {
@@ -75,6 +76,7 @@ CloudflareResponse _page(
     if (section == 'profile')
       'account': {'id': actor, 'email': '$actor@example.test'},
     if (section == 'profile') 'pair': null,
+    if (section == 'profile' && sections != null) 'sections': sections,
     if (section != 'profile') 'data': data,
     'next_cursor': cursor,
   },
@@ -384,6 +386,50 @@ void main() {
       await unmount(tester);
     },
   );
+
+  testWidgets('export includes digital greetings advertised by this server', (
+    tester,
+  ) async {
+    transport.handle = (request) async {
+      final section = request.body['section'] as String? ?? 'profile';
+      return _page(
+        section,
+        sections: const [
+          'profile',
+          'calendar',
+          'daily_answers',
+          'flower_gifts',
+          'billing_orders',
+          'billing_subscriptions',
+        ],
+        data: section == 'flower_gifts'
+            ? [
+                {'message': 'Чамтай өдөр бүр илүү гоё.'},
+              ]
+            : [],
+      );
+    };
+    await mount(tester);
+    await tester.tap(find.text('Мэдээллээ татах'));
+    await tester.pump();
+    await tester.runAsync(() async {
+      await until(tester, () => shared.length == 1);
+      await until(tester, () => temporary.listSync().isEmpty);
+      await until(
+        tester,
+        () => find.byType(CircularProgressIndicator).evaluate().isEmpty,
+      );
+    });
+    await tester.pumpAndSettle();
+    expect(
+      (shared.single['pages'] as List).where(
+        (p) => (p as Map)['section'] == 'flower_gifts',
+      ),
+      hasLength(1),
+    );
+    expect(jsonEncode(shared), contains('Чамтай өдөр бүр илүү гоё.'));
+    await unmount(tester);
+  });
 
   testWidgets('failed or repeating export page never shares a partial file', (
     tester,

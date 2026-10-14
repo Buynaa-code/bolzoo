@@ -26,7 +26,12 @@ void main() {
     await tester.pumpAndSettle();
   }
   Future<void> tapKey(WidgetTester tester, String key) async {
+    await tester.pumpAndSettle();
     final finder = find.byKey(Key(key));
+    if (finder.evaluate().isEmpty) {
+      await tester.scrollUntilVisible(finder, 250,
+        scrollable: find.byType(Scrollable).first);
+    }
     await tester.ensureVisible(finder);
     await tester.pumpAndSettle();
     await tester.tap(finder);

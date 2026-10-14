@@ -113,7 +113,7 @@ describe('Cloudflare account export and deletion on real D1', () => {
     const serialized = JSON.stringify(data);
     expect(serialized).not.toContain(b.email);
     expect(serialized).not.toContain('Private device');
-    expect(data.sections).toEqual(['profile', 'calendar', 'daily_answers', 'billing_orders', 'billing_subscriptions']);
+    expect(data.sections).toEqual(['profile', 'calendar', 'daily_answers', 'flower_gifts', 'billing_orders', 'billing_subscriptions']);
   });
   it('exports a partner answer only after both answer the same question', async () => {
     const a = await user(), b = await user(); const linked = await pair(a, b);

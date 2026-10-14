@@ -93,6 +93,72 @@ Logs: `../../output/ui-restoration-full-tests.log`,
 This supersedes the previous debug APKs. It does not close the signing, iOS,
 16 KB or Store gates, and no backend was changed or deployed.
 
+## Digital flowers and invitation music follow-up
+
+The Cloudflare app now lets paired users compose a digital bouquet, choose one
+of three styles and colors, preview a message, and explicitly send it to their
+partner. Received/sent gifts are stored on the server; access, retries, quotas,
+pagination, account export and deletion use the current authenticated pair.
+The physical-florist map remains a separate destination.
+
+The shared date editor now offers YouTube song search, preview and selection.
+The authenticated Worker uses the existing Bolzoo search service when no direct
+YouTube API key is configured. Only the video ID is persisted with the date;
+saved invitations show a generic song label and open the official YouTube watch
+page on a tap. Search-result metadata is not indefinitely cached. Browser preview
+preserves the unsaved date draft, while unlink/session changes still discard the
+old pair's editor. Old clients may omit music without erasing a saved selection.
+
+Verification: **554 Flutter tests passed**, with four optional capture tests
+skipped. A final browser-preview lifecycle fix then passed all **75 focused
+music/calendar tests**, with one optional capture skipped; changed files analyze
+cleanly. The final keyboard-dismiss refinement passed all **21 music tests**.
+The auth backend passed **191 tests**, four schema checks, TypeScript and
+production dry-run. These counts are not a claim of physical iPhone acceptance.
+
+Staging version `b52ce4c5-d291-443c-a26e-e32db6951c40` passed health, authentication
+rejection and public-policy probes. Production migration `0006_gifts_music.sql`
+was applied successfully, followed by auth Worker version
+`6fe43351-9207-4c2e-823e-d3670111867e`. Production health/catalog/privacy return
+200; anonymous gift and music calls return 401. Apple, Google and web purchase
+flags remain disabled. This production deployment also includes the earlier
+tested invite repair and policy source, superseding the historical staging-only
+boundary below. Local D1/native HTTP tests cover authenticated writes; no new
+live OTP or two-physical-phone acceptance run was performed.
+
+Native acceptance found a real deployment-only search failure: workerd rejects
+the Fetch `redirect: 'error'` option before a network request starts. The music
+adapter now uses `manual` and rejects non-2xx responses without following them.
+A real workerd/live-provider probe returned 200 with tracks after the fix, and
+a runtime regression now covers this failure. Final staging version:
+`720f6453-40b7-4bee-be11-110ce4a00684`. Final production version:
+`1dea13b9-2ec9-4705-b842-dc9f097e262d`; no additional migration was needed.
+
+The final production-configured debug APK upgraded the existing emulator without
+clearing its signed-in session. The paired gift inbox, composer, color selection
+and preview were inspected against production. A real authenticated song search
+returned thumbnail/title/channel results, selection appeared in the date editor,
+and tapping Listen opened and played the selected official YouTube video. Search
+results remained available on returning. No date invitation was saved by this
+native acceptance check; write/recipient flows are covered by disposable local
+tests, not a new two-physical-phone acceptance run.
+
+Development APK: `../../output/nandin-moch-flowers-music.apk`.
+SHA-256: `e07f08a31858233f062757e2f8c63e264ab0f33b21e41653d8b146589360a73e`.
+Logs: `../../output/flowers-music-full-tests-final.log`,
+`../../output/flowers-music-build-final.log`,
+`../../output/flowers-music-production-deploy.log`,
+`../../output/flowers-music-production-search-fix.log`,
+`../../output/flowers-music-production-probes.json`.
+This supersedes the earlier debug APKs; signing, iOS, 16 KB runtime and Store
+review gates remain open.
+
+Before re-enabling payments, replace and runtime-test the unsupported workerd
+`redirect: 'error'` option still present in `cloudflare/src/billing.ts` and
+`cloudflare/src/store_verification.ts`. The music investigation reproduced this
+runtime incompatibility; billing stays disabled and these unrelated paths were
+not changed by this feature rollout.
+
 ## Verified locally
 
 | Gate | Evidence |

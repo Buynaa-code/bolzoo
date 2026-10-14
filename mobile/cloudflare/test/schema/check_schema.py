@@ -49,9 +49,10 @@ def schema(connection):
     }
 
 
-def apply(connection, directory):
+def apply(connection, directory, names=None):
     for migration in sorted(directory.glob("*.sql")):
-        connection.executescript(migration.read_text())
+        if names is None or migration.name in names:
+            connection.executescript(migration.read_text())
 
 
 class RecoveredSchemaTest(unittest.TestCase):
@@ -62,7 +63,7 @@ class RecoveredSchemaTest(unittest.TestCase):
 
     def test_applied_migration_names_preserved(self):
         self.assertEqual(
-            [p.name for p in sorted(AUTH_DIR.glob("*.sql"))],
+            [p.name for p in sorted(AUTH_DIR.glob("*.sql"))][:len(FIXTURE["auth_migrations"])],
             FIXTURE["auth_migrations"],
         )
         self.assertEqual(
@@ -71,7 +72,7 @@ class RecoveredSchemaTest(unittest.TestCase):
         )
 
     def test_auth_migrations_rebuild_independently(self):
-        apply(self.db, AUTH_DIR)
+        apply(self.db, AUTH_DIR, FIXTURE["auth_migrations"])
         actual = schema(self.db)
         # Memories and wishes are separately managed additive migrations.
         # Auth recovery must not acquire their tables, indexes or triggers.
@@ -89,7 +90,7 @@ class RecoveredSchemaTest(unittest.TestCase):
         self.assertEqual(self.db.execute("PRAGMA foreign_key_check").fetchall(), [])
 
     def test_combined_migrations_match_deployed_schema(self):
-        apply(self.db, AUTH_DIR)
+        apply(self.db, AUTH_DIR, FIXTURE["auth_migrations"])
         apply(self.db, MEMORY_DIR)
         actual = schema(self.db)
         expected = {
@@ -100,6 +101,16 @@ class RecoveredSchemaTest(unittest.TestCase):
         for name in expected:
             with self.subTest(object=name):
                 self.assertEqual(actual[name], expected[name])
+        self.assertEqual(self.db.execute("PRAGMA integrity_check").fetchall(), [("ok",)])
+        self.assertEqual(self.db.execute("PRAGMA foreign_key_check").fetchall(), [])
+
+    def test_additive_gifts_music_migration_is_compatible(self):
+        apply(self.db, AUTH_DIR)
+        apply(self.db, MEMORY_DIR)
+        columns = {row[1] for row in self.db.execute("PRAGMA table_info(hamtdaa_calendar_events)")}
+        self.assertIn("music_json", columns)
+        self.assertIn("hamtdaa_flower_gifts", schema(self.db))
+        self.assertIn("hamtdaa_gift_receipts", schema(self.db))
         self.assertEqual(self.db.execute("PRAGMA integrity_check").fetchall(), [("ok",)])
         self.assertEqual(self.db.execute("PRAGMA foreign_key_check").fetchall(), [])
 

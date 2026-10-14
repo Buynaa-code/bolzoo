@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import '../cloudflare/cloudflare_auth_repository.dart';
 import '../ui/components.dart';
 import '../ui/theme.dart';
+import '../music/music_repository.dart';
+import '../music/music_widgets.dart';
 import '../memories/memory_controller.dart';
 import '../memories/memory_repository.dart';
 import '../memories/memory_editor.dart';
@@ -37,6 +39,7 @@ class TogetherScreen extends StatefulWidget {
     this.onPair,
     this.initialMemoryId,
     this.initialEventId,
+    this.musicRepository,
   });
   final CloudflareAuthRepository auth;
 
@@ -52,6 +55,7 @@ class TogetherScreen extends StatefulWidget {
   final bool embedded;
   final VoidCallback? onHome, onPair;
   final String? initialMemoryId, initialEventId;
+  final MusicRepository? musicRepository;
   @override
   TogetherScreenState createState() => TogetherScreenState();
 }
@@ -59,6 +63,7 @@ class TogetherScreen extends StatefulWidget {
 class TogetherScreenState extends State<TogetherScreen>
     with WidgetsBindingObserver {
   late final TogetherController _controller;
+  late final MusicRepository _music;
   MemoryController? _memories;
   WishController? _wishes;
   var _wishBoardKey = GlobalKey<WishBoardState>();
@@ -83,6 +88,7 @@ class TogetherScreenState extends State<TogetherScreen>
   void initState() {
     super.initState();
     _tab = _sectionTab(widget.initialSection);
+    _music = widget.musicRepository ?? CloudflareMusicRepository(widget.auth);
     _controller =
         widget.controller ??
         TogetherController(
@@ -468,9 +474,10 @@ class TogetherScreenState extends State<TogetherScreen>
       body: SafeArea(
         child: Visibility(
           visible: _foreground,
-          // The gallery temporarily backgrounds the app. Retain only an unsaved
-          // local editor; shared photos/details are removed while hidden.
-          maintainState: _addingMemory || _tab == 2,
+          // The gallery and YouTube preview temporarily background the app.
+          // Preserve local drafts under the privacy cover; shared details are
+          // removed while hidden, and pair/session changes still close editors.
+          maintainState: _addingMemory || _creating || _editing || _tab == 2,
           child: Column(
             children: [
               if (_controller.failure case final failure?)
@@ -590,6 +597,7 @@ class TogetherScreenState extends State<TogetherScreen>
         ),
         controller: _controller,
         event: event,
+        musicRepository: _music,
         onSaved: () {
           if (mounted) {
             setState(() {
@@ -1453,6 +1461,14 @@ class _EventDetail extends StatelessWidget {
         if (event.location.isNotEmpty)
           _DetailLine(Icons.place_outlined, event.location),
         if (event.note.isNotEmpty) _DetailLine(Icons.notes_rounded, event.note),
+        if (event.music case final music?) ...[
+          const SizedBox(height: 10),
+          const Text(
+            'Бидний болзооны дуу',
+            style: TextStyle(fontWeight: FontWeight.w800),
+          ),
+          MusicTrackCard(track: music),
+        ],
         const SizedBox(height: 14),
         Text(
           own

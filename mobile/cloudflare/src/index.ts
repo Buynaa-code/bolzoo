@@ -4,6 +4,8 @@ import { handleBillingRequest, type BillingEnvironment } from './billing';
 import { handleBillingPage } from './billing_pages';
 import { createPremiumCard } from './premium_cards';
 import { handleTogetherRequest } from './together';
+import { handleGiftRequest } from './gifts';
+import { handleMusicRequest, type MusicEnvironment } from './music';
 import { handleAccountRequest } from './account';
 import { handleAccountPage } from './account_pages';
 
@@ -109,7 +111,7 @@ function pairResult(result: Json): Response {
 
 /** Native app facade. Only the library handler creates/verifies/revokes sessions.
  * Never expose raw /api/auth, accept client actor IDs, or use cookie auth here. */
-export async function handleRequest(request: Request, env: BillingEnvironment & { LEGAL_OPERATOR_NAME?: string; LEGAL_SUPPORT_EMAIL?: string }): Promise<Response> {
+export async function handleRequest(request: Request, env: BillingEnvironment & MusicEnvironment & { LEGAL_OPERATOR_NAME?: string; LEGAL_SUPPORT_EMAIL?: string }): Promise<Response> {
   try {
     const url = new URL(request.url);
     const page = handleAccountPage(request) ?? handleBillingPage(request, env);
@@ -180,6 +182,13 @@ export async function handleRequest(request: Request, env: BillingEnvironment & 
     }
     if (url.pathname === '/v1/auth/session' && request.method === 'GET') {
       return json({ ok: true, ...await session(bearer(request)) });
+    }
+    if (url.pathname.startsWith('/v1/gifts/') || url.pathname.startsWith('/v1/music/')) {
+      const verified = await session(bearer(request));
+      const input = request.method === 'POST' ? await body(request) : null;
+      return url.pathname.startsWith('/v1/gifts/')
+        ? handleGiftRequest(request, env, verified.user.id, input)
+        : handleMusicRequest(request, env, verified.user.id, input);
     }
     if (url.pathname.startsWith('/v1/together/')) {
       const verified = await session(bearer(request));

@@ -93,13 +93,28 @@ describe('native HTTP API with real auth and D1', () => {
     expect((pairedA.partner as Json).user_id).toBe(userB.id);
     expect((pairedB.partner as Json).user_id).toBe(userA.id);
     expect((await c.data('/v1/pair/status')).pair).toBeNull();
+    const flower = { command_id: crypto.randomUUID(), expected_pair_id: pairedA.id,
+      template_id: 'garden', color_id: 'rose', occasion: 'Зүгээр л', message: 'Чамдаа' };
+    const sent = await a.data('/v1/gifts/send', flower);
+    expect((await a.data('/v1/gifts/send', flower)).id).toBe(sent.id);
+    const received = (await b.data('/v1/gifts/state', {})).gifts as Json[];
+    expect(received).toHaveLength(1);
+    expect(received[0]).toMatchObject({ sender_id: userA.id, recipient_id: userB.id, sender_name: 'Ану', recipient_name: 'Тэмүүлэн' });
+    expect((await c.data('/v1/gifts/state', {})).gifts).toEqual([]);
+    expect((await c.call('/v1/gifts/delete', { command_id: crypto.randomUUID(), expected_pair_id: pairedA.id, id: sent.id })).status).toBe(409);
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(Response.json({ items: [{ videoId: 'F0B7HDiY-10', title: 'Love', channelTitle: 'Artist' }] }));
+    expect((await a.data('/v1/music/search', { query: 'love' })).tracks).toEqual([{ video_id: 'F0B7HDiY-10', title: 'Love', channel_title: 'Artist' }]);
+
     expect((await c.call('/v1/pair/commands/unlink', { command_id: crypto.randomUUID(), pair_id: pairedA.id, expected_version: confirmed.version })).status).toBe(404);
     await b.data('/v1/pair/commands/unlink', { command_id: crypto.randomUUID(), pair_id: pairedB.id, expected_version: confirmed.version });
     expect((await a.data('/v1/pair/status')).pair).toBeNull();
     expect((await b.data('/v1/pair/status')).pair).toBeNull();
+    expect((await b.data('/v1/gifts/state', {})).gifts).toEqual([]);
     await a.data('/v1/auth/sign-out', {});
     expect((await a.call('/v1/auth/session')).status).toBe(401);
     expect((await a.call('/v1/pair/status')).status).toBe(401);
+    expect((await a.call('/v1/gifts/state', {})).status).toBe(401);
+    expect((await a.call('/v1/music/search', { query: 'love' })).status).toBe(401);
   });
 
   it('rejects cookie identity, forged actor fields and disables all access after profile suspension', async () => {

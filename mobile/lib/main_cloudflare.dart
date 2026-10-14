@@ -26,6 +26,8 @@ import 'features/pair/pair_screen.dart';
 import 'features/florists/nearby_florists_screen.dart';
 import 'features/home/cloudflare_dashboard.dart';
 import 'features/home/cloudflare_home_controller.dart';
+import 'flowers/flowers_screen.dart';
+import 'flowers/flower_art.dart';
 import 'memories/memory_controller.dart';
 import 'memories/memory_repository.dart';
 import 'ui/components.dart';
@@ -461,6 +463,16 @@ class _CloudflareHomeState extends State<_CloudflareHome>
     ),
   );
 
+  void _openFlowers() => _open(
+    () => FlowersScreen(
+      auth: widget.repository,
+      onPair: () {
+        Navigator.of(context).pop();
+        _openPair();
+      },
+    ),
+  );
+
   SubscriptionLegalLinks get _legalLinks {
     final transport = widget.repository.transport;
     final base = transport is HttpCloudflareTransport
@@ -611,7 +623,7 @@ class _CloudflareHomeState extends State<_CloudflareHome>
       onPair: _openPair,
       onCalendar: () => _openTogether(TogetherSection.calendar),
       onMemories: () => _selectTab(2),
-      onFlorists: () => _open(() => const NearbyFloristsScreen()),
+      onFlowers: _openFlowers,
       onDaily: () => _openTogether(TogetherSection.daily),
       onWishes: () => _openTogether(TogetherSection.wishes),
       onEvent: (event) =>
@@ -642,29 +654,41 @@ class _CloudflareHomeState extends State<_CloudflareHome>
         child: Column(
           children: [
             const SizedBox(height: 16),
-            const FlowerMark(size: 100),
-            const SizedBox(height: 24),
+            const DigitalBouquet(
+              templateId: 'letter',
+              colorId: 'rose',
+              height: 220,
+            ),
+            const SizedBox(height: 12),
             const Text(
               'Сэтгэлийн цэцэг',
               style: TextStyle(fontSize: 25, fontWeight: FontWeight.w900),
             ),
             const SizedBox(height: 8),
             const Text(
-              'Ойрхон цэцгийн дэлгүүрээс\nтүүнд таалагдах баглааг олоорой.',
+              'Дижитал баглаа, сэтгэлийн үгээ\nхосынхоо утсанд илгээгээрэй.',
               textAlign: TextAlign.center,
               style: TextStyle(color: AppColors.muted, height: 1.5),
             ),
             const SizedBox(height: 20),
             FilledButton.icon(
-              key: const Key('cloudflareOpenFlorists'),
-              onPressed: () => _open(() => const NearbyFloristsScreen()),
-              icon: const Icon(Icons.location_on_outlined),
-              label: const Text('Цэцгийн дэлгүүрүүд'),
+              key: const Key('cloudflareOpenFlowers'),
+              onPressed: _openFlowers,
+              icon: const Icon(Icons.local_florist_outlined),
+              label: const Text('Цэцэг бэлэглэх'),
             ),
           ],
         ),
       ),
       const SizedBox(height: 16),
+      HomeActionCard(
+        key: const Key('cloudflareOpenFlorists'),
+        icon: Icons.location_on_outlined,
+        title: 'Ойрхон цэцгийн дэлгүүрүүд',
+        subtitle: 'Бодит баглаа авах газраа газрын зургаас олоорой.',
+        onTap: () => _open(() => const NearbyFloristsScreen()),
+      ),
+      const SizedBox(height: 12),
       HomeActionCard(
         icon: Icons.send_outlined,
         title: 'Болзоонд урья',

@@ -10,6 +10,7 @@ import 'package:hamtdaa/auth/auth_models.dart';
 import 'package:hamtdaa/billing/subscription_controller.dart';
 import 'package:hamtdaa/features/account/cloudflare_account_screen.dart';
 import 'package:hamtdaa/features/florists/nearby_florists_screen.dart';
+import 'package:hamtdaa/flowers/flowers_screen.dart';
 import 'package:hamtdaa/features/premium_cards/premium_cards_screen.dart';
 import 'package:hamtdaa/features/subscription/subscription_screen.dart';
 import 'package:hamtdaa/cloudflare/cloudflare_auth_repository.dart';
@@ -517,7 +518,7 @@ void main() {
   );
 
   testWidgets(
-    'Cloudflare home opens florists, account, subscription and premium cards',
+    'Cloudflare home opens digital flowers, florists, account and premium cards',
     (tester) async {
       await tester.runAsync(() => login());
       await tester.pumpWidget(
@@ -533,6 +534,7 @@ void main() {
         'Нандин мөч',
       );
       for (final destination in <String, Type>{
+        'cloudflareOpenFlowers': FlowersScreen,
         'cloudflareOpenFlorists': NearbyFloristsScreen,
         'cloudflareOpenAccount': CloudflareAccountScreen,
         'cloudflareOpenSubscription': SubscriptionScreen,
@@ -541,7 +543,11 @@ void main() {
         await tester.tap(
           find.byKey(
             Key(
-              destination.key == 'cloudflareOpenFlorists' ? 'navHome' : 'navUs',
+              destination.key == 'cloudflareOpenFlowers'
+                  ? 'navHome'
+                  : destination.key == 'cloudflareOpenFlorists'
+                  ? 'navGifts'
+                  : 'navUs',
             ),
           ),
         );
@@ -660,6 +666,11 @@ void main() {
       await tester.tap(find.byKey(const Key('navGifts')));
       await tester.pumpAndSettle();
       expect(find.byKey(const Key('cloudflareGifts')), findsOneWidget);
+      expect(find.byKey(const Key('cloudflareOpenFlowers')), findsOneWidget);
+      await tester.scrollUntilVisible(
+        find.byKey(const Key('cloudflareOpenFlorists')),
+        200,
+      );
       expect(find.byKey(const Key('cloudflareOpenFlorists')), findsOneWidget);
       expect(find.byKey(const Key('cloudflareOpenSubscription')), findsNothing);
       expect(find.byKey(const Key('cloudflareOpenPremiumCards')), findsNothing);

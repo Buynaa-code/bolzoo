@@ -87,13 +87,15 @@ class _CloudflareAccountScreenState extends State<CloudflareAccountScreen> {
     try {
       final pages = <Map<String, dynamic>>[];
       var totalBytes = 0;
-      for (final section in [
+      final sections = [
         'profile',
         'calendar',
         'daily_answers',
         'billing_orders',
         'billing_subscriptions',
-      ]) {
+      ];
+      for (var index = 0; index < sections.length; index++) {
+        final section = sections[index];
         String? cursor;
         final seen = <String>{};
         do {
@@ -112,6 +114,12 @@ class _CloudflareAccountScreenState extends State<CloudflareAccountScreen> {
           }
           if (section == 'profile') {
             cloudflareExportPair(page, credential);
+            // Older servers do not have gifts yet. Export the new section only
+            // when advertised by the server serving this exact account.
+            final available = page['sections'];
+            if (available is List && available.contains('flower_gifts')) {
+              sections.add('flower_gifts');
+            }
             final account = page['account'];
             if (account is! Map || account['id'] != credential.scope.userId) {
               throw const FormatException('invalid_export');

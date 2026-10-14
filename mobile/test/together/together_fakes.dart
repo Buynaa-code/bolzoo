@@ -11,16 +11,21 @@ Map<String, dynamic> dailyJson({String? mine, String? partner, bool both = false
   'day': day, 'question_id': 'dq-v1:$day:7', 'question': 'Хамтдаа өнгөрүүлсэн хамгийн гоё мөч юу вэ?',
   'my_answer': mine, 'partner_answer': partner, 'both_answered': both,
 };
-Map<String, dynamic> eventJson({String creator = 'a', String title = 'Кофе уух уу?', int version = 1, String status = 'pending'}) => {
+Map<String, dynamic> eventJson({String creator = 'a', String title = 'Кофе уух уу?', int version = 1, String status = 'pending', Map<String, dynamic>? music}) => {
   'id': 'event-1', 'title': title, 'note': 'Сайхан яриа', 'location': 'Little Heaven',
   'starts_at': '2026-10-06T10:00:00.000Z', 'ends_at': null,
-  'creator_id': creator, 'status': status, 'version': version,
+  'creator_id': creator, 'status': status, 'version': version, 'music': music,
 };
 Map<String, dynamic> stateJson({bool paired = true, String pair = pairId, List<Map<String, dynamic>> events = const [], Map<String, dynamic>? daily}) => {
   'ok': true, 'paired': paired, 'pair_id': paired ? pair : null,
   'partner': paired ? {'id': 'b', 'display_name': 'Тэмүүлэн'} : null,
   'events': paired ? events : <Object>[], 'daily': paired ? daily ?? dailyJson() : null,
 };
+
+// The server stores only the user's chosen video reference, not cached API metadata.
+Object? _storedMusic(Object? value) => value is Map ? {
+  'video_id': value['video_id'], 'title': 'YouTube дуу', 'channel_title': 'YouTube',
+} : null;
 
 class TogetherFakeRepository implements TogetherRepository {
   final changes = StreamController<void>.broadcast(sync: true);
@@ -54,12 +59,13 @@ class TogetherFakeRepository implements TogetherRepository {
       case 'calendar/create':
         value = {...value, 'events': [...existing, {
           ...eventJson(), 'title': body['title'], 'note': body['note'], 'location': body['location'],
-          'starts_at': body['starts_at'], 'ends_at': body['ends_at'],
+          'starts_at': body['starts_at'], 'ends_at': body['ends_at'], 'music': _storedMusic(body['music']),
         }]};
       case 'calendar/update':
         value = {...value, 'events': [for (final event in existing)
           if (event['id'] == body['id']) {...event, 'title': body['title'], 'note': body['note'], 'location': body['location'],
-            'starts_at': body['starts_at'], 'ends_at': body['ends_at'], 'status': 'pending', 'version': (event['version'] as int) + 1}
+            'starts_at': body['starts_at'], 'ends_at': body['ends_at'], 'status': 'pending', 'version': (event['version'] as int) + 1,
+            if (body.containsKey('music')) 'music': _storedMusic(body['music'])}
           else event]};
       case 'calendar/delete':
         value = {...value, 'events': existing.where((e) => e['id'] != body['id']).toList()};
