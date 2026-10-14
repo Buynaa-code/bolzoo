@@ -93,3 +93,21 @@ A fresh startup attempt on 2026-10-14 used the installed `Medium_Phone_API_36.1`
 The emulator log is saved at `../../output/release-readiness/2026-10-14/android-emulator-runtime.log`; a compact result is in `android-native-startup-followup.json` beside it. No saved AVD userdata or snapshots were cleared, no SDK images or existing build artifacts were removed, and no temporary emulator remains running. The waiting ADB command from this attempt was stopped.
 
 The only installed system image is `android-36.1/google_apis_playstore/arm64-v8a`, revision 4, with one `kernel-ranchu` and no alternate 16 KB kernel. The earlier 4,096-byte page-size observation remains the only completed native page-size measurement. [Android's documented 16 KB emulator setup](https://developer.android.com/guide/practices/page-sizes#16kb-emulator) calls for a specifically labeled 16 KB image and verification that `adb shell getconf PAGE_SIZE` returns `16384`. No additional image was downloaded and no license was accepted. Both ordinary native startup verification and the separate 16 KB runtime gate therefore remain open.
+
+## Later emulator startup — completed
+
+After the owner requested an emulator for pairing with their phone, the host
+reported about **11 GiB free**. The same existing AVD booted successfully as
+`emulator-5554`, with read-only userdata, no snapshot loading/saving, 1,536 MiB
+RAM and two cores. No saved AVD data was wiped. The APK above was installed
+successfully and `mn.moch.hamtdaa/.MainActivity` cold-started with `Status: ok`.
+The app process remained running and the actual rendered Mongolian email-login
+screen was visually inspected. Evidence: `../../output/emulator-nandin-launch-20261014.png`
+and `../../output/emulator-session-20261014.log`.
+
+This closes the ordinary Android emulator installation/startup check for this
+debug APK only. The emulator again reports **4,096-byte pages**, so 16 KB remains
+untested. No email was entered or OTP sent; two-account authentication/pairing,
+physical Android/iPhone acceptance and Store-signed builds remain pending. The
+emulator is intentionally left open for the owner. Its APK uses production
+services; the server-side invitation recovery fix remains on staging only.

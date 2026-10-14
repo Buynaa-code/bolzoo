@@ -84,12 +84,13 @@ app-specific Store profile or valid distribution identity. This Mac has Command
 Line Tools, not full Xcode. A macOS CLT SDK version is not an iOS SDK version.
 Android SDK 36 and JDK 17 are installed; some Android SDK licenses are outstanding.
 
-The owner cannot connect phones at present. The installed Android API 36.1 AVD
-reported 4 KB pages and cannot certify 16 KB behavior. A fresh startup attempt
-was blocked by emulator preflight because the Mac has only about 350 MiB free;
-no native startup screenshot or successful install is claimed. No unrelated
-files or persisted emulator data were removed. No iPhone, Android physical
-device or iPad acceptance is marked passed.
+The owner cannot connect phones at present. An initial Android emulator attempt
+was blocked at about 350 MiB free. On a later owner-requested retry, the Mac had
+about 11 GiB free: the existing API 36.1 AVD booted, the final debug APK installed
+and the real email-login screen opened successfully. A screenshot is recorded
+in the mobile report. The emulator reports 4 KB pages and cannot certify 16 KB
+behavior. No unrelated files or persisted emulator data were removed. Two-account
+pairing and iPhone, Android physical-device or iPad acceptance remain pending.
 
 ## Published service state and deployment boundary
 
