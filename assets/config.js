@@ -10,5 +10,15 @@
  */
 window.BOLZOO_CONFIG = {
   supabaseUrl: 'https://chmxjljudmwttwhemdri.supabase.co',
-  supabaseAnonKey: 'sb_publishable_arrXY92vzLxUIKrb5SKenQ_fM7Y7vKR'
+  supabaseAnonKey: 'sb_publishable_arrXY92vzLxUIKrb5SKenQ_fM7Y7vKR',
+
+  /**
+   * Хариу ирэхэд илгээгч рүү автомат имэйл илгээх Google Apps Script-ийн
+   * Web app URL. Тохируулах заавар: bolzoo-email-apps-script.js файлын
+   * дээд талд бий.
+   *
+   * Хоосон үлдээвэл автомат имэйл явахгүй — оронд нь хүлээн авагчид
+   * "Хариу бичих" товч гарч, Gmail-аа гараар илгээх болно.
+   */
+  emailWebhookUrl: ''
 };

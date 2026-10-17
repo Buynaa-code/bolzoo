@@ -91,47 +91,6 @@ function readBody(req) {
   });
 }
 
-/* ---------- Filter parser (PostgREST-lite) ---------- */
-const RESERVED = new Set(['select', 'order', 'limit', 'offset', 'apikey', 'Prefer']);
-
-function parseFilters(url) {
-  const out = {};
-  for (const [k, v] of url.searchParams) {
-    if (RESERVED.has(k)) continue;
-    const m = v.match(/^(eq|neq|gt|lt|gte|lte|is|in|like|ilike)\.(.*)$/s);
-    if (!m) continue;
-    out[k] = { op: m[1], val: m[2] };
-  }
-  return out;
-}
-function matches(row, filters) {
-  for (const [key, f] of Object.entries(filters)) {
-    const v = row[key];
-    switch (f.op) {
-      case 'eq':  if (String(v) !== f.val) return false; break;
-      case 'neq': if (String(v) === f.val) return false; break;
-      case 'is':
-        if (f.val === 'null' && v != null) return false;
-        if (f.val === 'not.null' && v == null) return false;
-        break;
-      case 'in': {
-        const parts = f.val.replace(/^\(|\)$/g, '').split(',').map(s => decodeURIComponent(s.trim()));
-        if (!parts.includes(String(v))) return false;
-        break;
-      }
-      default: return false;
-    }
-  }
-  return true;
-}
-function stripFieldsForSelect(row, select) {
-  const clone = Object.assign({}, row);
-  if (!select || !select.split(',').map(s => s.trim()).includes('owner_token')) {
-    delete clone.owner_token;
-  }
-  return clone;
-}
-
 /* ---------- Code generation (matches SQL _gen_code) ---------- */
 function genCode() {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -142,55 +101,28 @@ function genCode() {
 }
 
 /* ---------- /rest/v1/invites ---------- */
-async function handleInvites(req, res, url) {
-  const method = req.method;
-  const filters = parseFilters(url);
-  const select = url.searchParams.get('select');
-  const order  = url.searchParams.get('order');
-  const bodyText = ['POST', 'PATCH', 'PUT'].includes(method) ? await readBody(req) : '';
-  let body = null;
-  if (bodyText) { try { body = JSON.parse(bodyText); } catch (e) { return sendJSON(res, 400, { error: 'Invalid JSON body' }); } }
-
-  if (method === 'POST') {
-    // Direct anon inserts are blocked — must use /rpc/create_invite_with_code
-    return sendPGError(res, 403, 'Direct invite insert not allowed. Use rpc/create_invite_with_code.');
-  }
-
-  if (method === 'GET') {
-    let rows = Object.values(invites).filter(r => matches(r, filters));
-    if (order) {
-      const [col, dir] = order.split('.');
-      rows = rows.slice().sort((a, b) => {
-        const av = String(a[col] || ''), bv = String(b[col] || '');
-        return dir === 'desc' ? bv.localeCompare(av) : av.localeCompare(bv);
-      });
-    }
-    rows = rows.map(r => stripFieldsForSelect(r, select));
-    return sendJSON(res, 200, rows);
-  }
-
-  if (method === 'PATCH') {
-    return sendPGError(res, 403, 'Direct invite update not allowed. Use rpc/save_response or rpc/mark_opened.');
-  }
-
-  if (method === 'DELETE') {
-    return sendPGError(res, 403, 'Direct invite delete not allowed. Use rpc/delete_own_invite.');
-  }
-
-  return sendJSON(res, 405, { error: 'Method not allowed' });
+/*
+ * Supabase дээр anon-д invites/access_codes хүснэгтэд ямар ч шууд эрх байхгүй
+ * (schema.sql-г үзнэ үү). Локал сервер ч яг ижил хатуу байх ёстой — эс тэгвэл
+ * алдаа зөвхөн production дээр илэрнэ. Бүх ажил RPC-ээр явна.
+ */
+async function handleInvites(req, res) {
+  const HINTS = {
+    GET:    'Use rpc/get_invites.',
+    POST:   'Use rpc/create_invite_with_code.',
+    PATCH:  'Use rpc/save_response or rpc/mark_opened.',
+    DELETE: 'Use rpc/delete_own_invite.'
+  };
+  const hint = HINTS[req.method];
+  if (!hint) return sendJSON(res, 405, { error: 'Method not allowed' });
+  return sendPGError(res, 403, 'Direct table access to invites is not allowed. ' + hint);
 }
 
 /* ---------- /rest/v1/access_codes ---------- */
-async function handleCodes(req, res, url) {
-  const method = req.method;
-  const filters = parseFilters(url);
-
-  if (method === 'GET') {
-    let rows = Object.values(codes).filter(r => matches(r, filters));
-    return sendJSON(res, 200, rows);
-  }
-  // No anon insert/update/delete — must use RPCs
-  return sendPGError(res, 403, 'access_codes mutations must go through admin RPCs.');
+async function handleCodes(req, res) {
+  // Уншуулбал зарагдаагүй бүх кодыг татаж авах боломжтой болно.
+  return sendPGError(res, 403,
+    'Direct table access to access_codes is not allowed. Use rpc/check_access_code.');
 }
 
 /* ---------- /rest/v1/rpc/* ---------- */
@@ -234,6 +166,27 @@ async function handleRPC(req, res, url) {
     return sendJSON(res, 200, [{ id: invId, owner_token: ownerToken, created_at: nowTs }]);
   }
 
+  if (name === 'check_access_code') {
+    const c = codes[body.p_code];
+    if (!body.p_code)  return sendJSON(res, 200, [{ ok: false, reason: 'empty' }]);
+    if (!c)            return sendJSON(res, 200, [{ ok: false, reason: 'not_found' }]);
+    if (c.used)        return sendJSON(res, 200, [{ ok: false, reason: 'used' }]);
+    return sendJSON(res, 200, [{ ok: true, reason: null }]);
+  }
+
+  if (name === 'get_invites') {
+    const ids = Array.isArray(body.p_ids) ? body.p_ids : [];
+    if (ids.length > 200) return sendPGError(res, 400, 'Too many ids');
+    const rows = ids
+      .map(id => invites[id])
+      .filter(Boolean)
+      // owner_token-ыг ХЭЗЭЭ Ч буцаахгүй
+      .map(({ id, config, response, opened_at, responded_at, created_at }) =>
+        ({ id, config, response, opened_at, responded_at, created_at }))
+      .sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''));
+    return sendJSON(res, 200, rows);
+  }
+
   if (name === 'save_response') {
     const invId = body.p_invite_id;
     if (!invId) return sendPGError(res, 400, 'Invite id required');
@@ -250,6 +203,20 @@ async function handleRPC(req, res, url) {
     if (!invId) return sendJSON(res, 200, null);
     const inv = invites[invId];
     if (inv && !inv.opened_at) { inv.opened_at = new Date().toISOString(); saveInvites(); }
+    return sendJSON(res, 200, null);
+  }
+
+  if (name === 'update_own_invite') {
+    const invId = body.p_invite_id;
+    const token = body.p_owner_token;
+    if (!invId || !token) return sendPGError(res, 400, 'invite id and owner token required');
+    if (body.p_config == null) return sendPGError(res, 400, 'config required');
+    const inv = invites[invId];
+    if (!inv) return sendPGError(res, 404, 'Invite not found');
+    if (inv.owner_token !== token) return sendPGError(res, 403, 'Wrong owner token');
+    if (inv.responded_at) return sendPGError(res, 409, 'Already answered');
+    inv.config = body.p_config;
+    saveInvites();
     return sendJSON(res, 200, null);
   }
 

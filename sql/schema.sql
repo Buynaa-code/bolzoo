@@ -1,6 +1,12 @@
 -- Bolzoo Supabase schema
 -- Run this in Supabase SQL editor: https://supabase.com/dashboard/project/_/sql/new
 --
+-- ⚠️ АЛЬ ХЭДИЙН АЖИЛЛАЖ БУЙ САЙТ ДЭЭР ШИНЭЧЛЭХ БОЛ:
+--    Файлын ТӨГСГӨЛД байгаа "АЛХАМ 2 — ХҮСНЭГТИЙГ ТҮГЖИХ" хэсгийг эхэлж
+--    бүү ажиллуул. Дараалал: (1) энэ файл АЛХАМ 2-гүйгээр → (2) frontend
+--    deploy → (3) АЛХАМ 2. Тайлбарыг тэр хэсгээс уншина уу.
+--    Шинэ төсөл бол бүгдийг нэг дор ажиллуулж болно.
+--
 -- After running this file:
 --   1. Set your admin password:
 --        insert into public.admin_settings(key, value) values ('admin_password', 'YOUR-SECRET-HERE')
@@ -29,12 +35,9 @@ alter table public.invites enable row level security;
 -- Anon cannot insert invites directly anymore — they must go through create_invite_with_code RPC.
 drop policy if exists "anon can insert invites" on public.invites;
 
--- Anyone (anon) can SELECT config by id
-drop policy if exists "anon can select invites" on public.invites;
-create policy "anon can select invites"
-  on public.invites for select
-  to anon
-  using (true);
+-- Anon энэ хүснэгтийг ШУУД УНШИХ ЁСГҮЙ — гэхдээ түгжээг файлын ТӨГСГӨЛД
+-- байрлуулав ("АЛХАМ 2" хэсгийг үзнэ үү). Учир нь энэ мөрийг ажиллуулмагц
+-- хуучин frontend уншиж чадахгүй болно.
 
 -- Anon UPDATE-ыг зөвшөөрөхгүй — хариу болон нээсэн тэмдгийг save_response / mark_opened RPC дамжуулна.
 drop policy if exists "anon can update response" on public.invites;
@@ -67,14 +70,21 @@ create index if not exists access_codes_used_idx on public.access_codes (used);
 
 alter table public.access_codes enable row level security;
 
--- Anon can SELECT to validate a code before submitting (client checks used=false, code=X)
-drop policy if exists "anon can select access codes" on public.access_codes;
-create policy "anon can select access codes"
-  on public.access_codes for select
-  to anon
-  using (true);
+-- Anon энэ хүснэгтийг ШУУД УНШИХ ЁСГҮЙ — түгжээ файлын ТӨГСГӨЛД байна
+-- ("АЛХАМ 2"). Хуучин frontend код шалгахдаа энэ хүснэгтийг уншдаг тул
+-- түгжээг deploy хийсний ДАРАА тавина.
 
 -- No anon insert/update/delete — those go through RPCs (admin_* + create_invite_with_code)
+
+/* ---------- Цэвэрлэгээ ----------
+ * Түр хугацаанд хоёр багцтай (Энгийн/Онцгой) байсныг больж, бүх боломжийг
+ * нэг үнэд оруулсан. Өмнөх хувилбарыг ажиллуулж байсан бол доорх мөрүүд
+ * үлдэгдлийг цэвэрлэнэ. Хэзээ ч ажиллуулаагүй бол юу ч болохгүй.
+ */
+drop function if exists public._apply_plan_limits(jsonb, text);
+drop function if exists public.admin_create_codes(text, int, text, text);
+alter table public.access_codes drop constraint if exists access_codes_plan_check;
+alter table public.access_codes drop column if exists plan;
 
 /* ---------- Helpers ---------- */
 
@@ -114,6 +124,63 @@ end;
 $$;
 
 /* ---------- RPCs ---------- */
+
+-- Код хүчинтэй эсэхийг шалгана. Кодын жагсаалт, note зэргийг ИЛ ГАРГАХГҮЙ —
+-- зөвхөн тухайн нэг кодын талаар "болно / болохгүй" гэсэн хариу өгнө.
+create or replace function public.check_access_code(p_code text)
+returns table (ok boolean, reason text)
+language plpgsql
+stable
+security definer
+set search_path = public
+as $$
+declare
+  c public.access_codes%rowtype;
+begin
+  if p_code is null or length(p_code) = 0 then
+    return query select false, 'empty'::text; return;
+  end if;
+  select * into c from public.access_codes where code = p_code;
+  if not found then
+    return query select false, 'not_found'::text; return;
+  end if;
+  if c.used then
+    return query select false, 'used'::text; return;
+  end if;
+  return query select true, null::text;
+end;
+$$;
+
+grant execute on function public.check_access_code(text) to anon;
+
+-- Урилгыг ID-аар нь уншина. owner_token-ыг ХЭЗЭЭ Ч буцаахгүй, мөн зөвхөн
+-- нэрлэсэн ID-уудыг өгнө — тиймээс хүснэгтийг бүхэлд нь татах боломжгүй.
+create or replace function public.get_invites(p_ids text[])
+returns table (
+  id            text,
+  config        jsonb,
+  response      jsonb,
+  opened_at     timestamptz,
+  responded_at  timestamptz,
+  created_at    timestamptz
+)
+language plpgsql
+stable
+security definer
+set search_path = public
+as $$
+begin
+  if p_ids is null or array_length(p_ids, 1) is null then return; end if;
+  if array_length(p_ids, 1) > 200 then raise exception 'Too many ids'; end if;
+  return query
+    select i.id, i.config, i.response, i.opened_at, i.responded_at, i.created_at
+      from public.invites i
+     where i.id = any(p_ids)
+     order by i.created_at desc;
+end;
+$$;
+
+grant execute on function public.get_invites(text[]) to anon;
 
 -- Redeem a code and create an invite in one atomic step.
 -- Called from create.html when the buyer submits their invite form.
@@ -211,6 +278,41 @@ $$;
 
 grant execute on function public.delete_own_invite(text, uuid) to anon;
 
+-- Owner: үүсгэсэн урилгаа засна.
+--
+-- Нэг код = нэг урилга тул нэг үсгийн алдаа кодыг шатаадаг байсан. Одоо
+-- ХАРИУ ИРЭХЭЭС ӨМНӨ засаж болно. Хариу ирсэн бол хориглоно — хүлээн авагч
+-- харсан зүйл дээрээ үндэслэж хариулсан, түүнийг нь дараа нь өөрчлөх нь
+-- шударга бус.
+create or replace function public.update_own_invite(
+  p_invite_id   text,
+  p_owner_token uuid,
+  p_config      jsonb
+)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  inv public.invites%rowtype;
+begin
+  if p_invite_id is null or p_owner_token is null then
+    raise exception 'invite id and owner token required';
+  end if;
+  if p_config is null then raise exception 'config required'; end if;
+
+  select * into inv from public.invites where id = p_invite_id for update;
+  if not found then raise exception 'Invite not found'; end if;
+  if inv.owner_token <> p_owner_token then raise exception 'Wrong owner token'; end if;
+  if inv.responded_at is not null then raise exception 'Already answered'; end if;
+
+  update public.invites set config = p_config where id = p_invite_id;
+end;
+$$;
+
+grant execute on function public.update_own_invite(text, uuid, jsonb) to anon;
+
 -- Admin: create N new codes at once.
 create or replace function public.admin_create_codes(
   admin_pw text,
@@ -282,4 +384,35 @@ $$;
 grant execute on function public.admin_delete_code(text, text) to anon;
 
 -- Force PostgREST to reload its schema cache so new tables/functions are picked up immediately.
+NOTIFY pgrst, 'reload schema';
+
+
+/* ═══════════════════════════════════════════════════════════════════════
+   АЛХАМ 2 — ХҮСНЭГТИЙГ ТҮГЖИХ
+
+   ⚠️ Доорх мөрүүдийг ЗӨВХӨН шинэ frontend deploy хийгдсЭНИЙ ДАРАА
+      ажиллуулна уу. Дараалал нь чухал:
+
+        1) Энэ файлыг АЛХАМ 2-гүйгээр ажиллуулна   (шинэ RPC-үүд үүснэ,
+           хуучин сайт хэвийн ажилласаар байна)
+        2) PR-ээ merge хийж deploy хийнэ            (шинэ сайт RPC ашиглана)
+        3) Доорх блокийг ажиллуулна                  (хуучин зам хаагдана)
+
+      Яагаад? Одоо ажиллаж буй сайт эдгээр хүснэгтийг ШУУД уншдаг. Түгжээг
+      эрт тавибал deploy дуустал сайт ажиллахгүй; оройтвол аюулгүй байдлын
+      нүх нээлттэй хэвээр байна.
+
+      Шинээр төсөл эхлүүлж байгаа бол бүх файлыг нэг дор ажиллуулж болно.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+-- Урилга: ID мэдэхгүйгээр бүгдийг татах, owner_token унших боломжийг хаана.
+-- Унших ажил get_invites() RPC-ээр явна.
+drop policy if exists "anon can select invites" on public.invites;
+revoke select on public.invites from anon;
+
+-- Кодууд: зарагдаагүй бүх кодыг татах, note доторх худалдан авагчийн
+-- мэдээллийг унших боломжийг хаана. Шалгалт check_access_code() RPC-ээр явна.
+drop policy if exists "anon can select access codes" on public.access_codes;
+revoke select on public.access_codes from anon;
+
 NOTIFY pgrst, 'reload schema';
