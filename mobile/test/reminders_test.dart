@@ -112,6 +112,36 @@ void main() {
     expect(plugin.pending.values.single.payload, 'saved');
   });
 
+  test('an unchanged queue does no native work until it changes or is cleared', () async {
+    final plugin = _Plugin();
+    final reminders = _reminders(plugin);
+    await reminders.sync([_event('date')]);
+    await reminders.sync([_event('date')]);
+    expect(plugin.calls, ['cancelPending', 'schedule:date']);
+    await reminders.sync([_event('date', minutes: 90)]);
+    expect(plugin.calls, [
+      'cancelPending', 'schedule:date', 'cancelPending', 'schedule:date',
+    ]);
+    await reminders.clear();
+    await reminders.sync([_event('date', minutes: 90)]);
+    expect(plugin.calls, [
+      'cancelPending', 'schedule:date', 'cancelPending', 'schedule:date',
+      'cancelAll', 'cancelPending', 'schedule:date',
+    ]);
+    expect(plugin.pending.values.single.payload, 'date');
+  });
+
+  test('a failed batch is not remembered, so the same queue is retried', () async {
+    final plugin = _Plugin()..failSchedule = true;
+    final reminders = _reminders(plugin);
+    await expectLater(reminders.sync([_event('date')]), throwsStateError);
+    await reminders.sync([_event('date')]);
+    expect(plugin.calls, [
+      'cancelPending', 'schedule:date', 'cancelPending', 'schedule:date',
+    ]);
+    expect(plugin.pending.values.single.payload, 'date');
+  });
+
   test('uninitialized reminders do no native work but clear pending tap state', () async {
     final plugin = _Plugin();
     final reminders = Reminders.withPlugin(plugin)..pendingEventId = 'old';

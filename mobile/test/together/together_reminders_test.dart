@@ -336,6 +336,91 @@ void main() {
       expect(scheduler.notices, isEmpty);
     },
   );
+
+  test('reminder scope ignores new poll objects, names and daily answers', () {
+    final base = stateJson(events: [eventJson(status: 'accepted')]);
+    final scope = togetherReminderScope(TogetherSnapshot.fromJson(base));
+    expect(togetherReminderScope(TogetherSnapshot.fromJson(base)), scope);
+    expect(
+      togetherReminderScope(
+        TogetherSnapshot.fromJson({
+          ...base,
+          'partner': {'id': 'b', 'display_name': 'Өөр нэр'},
+          'daily': dailyJson(mine: 'Хариулт'),
+        }),
+      ),
+      scope,
+    );
+    expect(
+      togetherReminderScope(
+        TogetherSnapshot.fromJson(
+          stateJson(events: [eventJson(status: 'accepted', version: 2)]),
+        ),
+      ),
+      isNot(scope),
+    );
+    expect(
+      togetherReminderScope(
+        TogetherSnapshot.fromJson(
+          stateJson(pair: otherPairId, events: [eventJson(status: 'accepted')]),
+        ),
+      ),
+      isNot(scope),
+    );
+    expect(
+      togetherReminderScope(const TogetherSnapshot(paired: false)),
+      'unpaired',
+    );
+    expect(togetherReminderScope(null), isNull);
+  });
+
+  testWidgets(
+    'calendar polls with unchanged dates do not clear native reminders',
+    (tester) async {
+      preferences.values['a:$pairId'] = true;
+      repository.value = stateJson(events: [eventJson(status: 'accepted')]);
+      final auth = CloudflareAuthRepository(
+        transport: TogetherTransport(),
+        storage: TogetherStorage(),
+      );
+      final calendarRepository = TogetherFakeRepository()
+        ..value = stateJson(events: [eventJson(status: 'accepted')]);
+      final calendar = TogetherController(
+        repository: calendarRepository,
+        now: () => today,
+      );
+      await coordinator.initialize();
+      await tester.pumpWidget(
+        MaterialApp(
+          home: TogetherScreen(
+            auth: auth,
+            controller: calendar,
+            reminders: coordinator,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(scheduler.notices, hasLength(1));
+      final clears = scheduler.clears;
+      for (var poll = 0; poll < 2; poll++) {
+        await calendar.refresh(quiet: true);
+        await tester.pumpAndSettle();
+      }
+      expect(scheduler.clears, clears);
+      expect(scheduler.notices, hasLength(1));
+      calendarRepository.value = stateJson(
+        events: [eventJson(status: 'accepted', version: 2)],
+      );
+      await calendar.refresh(quiet: true);
+      await tester.pumpAndSettle();
+      expect(scheduler.clears, greaterThan(clears));
+      expect(scheduler.notices, hasLength(1));
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox.shrink());
+      calendar.dispose();
+      await auth.dispose();
+    },
+  );
 }
 
 Future<void> _settle() async {

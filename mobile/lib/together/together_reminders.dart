@@ -49,6 +49,26 @@ class SecureTogetherReminderPreferences implements TogetherReminderPreferences {
   );
 }
 
+/// What a calendar response means for native reminders. Every poll builds a new
+/// snapshot object, so identity cannot tell whether anything changed. This key
+/// changes only with the pair or with the dates, statuses or versions of its
+/// events; partner names and daily answers never affect a reminder.
+String? togetherReminderScope(TogetherSnapshot? snapshot) {
+  if (snapshot == null) return null;
+  if (!snapshot.paired) return 'unpaired';
+  final events = [
+    for (final event in snapshot.events)
+      [
+        event.id,
+        event.version,
+        event.status.name,
+        event.startsAt.microsecondsSinceEpoch,
+        event.endsAt?.microsecondsSinceEpoch,
+      ].join(':'),
+  ]..sort();
+  return [snapshot.pairId, snapshot.partnerId, ...events].join('|');
+}
+
 /// Owned by the signed-in home, not by a calendar route. Native schedules keep
 /// working while the app is closed. Changes made on another phone are reconciled
 /// only while this app is open; local notifications cannot perform remote sync.
@@ -140,8 +160,10 @@ class TogetherReminderCoordinator extends ChangeNotifier {
     });
   }
 
-  /// A calendar mutation/fresh snapshot invalidates the cached native dates.
-  /// Refetch the upcoming range, independent of the month being browsed.
+  /// A calendar mutation or a different pair invalidates the cached native
+  /// dates. Refetch the upcoming range, independent of the month being browsed.
+  /// Callers filter unchanged polls with [togetherReminderScope]; this
+  /// coordinator's own poll still reconciles changes outside the browsed month.
   void observe(TogetherSnapshot? snapshot) {
     if (_disposed) return;
     if (!current) {
