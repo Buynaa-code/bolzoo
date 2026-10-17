@@ -14,9 +14,13 @@
 (function(){
   var C = window.BOLZOO_CONFIG || {};
   var IS_FILE = (typeof location !== 'undefined') && location.protocol === 'file:';
-  var HAS_SUPABASE = !!(C.supabaseUrl && C.supabaseAnonKey);
-  var HAS_CUSTOM_API = !!C.apiUrl;
-  var HAS_SAME_ORIGIN = !HAS_SUPABASE && !HAS_CUSTOM_API && !IS_FILE;
+  // Локал dev/LAN дээр ажиллах үед Supabase config байсан ч же локал server-руу хандах.
+  // Учир: /api/checkout төлбөрөөс үүсгэсэн код нь локал JSON-т хадгалагддаг тул
+  // Supabase руу шалгавал "олдсонгүй" болно.
+  var IS_LOCAL_DEV = (typeof location !== 'undefined') && /^(localhost|127\.0\.0\.1|0\.0\.0\.0|192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|172\.(1[6-9]|2\d|3[01])\.\d+\.\d+)$/.test(location.hostname);
+  var HAS_SUPABASE   = !IS_LOCAL_DEV && !!(C.supabaseUrl && C.supabaseAnonKey);
+  var HAS_CUSTOM_API = !IS_LOCAL_DEV && !!C.apiUrl;
+  var HAS_SAME_ORIGIN = IS_LOCAL_DEV || (!HAS_SUPABASE && !HAS_CUSTOM_API && !IS_FILE);
   var HAS_BACKEND = HAS_SUPABASE || HAS_CUSTOM_API || HAS_SAME_ORIGIN;
   var BACKEND_KIND = HAS_SUPABASE ? 'supabase' : HAS_CUSTOM_API ? 'custom' : HAS_SAME_ORIGIN ? 'same-origin' : 'localStorage';
   var API =
@@ -56,6 +60,11 @@
   function lsGet(k){ try{ return JSON.parse(localStorage.getItem(k)); }catch(e){ return null; } }
   function lsSet(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
   function lsDel(k){ try{ localStorage.removeItem(k); }catch(e){} }
+  function isExpiredConfig(cfg){
+    if(!cfg || cfg.experienceType !== 'apology' || !cfg.expiresAt) return false;
+    var expiry = Date.parse(String(cfg.expiresAt));
+    return isFinite(expiry) && expiry <= Date.now();
+  }
 
   function rememberMine(id){
     var mine = lsGet('bolzoo:my') || [];
@@ -98,18 +107,30 @@
   function rpc(name, params){
     return req('POST', '/rpc/'+name, params || {});
   }
+  function appReq(method, path, body){
+    return fetch(path, {
+      method: method,
+      headers: { 'Content-Type': 'application/json' },
+      body: body ? JSON.stringify(body) : undefined
+    }).then(function(r){
+      return r.text().then(function(t){
+        var data = null;
+        try { data = t ? JSON.parse(t) : null; } catch(_){}
+        if(!r.ok){
+          var msg = data && (data.user_error || data.error || data.message);
+          throw new Error(msg || ('HTTP '+r.status));
+        }
+        return data;
+      });
+    });
+  }
 
   /* ------------ Access codes ------------ */
-  // Кодыг RPC-ээр шалгана. Хүснэгтийг шууд уншвал зарагдаагүй бүх кодыг
-  // татаж авах боломжтой болох тул тэр зам хаалттай (sql/schema.sql).
   async function validateCode(code){
     if(!code) return { ok:false, reason:'empty' };
     if(HAS_BACKEND){
       try{
-        var rows = await rpc('check_access_code', { p_code: code });
-        var r = rows && rows[0];
-        if(!r) return { ok:false, reason:'error' };
-        return r.ok ? { ok:true } : { ok:false, reason:r.reason || 'not_found' };
+        return await appReq('POST', '/api/validate-code', { code:code });
       }catch(e){ return { ok:false, reason:'error', error:e.message }; }
     } else {
       var c = lsCodes()[code];
@@ -161,16 +182,19 @@
   }
 
   /* ------------ Public API ------------ */
-  async function createInvite(config, accessCode){
+  async function createInvite(config, accessCode, privateConfig){
     if(!accessCode) throw new Error('Access code required');
     var id = shortId(10);
+    var priv = privateConfig || {};
 
     if(HAS_BACKEND){
-      var rows = await rpc('create_invite_with_code', {
+      var payload = {
         p_invite_id: id,
         p_config: config,
         p_access_code: accessCode
-      });
+      };
+      if(Object.keys(priv).length > 0) payload.p_private_config = priv;
+      var rows = await rpc('create_invite_with_code', payload);
       var row = rows && rows[0];
       if(!row) throw new Error('RPC returned no row');
       setOwnerToken(row.id, row.owner_token);
@@ -183,7 +207,7 @@
       if(c.used) throw new Error('Access code already used');
       var token = uuid4();
       var createdAt = new Date().toISOString();
-      lsSet('bolzoo:invites:'+id, { config:config, response:null, opened_at:null, responded_at:null, created_at:createdAt });
+      lsSet('bolzoo:invites:'+id, { config:config, private_config:priv, response:null, opened_at:null, responded_at:null, created_at:createdAt });
       setOwnerToken(id, token);
       rememberMine(id);
       c.used = true;
@@ -197,11 +221,16 @@
   async function getInvite(id){
     if(!id) return null;
     if(HAS_BACKEND){
-      var rows = await rpc('get_invites', { p_ids: [id] });
-      return rows && rows[0] ? rows[0] : null;
+      try{
+        return await appReq('GET', '/api/invite?id='+encodeURIComponent(id));
+      }catch(e){
+        if(/not found/i.test(e.message || '')) return null;
+        throw e;
+      }
     } else {
       var stored = lsGet('bolzoo:invites:'+id);
       if(!stored) return null;
+      if(isExpiredConfig(stored.config)) throw new Error('Invite expired');
       return { id:id, config:stored.config, response:stored.response, opened_at:stored.opened_at, responded_at:stored.responded_at, created_at:stored.created_at };
     }
   }
@@ -212,63 +241,78 @@
       try{ await rpc('mark_opened', { p_invite_id: id }); }catch(e){}
     } else {
       var s = lsGet('bolzoo:invites:'+id);
-      if(s && !s.opened_at){ s.opened_at = new Date().toISOString(); lsSet('bolzoo:invites:'+id, s); }
+      if(s && !isExpiredConfig(s.config) && !s.opened_at){ s.opened_at = new Date().toISOString(); lsSet('bolzoo:invites:'+id, s); }
     }
   }
 
+  var PENDING_PREFIX = 'bolzoo:pending-response:';
+  function pendingKey(id){ return PENDING_PREFIX + id; }
+  function enqueuePending(id, payload, clientTs){
+    lsSet(pendingKey(id), { payload: payload, client_ts: clientTs, queued_at: new Date().toISOString() });
+  }
+  function clearPending(id){ lsDel(pendingKey(id)); }
+
   async function saveResponse(id, response){
     if(!id) return;
+    var clientTs = new Date().toISOString();
+    var payload = response || {};
+
     if(HAS_BACKEND){
-      await rpc('save_response', { p_invite_id: id, p_response: response });
+      try{
+        await rpc('save_response', {
+          p_invite_id: id,
+          p_response:  payload,
+          p_client_ts: clientTs
+        });
+        clearPending(id);
+      }catch(e){
+        // Keep the newest attempt queued for a later flush. The server-side
+        // guard (p_client_ts) makes replay safe — stale writes are dropped.
+        enqueuePending(id, payload, clientTs);
+        throw e;
+      }
     } else {
       var s = lsGet('bolzoo:invites:'+id) || { config:null, response:null, opened_at:null };
-      s.response = response;
-      s.responded_at = new Date().toISOString();
+      if(isExpiredConfig(s.config)) throw new Error('Invite expired');
+      s.response = payload;
+      s.responded_at = clientTs;
       lsSet('bolzoo:invites:'+id, s);
     }
   }
 
-  /**
-   * Хариу хадгалсны дараа илгээгч рүү имэйл явуулах webhook-ыг зэвүүлнэ.
-   * Тохируулаагүй бол юу ч хийхгүй. Хариу нь аль хэдийн DB-д хадгалагдсан
-   * тул имэйл амжилтгүй болсон ч мэдээлэл алдагдахгүй — тиймээс алдааг
-   * хэрэглэгчид харуулахгүй, зөвхөн console-д бичнэ.
-   */
-  function notifyResponse(id){
-    var url = C.emailWebhookUrl;
-    if(!url || !id) return Promise.resolve(false);
-    return fetch(url, {
-      method: 'POST',
-      mode: 'no-cors',                              // Apps Script CORS header буцаадаггүй
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ inviteId: id })
-    }).then(function(){ return true; })
-      .catch(function(e){ console.warn('Email webhook failed:', e); return false; });
-  }
-
-  /**
-   * Одоо байгаа урилгыг энэ browser-ийн жагсаалтад буцааж нэмнэ.
-   * (Утсаа сольсон / түүхээ цэвэрлэсэн хүн линкээрээ сэргээхэд.)
-   * Зөвхөн харах эрх — устгахад хэрэгтэй owner_token сэргэхгүй.
-   */
-  async function trackInvite(idOrUrl){
-    var raw = String(idOrUrl || '').trim();
-    if(!raw) throw new Error('Линк эсвэл ID оруулна уу');
-    // Линк дотроос ?id=xxx-г салгаж авна, эсвэл шууд ID гэж үзнэ
-    var m = raw.match(/[?&]id=([^&#\s]+)/);
-    var id = m ? decodeURIComponent(m[1]) : raw;
-    var rec = await getInvite(id);
-    if(!rec) throw new Error('Ийм урилга олдсонгүй');
-    rememberMine(id);
-    return rec;
+  async function flushPendingResponses(){
+    if(!HAS_BACKEND) return;
+    var ids = [];
+    try{
+      for(var i=0; i<localStorage.length; i++){
+        var key = localStorage.key(i);
+        if(key && key.indexOf(PENDING_PREFIX) === 0) ids.push(key.slice(PENDING_PREFIX.length));
+      }
+    }catch(e){ return; }
+    for(var j=0; j<ids.length; j++){
+      var pid = ids[j];
+      var pending = lsGet(pendingKey(pid));
+      if(!pending || !pending.payload) { clearPending(pid); continue; }
+      try{
+        await rpc('save_response', {
+          p_invite_id: pid,
+          p_response:  pending.payload,
+          p_client_ts: pending.client_ts || new Date().toISOString()
+        });
+        clearPending(pid);
+      }catch(e){ /* leave queued for next attempt */ }
+    }
   }
 
   async function listMyInvites(){
     var mine = listMine();
     if(!mine.length) return [];
     if(HAS_BACKEND){
-      var rows = await rpc('get_invites', { p_ids: mine.map(function(x){ return x.id; }) });
-      return rows || [];
+      var items = mine.map(function(x){
+        return { id:x.id, owner_token:getOwnerToken(x.id) };
+      }).filter(function(x){ return !!x.owner_token; });
+      if(!items.length) return [];
+      return await appReq('POST', '/api/invite', { items:items }) || [];
     } else {
       return mine.map(function(x){
         var s = lsGet('bolzoo:invites:'+x.id);
@@ -278,33 +322,6 @@
     }
   }
 
-  /**
-   * Үүсгэсэн урилгаа засна (хариу ирэхээс өмнө).
-   * owner_token нь зөвхөн үүсгэсэн төхөөрөмжид байдаг тул линкээр сэргээсэн
-   * урилгыг засах боломжгүй — зөвхөн харна.
-   */
-  async function updateInvite(id, config){
-    var token = getOwnerToken(id);
-    if(!token) throw new Error('Энэ урилгыг зөвхөн үүсгэсэн төхөөрөмжөөс засна');
-    if(HAS_BACKEND){
-      await rpc('update_own_invite', { p_invite_id:id, p_owner_token:token, p_config:config });
-    } else {
-      var s = lsGet('bolzoo:invites:'+id);
-      if(!s) throw new Error('Урилга олдсонгүй');
-      if(s.responded_at) throw new Error('Хариу ирсэн тул засах боломжгүй');
-      s.config = config;
-      lsSet('bolzoo:invites:'+id, s);
-    }
-  }
-
-  // Зөвхөн энэ browser-ийн жагсаалтаас хасна — backend дээрх урилга хэвээр үлдэнэ.
-  // owner token-ыг хэвээр үлдээнэ (дахин нэмбэл устгах эрх нь сэргэнэ).
-  function forgetInvite(id){
-    var mine = lsGet('bolzoo:my') || [];
-    lsSet('bolzoo:my', mine.filter(function(x){ return x.id!==id; }));
-  }
-
-  // Урилгыг бүрмөсөн устгана — зөвхөн энэ төхөөрөмж дээр үүсгэсэн (owner token-той) урилгад.
   async function deleteInvite(id){
     if(HAS_BACKEND){
       var token = getOwnerToken(id);
@@ -316,6 +333,36 @@
     forgetMine(id);
   }
 
+  async function recoverInvite(code){
+    if(!HAS_BACKEND) throw new Error('Backend тохируулаагүй тул сэргээх боломжгүй');
+    var normalized = String(code || '').trim().toUpperCase();
+    if(!/^LOV-[A-HJ-NP-Z2-9]{6}$/.test(normalized)){
+      var formatError = new Error(/^[A-Za-z0-9_-]{8,64}$/.test(normalized)
+        ? 'Энэ нь урилгын ID байна. Сэргээхдээ төлбөрөөр авсан LOV-XXXXXX кодоо оруулна уу.'
+        : 'Сэргээх код LOV-XXXXXX хэлбэртэй байна. Кодоо дахин шалгана уу.');
+      formatError.reason = 'invalid_format';
+      throw formatError;
+    }
+    var data = await appReq('POST', '/api/recover-invite', { code: normalized });
+    if(!data || !data.ok){
+      var reason = data && data.reason;
+      var msg = reason === 'not_used_yet' ? 'Энэ код хэрэглэгдээгүй байна — /create дээр урилга үүсгэж болно.'
+              : reason === 'invite_missing' ? 'Урилга олдсонгүй (магадгүй устгагдсан).'
+              : 'Код олдсонгүй. Дахин шалгана уу.';
+      var err = new Error(msg);
+      err.reason = reason || 'not_found';
+      throw err;
+    }
+    return data;
+  }
+
+  function rememberOwnedInvite(id, ownerToken){
+    if(!id || !ownerToken) return false;
+    setOwnerToken(id, ownerToken);
+    rememberMine(id);
+    return true;
+  }
+
   window.BolzooAPI = {
     hasBackend: HAS_BACKEND,
     backendKind: BACKEND_KIND,
@@ -323,18 +370,21 @@
     getInvite: getInvite,
     markOpened: markOpened,
     saveResponse: saveResponse,
-    notifyResponse: notifyResponse,
-    hasEmailWebhook: !!C.emailWebhookUrl,
+    flushPendingResponses: flushPendingResponses,
     listMyInvites: listMyInvites,
-    trackInvite: trackInvite,
-    updateInvite: updateInvite,
-    forgetInvite: forgetInvite,
     deleteInvite: deleteInvite,
     getOwnerToken: getOwnerToken,
     validateCode: validateCode,
+    recoverInvite: recoverInvite,
+    rememberOwnedInvite: rememberOwnedInvite,
     adminCreateCodes: adminCreateCodes,
     adminListCodes: adminListCodes,
     adminDeleteCode: adminDeleteCode,
     _shortId: shortId
   };
+
+  // Drain any responses that got stuck offline on a previous visit.
+  if(typeof window !== 'undefined' && HAS_BACKEND){
+    setTimeout(function(){ flushPendingResponses().catch(function(){}); }, 500);
+  }
 })();

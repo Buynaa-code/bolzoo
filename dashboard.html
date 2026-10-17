@@ -3,408 +3,515 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Ирсэн хариунууд 💌</title>
+<title>Миний урилгууд 📊</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Comfortaa:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/styles.css">
 <style>
   .wrap{max-width:900px; margin:0 auto; padding:32px 20px 60px;}
-  header{display:flex; align-items:flex-start; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:18px;}
-  h1{font-family:'Comfortaa',sans-serif; font-weight:700; font-size:26px; margin:0 0 6px;}
-  .subtitle{margin:0; max-width:520px; line-height:1.5;}
-
-  /* ── 1-2-3 тайлбар зурвас ── */
-  .howto{
-    display:grid; grid-template-columns:repeat(3,1fr); gap:10px;
-    background:#fffdfb; border-radius:16px; padding:14px 16px; margin-bottom:18px;
-    box-shadow:0 12px 30px -18px rgba(247,106,142,.35);
+  header{display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:22px;}
+  .h-title{display:flex; align-items:center; gap:8px; flex-wrap:wrap;}
+  h1{font-family:'Comfortaa',sans-serif; font-weight:700; font-size:26px; margin:0;}
+  .private-pill{display:inline-flex; align-items:center; gap:4px; font-family:'Nunito',sans-serif; font-size:11px; font-weight:900; padding:5px 10px; border-radius:999px; background:#dcffde; color:#2e7a3e; letter-spacing:.02em;}
+  .subtitle{margin:0;}
+  .privacy-note{margin:0 0 18px; padding:12px 14px; border-radius:14px; background:linear-gradient(135deg,#f2fff2,#fff); border:1px solid rgba(90,186,122,.35); color:#215a34; font-size:13px; font-weight:800; line-height:1.5; display:flex; align-items:flex-start; gap:10px;}
+  .privacy-note-ic{flex:0 0 auto; font-size:16px; line-height:1;}
+  .privacy-note b{color:#1a4a28;}
+  .answer-celebration{
+    position:relative;
+    margin:0 0 18px;
+    padding:25px 24px 22px;
+    border:1px solid rgba(255,115,158,.34);
+    border-radius:24px;
+    background:
+      radial-gradient(circle at 0 0,rgba(255,222,104,.52),transparent 30%),
+      radial-gradient(circle at 100% 0,rgba(255,174,208,.5),transparent 38%),
+      linear-gradient(145deg,#fffdf4 0%,#fff5fa 52%,#f6efff 100%);
+    box-shadow:0 28px 65px -38px rgba(151,53,104,.62);
+    overflow:hidden;
+    animation:celebrationIn .52s cubic-bezier(.2,.8,.2,1) both;
   }
-  .howto-step{display:flex; align-items:center; gap:10px; font-size:13px; font-weight:800; color:var(--ink); line-height:1.3;}
-  .howto-step span.n{
-    flex:0 0 26px; width:26px; height:26px; border-radius:50%;
-    display:grid; place-items:center; font-size:12px; color:#fff;
-    background:linear-gradient(135deg,var(--coral),var(--coral-deep));
+  .answer-celebration::before,
+  .answer-celebration::after{
+    position:absolute;
+    color:#ff78a5;
+    pointer-events:none;
+    animation:celebrationTwinkle 2s ease-in-out infinite;
   }
-  .howto-step.now{color:var(--coral-deep);}
-  @media (max-width:640px){ .howto{grid-template-columns:1fr; gap:8px;} }
-
-  /* ── ID-аар хайх ── */
-  .lookup{margin-bottom:18px;}
-  .lookup h2{font-family:'Comfortaa',sans-serif; font-size:16px; margin:0 0 4px;}
-  .lookup p.hint{margin:0 0 12px; font-size:12.5px; color:var(--muted); line-height:1.5;}
-  .lookup-row{display:flex; gap:10px; flex-wrap:wrap;}
-  .lookup-row input{flex:1 1 240px;}
-  .lookup-status{margin-top:10px; font-size:13px; font-weight:800; min-height:18px;}
-  .lookup-status.ok{color:#3a8a4a;}
-  .lookup-status.err{color:#c05252;}
-
-  .stats{display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:16px;}
-  @media (max-width:520px){
-    .stats{gap:8px;}
-    .stat{padding:14px 8px; text-align:center;}
-    .stat-num{font-size:22px;}
-    .stat-lbl{font-size:10px; letter-spacing:.3px;}
-  }
+  .answer-celebration::before{content:'✦'; right:22px; top:16px; font-size:24px;}
+  .answer-celebration::after{content:'♡'; right:61px; top:50px; font-size:21px; animation-delay:.55s;}
+  .celebration-kicker{display:inline-flex; align-items:center; gap:6px; margin-bottom:8px; padding:5px 10px; border-radius:999px; background:#fff; color:#cf3e70; font-size:11px; font-weight:900; text-transform:uppercase; letter-spacing:.06em; box-shadow:0 8px 20px -15px rgba(101,37,76,.5);}
+  .answer-celebration h2{max-width:680px; margin:0 54px 7px 0; color:#5c244b; font-family:'Comfortaa',sans-serif; font-size:23px; line-height:1.35;}
+  .answer-celebration p{max-width:650px; margin:0; color:#805c76; font-size:14px; font-weight:800; line-height:1.55;}
+  .celebration-details{display:flex; gap:8px; flex-wrap:wrap; margin-top:15px;}
+  .celebration-details span{display:inline-flex; align-items:center; min-height:31px; padding:6px 11px; border:1px solid rgba(255,138,174,.26); border-radius:999px; background:rgba(255,255,255,.82); color:#68354f; font-size:12px; font-weight:900;}
+  @keyframes celebrationIn{from{opacity:0; transform:translateY(9px) scale(.985);}to{opacity:1; transform:none;}}
+  @keyframes celebrationTwinkle{0%,100%{opacity:.35; transform:scale(.8) rotate(-8deg);}50%{opacity:1; transform:scale(1.12) rotate(9deg);}}
+  .demo-banner{margin:0 0 18px; padding:14px 16px; border:1px solid rgba(255,77,130,.26); border-radius:17px; background:linear-gradient(135deg,#fff4f8,#fff 58%,#faf3ff); color:#7a4062; font-size:13px; font-weight:850; line-height:1.5;}
+  .demo-banner b{color:#c9346a;}
+  body.demo-mode .privacy-note,
+  body.demo-mode .recover-box,
+  body.demo-mode #backendWarn{display:none !important;}
+  /* Dashboard-д стат картны stat илүү том */
+  .stats{display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:22px;}
+  @media (max-width:520px){ .stats{grid-template-columns:1fr;} }
   .stat{border-radius:18px; padding:18px 20px; box-shadow:0 12px 30px -18px rgba(247,106,142,.35);}
   .stat-num{font-size:28px;}
   .stat-lbl{font-size:12px;}
-
-  /* ── Шүүлтүүр ── */
-  .filters{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;}
-  .chip{
-    border:2px solid var(--coral-soft); background:#fff; color:var(--coral-deep);
-    border-radius:999px; padding:7px 15px; font-family:'Nunito',sans-serif;
-    font-size:12.5px; font-weight:800; cursor:pointer;
-  }
-  .chip.on{background:linear-gradient(135deg,var(--coral),var(--coral-deep)); color:#fff; border-color:transparent;}
-
   .list{display:flex; flex-direction:column; gap:14px;}
   .empty{text-align:center; background:#fffdfb; border-radius:20px; padding:40px 20px; box-shadow:0 12px 30px -18px rgba(247,106,142,.35);}
   .empty h2{font-family:'Comfortaa',sans-serif; margin:0 0 6px;}
-
-  .card{border-radius:20px; padding:18px 20px; box-shadow:0 12px 30px -18px rgba(247,106,142,.35);}
-  .card.has-answer{border:2px solid #b7e9bd; background:linear-gradient(180deg,#fbfff8,#fffdfb);}
-  .card-top{display:grid; grid-template-columns:1fr auto; gap:12px; align-items:start;}
-  @media (max-width:560px){ .card-top{grid-template-columns:1fr;} }
-  .card-title{font-family:'Comfortaa',sans-serif; font-weight:700; font-size:18px; margin:0 0 4px;}
-  .card-meta{font-size:12px; color:var(--muted); line-height:1.6;}
-  .badge{display:inline-block; font-size:11px; font-weight:800; padding:5px 12px; border-radius:999px; letter-spacing:.4px;}
+  .card{border:1px solid transparent; border-radius:20px; padding:18px 20px; box-shadow:0 12px 30px -18px rgba(247,106,142,.35); display:grid; grid-template-columns:1fr auto; gap:12px;}
+  .card.answer-yes{border-color:rgba(255,120,165,.25); box-shadow:0 20px 42px -28px rgba(204,62,112,.48);}
+  .card-title{font-family:'Comfortaa',sans-serif; font-weight:700; font-size:17px; margin:0 0 4px;}
+  .card-meta{font-size:12px; color:var(--muted);}
+  .badge{display:inline-block; font-size:11px; font-weight:800; padding:4px 10px; border-radius:999px; letter-spacing:.4px;}
   .badge.pending{background:#f3e6ec; color:var(--muted);}
   .badge.opened{background:#fff1cf; color:#b47f16;}
   .badge.responded{background:#dcffde; color:#3a8a4a;}
-
-  /* ── Хариу — гол блок ── */
-  .answer{margin-top:14px; border-radius:16px; overflow:hidden; border:1px solid #cdeed2;}
-  .answer-head{
-    background:linear-gradient(135deg,#dcffde,#c7f5cf); color:#2f7a41;
-    font-family:'Comfortaa',sans-serif; font-weight:700; font-size:15px;
-    padding:12px 16px; display:flex; align-items:center; gap:8px; flex-wrap:wrap;
-  }
-  .answer-body{background:#fbfff9; padding:14px 16px;}
-  .answer-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:12px;}
-  @media (max-width:420px){ .answer-grid{grid-template-columns:1fr;} }
-  .a-item{background:#fff; border:1px solid #e6f5e8; border-radius:12px; padding:10px 12px;}
-  .a-lbl{display:block; font-size:11px; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; margin-bottom:3px;}
-  .a-val{display:block; font-size:15px; font-weight:800; color:var(--ink); word-break:break-word;}
-  .answer-foot{margin-top:12px; font-size:12px; color:var(--muted); font-weight:700;}
-
-  /* ── Хариугүй тохиолдол ── */
-  .waiting{
-    margin-top:14px; background:#fff8f4; border:1px dashed var(--coral-soft);
-    border-radius:14px; padding:14px 16px; font-size:13px; line-height:1.55; color:var(--muted);
-  }
-  .waiting b{color:var(--coral-deep); display:block; margin-bottom:3px; font-size:14px;}
-
-  .card-actions{display:flex; gap:8px; flex-wrap:wrap; align-items:center;}
-  @media (min-width:561px){ .card-actions{flex-direction:column; align-items:flex-end;} }
-  .backend-warn{background:#fff1cf; color:#8a6a20; padding:12px 16px; border-radius:12px; margin-bottom:18px; font-size:13px; font-weight:700; line-height:1.55;}
+  .badge.apology{background:linear-gradient(135deg,#ffedf3,#f8eaff); color:#c9346a; border:1px solid rgba(255,77,130,.18);}
+  .badge.accepted{background:linear-gradient(135deg,#ff4d82,#c136a0); color:#fff; box-shadow:0 8px 16px -11px rgba(193,54,160,.8);}
+  .response{margin-top:12px; padding:15px 16px; background:#fff8f4; border:1px dashed var(--coral-soft); border-radius:16px; font-size:13px; line-height:1.5;}
+  .response b{color:var(--coral-deep);}
+  .response-yes{position:relative; background:linear-gradient(145deg,#fffdf3,#fff5fa 62%,#f8f2ff); border:1px solid rgba(255,107,153,.34); overflow:hidden;}
+  .response-yes::after{content:'💕'; position:absolute; right:13px; top:11px; font-size:20px; opacity:.75;}
+  .response-later{background:linear-gradient(145deg,#fffaf0,#fff7fb); border-color:rgba(231,166,65,.34);}
+  .response-apology{position:relative; background:linear-gradient(145deg,#fff,#fff3f8 62%,#f9efff); border:1px solid rgba(255,77,130,.28); overflow:hidden;}
+  .response-apology::after{content:'💗'; position:absolute; right:14px; top:11px; font-size:18px; opacity:.75;}
+  .response-no{background:#fffafa; border-color:rgba(158,126,143,.32); color:#806b77;}
+  .response-hero{padding-right:44px;}
+  .response-hero strong{display:block; margin-bottom:5px; color:#a92964; font-family:'Comfortaa',sans-serif; font-size:15px; line-height:1.42;}
+  .response-hero p{margin:0 0 10px; color:#76556c; font-size:12px; font-weight:800;}
+  .response-details{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:7px; margin:10px 0;}
+  .response-detail{padding:8px 10px; border-radius:11px; background:rgba(255,255,255,.82); color:#6f5266;}
+  .response-detail small{display:block; color:#a8869c; font-size:9px; font-weight:900; letter-spacing:.05em; text-transform:uppercase;}
+  .response-detail b{display:block; margin-top:1px; color:#64354e; font-size:12px;}
+  .readiness-progress{margin:12px 0; padding:13px 14px; border-radius:14px; background:rgba(255,255,255,.9); border:1px solid rgba(255,77,130,.2);}
+  .readiness-progress-head{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:8px; color:#80546a; font-size:11px; font-weight:900;}
+  .readiness-progress-head strong{color:#d23970; font-family:'Comfortaa',sans-serif; font-size:18px;}
+  .readiness-progress-track{height:10px; overflow:hidden; border-radius:999px; background:#eee7e9; box-shadow:inset 0 1px 3px rgba(73,52,62,.1);}
+  .readiness-progress-fill{display:block; height:100%; border-radius:inherit; background:linear-gradient(90deg,#ffb1c9,#ff6f9d 52%,#c136a0); box-shadow:0 0 10px rgba(255,77,130,.3);}
+  .readiness-progress-note{margin:7px 0 0; color:#8b7c82; font-size:9px; font-weight:800; line-height:1.45;}
+  .response .location-row{margin-top:8px; padding-top:8px; border-top:1px dashed rgba(0,0,0,.08); display:flex; align-items:center; gap:6px; flex-wrap:wrap;}
+  .response .location-row a{color:var(--coral-deep); font-weight:700; text-decoration:none;}
+  .response .location-row a:hover{text-decoration:underline;}
+  .history{margin-top:8px; padding:8px 12px; background:#fdf3f8; border-left:3px solid var(--coral-soft); border-radius:8px; font-size:12px; color:var(--muted); line-height:1.55;}
+  .history-title{display:block; font-weight:800; color:var(--coral-deep); margin-bottom:4px;}
+  .history-item{padding:2px 0; border-bottom:1px dashed rgba(0,0,0,.06);}
+  .history-item:last-child{border-bottom:none;}
+  .card-actions{display:flex; flex-direction:column; gap:6px; align-items:flex-end;}
+  .backend-warn{background:#fff1cf; color:#8a6a20; padding:10px 14px; border-radius:12px; margin-bottom:18px; font-size:13px; font-weight:700;}
   .id-mono{font-family:ui-monospace, Menlo, monospace; font-size:12px; color:var(--muted);}
+  .demo-card-pill{display:inline-flex; align-items:center; min-height:30px; padding:6px 11px; border-radius:999px; background:#fff0f5; color:#c9346a; font-size:11px; font-weight:950;}
+  .recover-box{margin:0 0 18px; padding:14px 16px; border-radius:14px; background:linear-gradient(135deg,#fff4f8,#fff8f4); border:1px solid rgba(247,106,142,.28);}
+  .recover-box summary{cursor:pointer; font-family:'Nunito',sans-serif; font-weight:900; color:var(--coral-deep); font-size:14px; list-style:none; display:flex; align-items:center; gap:8px;}
+  .recover-box summary::-webkit-details-marker{display:none;}
+  .recover-box summary::after{content:'▾'; margin-left:auto; transition:transform .2s;}
+  .recover-box[open] summary::after{transform:rotate(180deg);}
+  .recover-body{margin-top:12px; display:flex; flex-direction:column; gap:8px;}
+  .recover-body .hint{font-size:12px; color:var(--muted); line-height:1.5;}
+  .recover-form{display:flex; gap:8px; flex-wrap:wrap;}
+  .recover-form input{flex:1 1 200px; min-width:0; padding:11px 14px; border-radius:10px; border:1px solid rgba(0,0,0,.12); font-family:ui-monospace, Menlo, monospace; font-size:14px; letter-spacing:.06em; text-transform:uppercase;}
+  .recover-form input:focus{outline:2px solid rgba(247,106,142,.35); border-color:transparent;}
+  .recover-status{font-size:12px; font-weight:800; min-height:16px;}
+  .recover-status.ok{color:#2e7a3e;}
+  .recover-status.bad{color:#c92e5b;}
+  @media (max-width:640px){
+    .wrap{padding:22px 12px 48px;}
+    .answer-celebration{padding:21px 17px 18px; border-radius:20px;}
+    .answer-celebration h2{margin-right:28px; font-size:19px;}
+    .card{grid-template-columns:1fr; padding:17px;}
+    .card-actions{flex-direction:row; flex-wrap:wrap; align-items:center;}
+    .response-details{grid-template-columns:1fr;}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .answer-celebration,
+    .answer-celebration::before,
+    .answer-celebration::after{animation:none;}
+  }
 </style>
 </head>
 <body>
   <div class="wrap">
     <header>
       <div>
-        <h1>💌 Ирсэн хариунууд</h1>
-        <p class="subtitle">Таны илгээсэн урилга, цэцэг + захидал бүр нээгдсэн эсэх, хүлээн авагч ямар өдөр, цагийг сонгосон нь энд харагдана.</p>
+        <div class="h-title">
+          <h1>📊 Миний урилгууд</h1>
+          <span class="private-pill" title="Зөвхөн энэ browser дээрээс харагдана">🔒 Хувийн</span>
+        </div>
+        <div class="subtitle">Энэ browser-с үүсгэсэн урилгууд ба хариунууд</div>
       </div>
       <div style="display:flex; gap:8px; flex-wrap:wrap;">
-        <a class="btn secondary" href="create.html">＋ Шинэ урилга</a>
-        <a class="btn secondary" href="unelgee.html">💰 Үнэ</a>
+        <a class="btn secondary" href="create.html">+ Шинэ урилга</a>
         <button class="btn secondary" id="refresh">🔄 Шинэчлэх</button>
       </div>
     </header>
 
-    <div class="howto">
-      <div class="howto-step"><span class="n">1</span>Урилга үүсгэнэ</div>
-      <div class="howto-step"><span class="n">2</span>Линкээ илгээнэ</div>
-      <div class="howto-step now"><span class="n">3</span>Хариу энэ хуудсанд ирнэ</div>
+    <section class="demo-banner" id="demoBanner" hidden>
+      🎀 <b>Эвлэрье хариуны demo</b> — доорх хувь, төлөв болон өмнөх хариунууд нь зөвхөн харагдац шалгах жишээ бөгөөд бодит хүнд илгээгдэхгүй.
+    </section>
+
+    <section class="answer-celebration" id="answerCelebration" hidden aria-live="polite">
+      <span class="celebration-kicker">💌 Хариу ирлээ</span>
+      <h2 id="celebrationTitle">Тийм ээ! Таны урилгыг зөвшөөрлөө 💕</h2>
+      <p id="celebrationMessage">Таны болзоонд амжилт хүсье — хамтдаа хамгийн гоё дурсамжаа бүтээгээрэй ✨</p>
+      <div class="celebration-details" id="celebrationDetails"></div>
+    </section>
+
+    <div class="privacy-note">
+      <span class="privacy-note-ic" aria-hidden="true">🔒</span>
+      <div>
+        <b>Энэ хуудсыг зөвхөн та л харна.</b> Урилгын линкийг илгээсэн crush эсвэл бусад хүн энэ жагсаалт руу нэвтрэх боломжгүй — жагсаалт нь зөвхөн энэ browser дээр хадгалагдана. Өөр browser эсвэл утаснаас хариу харах бол доорх "Урилгаа сэргээх"-ээр эрхийн кодоороо буцааж авна уу.
+      </div>
     </div>
+
+    <details class="recover-box" id="recoverBox">
+      <summary>🔑 Урилгаа сэргээх — өмнөх эрхийн кодоороо</summary>
+      <div class="recover-body">
+        <p class="hint">Browser цэвэрлэсэн, өөр төхөөрөмжөөс нэвтэрсэн үү? Урилга үүсгэхэд ашигласан <b>LOV-XXXXXX</b> кодоо оруулаад тухайн урилгын хариугаа энэ browser-т сэргээгээрэй. Код нь QPay төлбөрийн түүхэнд эсвэл өмнө хуулж авсан газарт байгаа.</p>
+        <form class="recover-form" id="recoverForm" autocomplete="off">
+          <input id="recoverCode" type="text" placeholder="LOV-XXXXXX" maxlength="10" spellcheck="false" aria-describedby="recoverCodeHelp" />
+          <button class="btn small" type="submit" id="recoverBtn">Сэргээх</button>
+        </form>
+        <small class="hint" id="recoverCodeHelp">Жишээ: <b>LOV-ABC234</b> · Урилгын ID биш.</small>
+        <div class="recover-status" id="recoverStatus"></div>
+      </div>
+    </details>
 
     <div class="backend-warn" id="backendWarn" style="display:none;">
       ⚠️ Supabase backend тохируулаагүй тул зөвхөн энэ browser дээрх урилгууд харагдана. Backend тохируулбал бүх төхөөрөмжөөс харах, хариу цуглуулах боломжтой болно (assets/config.js).
     </div>
 
-    <section class="card lookup">
-      <h2>🔎 Урилгаа ID эсвэл линкээр нь хайх</h2>
-      <p class="hint">
-        Энэ хуудас нь <b>энэ browser-с</b> үүсгэсэн урилгуудыг сануулж харуулдаг.
-        Өөр утас/компьютерээс үүсгэсэн, эсвэл түүх нь арилсан бол урилгын линкээ доор буулгаад нэмээрэй —
-        нэг л удаа нэмбэл цаашид жагсаалтад үлдэнэ.
-        Ингэж нэмсэн урилгыг зөвхөн жагсаалтаас хасаж болно — бүрмөсөн устгахын тулд
-        уг урилгыг үүсгэсэн browser-ээсээ орно уу.
-      </p>
-      <div class="lookup-row">
-        <input id="lookupInput" type="text" placeholder="https://…/greet.html?id=abc123  эсвэл  abc123" autocomplete="off" />
-        <button class="btn" id="lookupBtn">Хайх</button>
-      </div>
-      <div class="lookup-status" id="lookupStatus"></div>
-    </section>
-
     <div class="stats">
       <div class="stat"><div class="stat-num" id="statTotal">0</div><div class="stat-lbl">Нийт урилга</div></div>
-      <div class="stat"><div class="stat-num" id="statOpened">0</div><div class="stat-lbl">Нээж үзсэн</div></div>
+      <div class="stat"><div class="stat-num" id="statOpened">0</div><div class="stat-lbl">Нээгдсэн</div></div>
       <div class="stat"><div class="stat-num" id="statResponded">0</div><div class="stat-lbl">Хариу ирсэн</div></div>
     </div>
 
-    <div class="filters" id="filters">
-      <button class="chip on" data-filter="all">Бүгд <span data-count="all">0</span></button>
-      <button class="chip" data-filter="responded">✅ Хариу ирсэн <span data-count="responded">0</span></button>
-      <button class="chip" data-filter="waiting">⏳ Хариу хүлээж буй <span data-count="waiting">0</span></button>
+    <div class="list" id="list">
+      <div class="empty" id="empty" style="display:none;">
+        <h2>Урилга байхгүй байна 💌</h2>
+        <p class="subtitle">Энэ browser-с үүсгэсэн урилга алга.</p>
+        <p class="subtitle" style="margin-top:10px; font-size:13px;">Өмнө нь өөр browser эсвэл утаснаас урилга үүсгэсэн үү? Дээрх <b>🔑 Урилгаа сэргээх</b> хэсгээр эрхийн кодоороо буцааж авах боломжтой — <u>дахин код худалдаж авах шаардлагагүй</u>.</p>
+        <div style="margin-top:16px; display:flex; gap:8px; justify-content:center; flex-wrap:wrap;">
+          <button class="btn" type="button" id="emptyRecoverBtn">🔑 Урилгаа сэргээх</button>
+          <a class="btn secondary" href="create.html">+ Шинэ урилга үүсгэх</a>
+        </div>
+      </div>
     </div>
-
-    <div class="list" id="list"></div>
   </div>
 
 <script src="assets/utils.js"></script>
 <script src="assets/config.js"></script>
 <script src="assets/api.js"></script>
-<script src="assets/bolzoo-garden.js"></script>
 <script>
 (function(){
   var $ = BolzooUtils.$, esc = BolzooUtils.esc, fmtWhen = BolzooUtils.fmtWhen;
-  var invites = [];
-  var filter = 'all';
+  var list = $('list'), empty = $('empty');
+  var DEMO_MODE = new URLSearchParams(window.location.search).get('demo') === 'apology';
+
+  if(DEMO_MODE){
+    document.body.classList.add('demo-mode');
+    document.title = 'Эвлэрье · Хариуны demo 💗';
+    $('demoBanner').hidden = false;
+    document.querySelector('h1').textContent = '💗 Эвлэрье · Хариуны demo';
+    document.querySelector('.subtitle').textContent = 'Илгээгчид хариу ингэж харагдана';
+    document.querySelector('.private-pill').textContent = '🎀 Demo';
+  }
 
   var kind = window.BolzooAPI ? window.BolzooAPI.backendKind : 'localStorage';
   if(kind === 'localStorage'){
     $('backendWarn').style.display = 'block';
   }
+  function inviteUrl(id){
+    return new URL('bolzoo.html', window.location.href).href + '?id=' + encodeURIComponent(id);
+  }
 
-  function isFlower(cfg){ return (cfg || {}).mode === 'flower'; }
-  function isSorry(cfg){ return (cfg || {}).mode === 'sorry'; }
-  // Горим бүр өөрийн хүлээн авагчийн хуудастай
-  function invitePage(cfg){
-    if(isFlower(cfg)) return 'greet.html';
-    if(isSorry(cfg))  return 'argadah.html';
-    return 'bolzoo.html';
-  }
-  function inviteUrl(cfg, id){
-    return new URL(invitePage(cfg), window.location.href).href + '?id=' + encodeURIComponent(id);
-  }
-  function val(v){ return (v === undefined || v === null || v === '') ? '—' : v; }
-
-  // Засах эрх: хариу ирээгүй бөгөөд owner_token энэ төхөөрөмж дээр байгаа
-  function canEdit(inv){
-    return !inv.responded_at && !!BolzooAPI.getOwnerToken(inv.id);
-  }
+  var APOLOGY_STATUS = {
+    needs_space: { icon:'🕊️', label:'Хугацаа хэрэгтэй' },
+    read:        { icon:'💌', label:'Захиаг уншсан' },
+    message:     { icon:'💬', label:'Мессежээр ярилцаж болно' },
+    meet:        { icon:'☕', label:'Уулзаж ярилцахад бэлэн' },
+    stop:        { icon:'🛑', label:'Дахиж холбоо барихгүй байхыг хүссэн' }
+  };
+  var APOLOGY_ISSUES = {
+    harsh_words:'Хатуу үг хэлсэн', forgot:'Амлалт эсвэл чухал өдрийг мартсан',
+    neglected:'Анхаарал халамж дутсан', cancelled:'Хоцорсон эсвэл төлөвлөгөөг цуцалсан',
+    jealousy:'Хардалт эсвэл буруу ойлголцол', other:'Өөр асуудал'
+  };
+  function isApologyInvite(inv){ return !!(inv && inv.config && inv.config.experienceType === 'apology'); }
 
   function statusBadge(inv){
+    if(isApologyInvite(inv) && inv.response){
+      var apologyStatus = APOLOGY_STATUS[inv.response.status];
+      return '<span class="badge apology">' + esc(apologyStatus ? apologyStatus.icon + ' ' + apologyStatus.label : '✅ Хариу ирсэн') + '</span>';
+    }
+    if(isAccepted(inv)) return '<span class="badge accepted">💕 Зөвшөөрсөн</span>';
     if(inv.responded_at) return '<span class="badge responded">✅ Хариу ирсэн</span>';
-    if(inv.opened_at)    return '<span class="badge opened">👀 Нээсэн, хариу өгөөгүй</span>';
-    return '<span class="badge pending">⏳ Хараахан нээгээгүй</span>';
+    if(inv.opened_at)    return '<span class="badge opened">👀 Нээсэн</span>';
+    return '<span class="badge pending">⏳ Хүлээгдэж буй</span>';
   }
 
-  function answerBlock(inv){
-    var flower = isFlower(inv.config);
-    var sorry  = isSorry(inv.config);
-    var what   = flower ? 'Мэндчилгээ' : (sorry ? 'Захидал' : 'Урилга');
-    if(!inv.response){
-      if(inv.opened_at){
-        return '<div class="waiting"><b>Хариу хараахан ирээгүй байна</b>'
-          + (flower
-              ? 'Мэндчилгээг ' + esc(fmtWhen(inv.opened_at)) + '-д нээж үзсэн байна. Түр хүлээгээрэй 💗'
-              : sorry
-              ? 'Захидлыг ' + esc(fmtWhen(inv.opened_at)) + '-д уншсан ч хариугаа хэлээгүй байна. Түр хүлээгээрэй 💗'
-              : 'Урилгыг ' + esc(fmtWhen(inv.opened_at)) + '-д нээж үзсэн ч болзооны өдрөө сонгоогүй байна. Түр хүлээгээрэй 💗')
-          + '</div>';
-      }
-      return '<div class="waiting"><b>' + what + ' хараахан нээгдээгүй</b>'
-        + 'Линкийг илгээсэн эсэхээ шалгаад, дахин нэг сануулаарай 💌</div>';
-    }
+  function isAccepted(inv){
+    if(isApologyInvite(inv)) return false;
+    var r = inv && inv.response;
+    return !!r && (r.answer === 'yes' || (r.answer !== 'no' && !!r.date));
+  }
+
+  function detailCard(icon, label, value){
+    if(!value) return '';
+    return '<div class="response-detail"><small>' + icon + ' ' + esc(label) + '</small><b>' + esc(value) + '</b></div>';
+  }
+
+  function readinessProgress(value){
+    var percent = Number(value);
+    if(!Number.isInteger(percent) || percent < 0 || percent > 100) return '';
+    return '<div class="readiness-progress">'
+      + '<div class="readiness-progress-head"><span>🌿 Хүлээн авагчийн сонгосон эвлэрлийн явц</span><strong>' + percent + '%</strong></div>'
+      + '<div class="readiness-progress-track"><i class="readiness-progress-fill" style="width:' + percent + '%"></i></div>'
+      + '<p class="readiness-progress-note">AI тооцоолоогүй — хүлээн авагч өөрөө энэ хувийг сонгосон.</p>'
+      + '</div>';
+  }
+
+  function renderLocationRow(cfg){
+    var name = (cfg.locationName || '').trim();
+    var url  = (cfg.locationUrl  || '').trim();
+    if(!name && !url) return '';
+    var label = name || 'Байршил';
+    var inner = url
+      ? '<a href="' + esc(url) + '" target="_blank" rel="noopener">' + esc(label) + ' →</a>'
+      : '<b>' + esc(label) + '</b>';
+    return '<div class="location-row">📍 <b>Уулзах газар:</b> ' + inner + '</div>';
+  }
+
+  function renderResponse(inv){
+    if(!inv.response) return '';
     var r = inv.response;
-
-    if(r.type === 'sorry' || sorry){
-      // Хувь ганцаараа ойлгомжгүй тул нүүр + тайлбартай нь хамт харуулна
-      var lv = BolzooUtils.forgiveLevel(r.level);
-      return '<div class="answer">'
-        + '<div class="answer-head">' + (r.forgiven ? '💗 Уучиллаа!' : '🫂 Хараахан үгүй') + '</div>'
-        + '<div class="answer-body">'
-          + '<div class="answer-grid">'
-            + '<div class="a-item"><span class="a-lbl">📊 Уучлалын хэмжүүр</span><span class="a-val">'
-              + (r.level == null ? '—' : lv.face + ' ' + esc(lv.label) + ' (' + esc(String(r.level)) + '%)')
-            + '</span></div>'
-            + '<div class="a-item"><span class="a-lbl">💔 Миний буруу</span><span class="a-val">'
-              + esc(val((inv.config || {}).sorryReason)) + '</span></div>'
-            + '<div class="a-item" style="grid-column:1/-1;"><span class="a-lbl">✍️ Хэлсэн үг</span><span class="a-val">'
-              + esc(r.reply ? r.reply : '(үг бичээгүй)') + '</span></div>'
-          + '</div>'
-          + '<div class="answer-foot">Хариу ирсэн: ' + esc(fmtWhen(inv.responded_at)) + '</div>'
+    var cfg = inv.config || {};
+    var meta = '<span class="card-meta">Хариу ирсэн: ' + esc(fmtWhen(inv.responded_at)) + '</span>';
+    if(isApologyInvite(inv)){
+      var apologyStatus = APOLOGY_STATUS[r.status] || {icon:'💌',label:r.statusLabel || 'Хариу ирсэн'};
+      var issue = APOLOGY_ISSUES[cfg.apologyIssue] || 'Эвлэрлийн захиа';
+      return '<div class="response response-apology">'
+        + '<div class="response-hero"><strong>' + esc(apologyStatus.icon + ' ' + apologyStatus.label) + '</strong>'
+        + '<p>Хүлээн авагч өөрийн хурдаар энэ төлвийг сонгосон. Хариуг нь тайлбарлаж таахгүй, яг сонгосноор нь хүндэтгээрэй.</p></div>'
+        + readinessProgress(r.readinessPercent)
+        + '<div class="response-details">'
+        + detailCard('🫶','Нөхцөл',issue)
+        + detailCard('🌱','Таны амласан үйлдэл',cfg.apologyRepair)
+        + detailCard('📅','Уулзах өдөр',r.date)
+        + detailCard('🕐','Цаг',r.time)
+        + detailCard('☕','Болзооны төрөл',r.kind)
         + '</div>'
-      + '</div>';
+        + meta
+        + '</div>' + renderHistory(inv);
     }
-
-    if(r.type === 'flower' || flower){
-      var cfgF = inv.config || {};
-      var fname = (window.BolzooGarden ? BolzooGarden.flower(cfgF.flower).name : (cfgF.flower || '—'));
-      var pname = (window.BolzooGarden ? BolzooGarden.paper(cfgF.paper).name : (cfgF.paper || '—'));
-      return '<div class="answer">'
-        + '<div class="answer-head">💗 Цэцгийг хүлээж авлаа!</div>'
-        + '<div class="answer-body">'
-          + '<div class="answer-grid">'
-            + '<div class="a-item"><span class="a-lbl">🌸 Илгээсэн цэцэг</span><span class="a-val">' + esc(fname) + '</span></div>'
-            + '<div class="a-item"><span class="a-lbl">📄 Захидлын цаас</span><span class="a-val">' + esc(pname) + '</span></div>'
-            + '<div class="a-item" style="grid-column:1/-1;"><span class="a-lbl">✍️ Хариу үг</span><span class="a-val">' + esc(r.note ? r.note : '(үг бичээгүй)') + '</span></div>'
-          + '</div>'
-          + '<div class="answer-foot">Хариу ирсэн: ' + esc(fmtWhen(inv.responded_at)) + '</div>'
-        + '</div>'
-      + '</div>';
+    var choiceLine = r.choice
+      ? '<b>💘 Сонголт:</b> ' + esc(r.choice) + '<br>'
+      : '';
+    // Байршил зөвхөн уулзалт болох магадлалтай хариунуудад харуулна
+    var locationRow = r.answer === 'no' ? '' : renderLocationRow(cfg);
+    var body;
+    // Poster урилга: татгалзсан
+    if(r.answer === 'no'){
+      body = '<div class="response response-no">'
+        + '<b>💌 Хариу:</b> Эелдгээр татгалзсан байна 🥲<br>'
+        + meta
+        + '</div>';
+    } else if(r.answer === 'later' && !r.date){
+      body = '<div class="response response-later">'
+        + '<b>💌 Багахан хүлээгээрэй:</b> Тухайн өдөр амжихгүй ч өөр өдөр сонгож байна 💗<br>'
+        + meta
+        + locationRow
+        + '</div>';
+    } else if(r.answer === 'yes' && !r.date){
+      body = '<div class="response response-yes">'
+        + '<div class="response-hero"><strong>Тийм ээ! Таны урилгыг зөвшөөрлөө 💕</strong>'
+        + '<p>Одоо огноо, цагаа сонгож байна. Таны болзоонд амжилт хүсье ✨</p></div>'
+        + choiceLine
+        + meta
+        + locationRow
+        + '</div>';
+    } else {
+      var accepted = isAccepted(inv);
+      var responseClass = accepted ? ' response-yes' : ' response-later';
+      var responseHero = accepted
+        ? '<div class="response-hero"><strong>Тийм ээ! Таны урилгыг зөвшөөрлөө 💕</strong><p>Таны болзоонд амжилт хүсье — гоё дурсамж бүтээгээрэй ✨</p></div>'
+        : '';
+      var details = '<div class="response-details">'
+        + detailCard('📅','Өдөр',r.date)
+        + detailCard('🕐','Цаг',r.time)
+        + detailCard('💝','Болзооны төрөл',r.kind)
+        + detailCard('🎫','Ticket',r.ticketNo)
+        + '</div>';
+      body = '<div class="response' + responseClass + '">'
+        + responseHero
+        + (r.answer === 'later'
+          ? '<b>🎬 Постерийн хариу:</b> Тухайн өдөр амжихгүй, өөр өдөр санал болгосон<br>'
+          : '')
+        + choiceLine
+        + details
+        + meta
+        + locationRow
+        + '</div>';
     }
-    return '<div class="answer">'
-      + '<div class="answer-head">🎉 Тийм гэж хариулсан!</div>'
-      + '<div class="answer-body">'
-        + '<div class="answer-grid">'
-          + '<div class="a-item"><span class="a-lbl">📅 Сонгосон өдөр</span><span class="a-val">' + esc(val(r.date)) + '</span></div>'
-          + '<div class="a-item"><span class="a-lbl">🕐 Сонгосон цаг</span><span class="a-val">' + esc(val(r.time)) + '</span></div>'
-          + '<div class="a-item"><span class="a-lbl">💝 Болзооны төрөл</span><span class="a-val">' + esc(val(r.kind)) + '</span></div>'
-          + '<div class="a-item"><span class="a-lbl">🎫 Ticket дугаар</span><span class="a-val">' + esc(val(r.ticketNo)) + '</span></div>'
-        + '</div>'
-        + '<div class="answer-foot">Хариу ирсэн: ' + esc(fmtWhen(inv.responded_at)) + '</div>'
-      + '</div>'
-    + '</div>';
+    return body + renderHistory(inv);
   }
 
-  function emptyBox(){
-    if(!invites.length){
-      return '<div class="empty">'
-        + '<h2>Одоохондоо урилга алга 💌</h2>'
-        + '<p class="subtitle">Эхний урилгаа үүсгээд линкээ илгээвэл хариу нь яг энд харагдана.</p>'
-        + '<a class="btn" href="create.html" style="margin-top:10px;">＋ Шинэ урилга үүсгэх</a>'
-      + '</div>';
+  function summarizeHistoryEntry(entry){
+    var r = (entry && entry.response) || {};
+    var when = entry && entry.responded_at ? fmtWhen(entry.responded_at) : '';
+    var label;
+    if(r.type === 'apology'){
+      var apologyStatus = APOLOGY_STATUS[r.status];
+      label = apologyStatus ? apologyStatus.icon + ' ' + apologyStatus.label : (r.statusLabel || 'Эвлэрлийн өмнөх төлөв');
+      if(Number.isInteger(Number(r.readinessPercent))) label += ' · ' + Number(r.readinessPercent) + '%';
     }
-    if(filter === 'responded'){
-      return '<div class="empty"><h2>Хариу ирсэн урилга алга ⏳</h2>'
-        + '<p class="subtitle">Хүлээн авагч болзооны өдрөө сонгомогц энд шууд харагдана.</p></div>';
-    }
-    return '<div class="empty"><h2>Хүлээгдэж буй урилга алга ✅</h2>'
-      + '<p class="subtitle">Бүх урилгад чинь хариу ирсэн байна!</p></div>';
+    else if(r.answer === 'no') label = 'Татгалзсан 🥲';
+    else if(r.answer === 'later' && !r.date) label = 'Тухайн өдөр амжихгүй';
+    else if(r.answer === 'yes' && !r.date) label = r.choice ? r.choice + ' — огноо сонгоогүй' : 'Тийм — огноо сонгоогүй';
+    else if(r.date) label = (r.choice ? r.choice + ': ' : (r.answer === 'later' ? 'Өөр өдөр: ' : '')) + r.date + (r.time ? ' · ' + r.time : '');
+    else label = 'Өмнөх хариу';
+    return {
+      label: label,
+      when: when
+    };
   }
 
-  function matches(inv){
-    if(filter === 'responded') return !!inv.responded_at;
-    if(filter === 'waiting')   return !inv.responded_at;
-    return true;
-  }
-
-  function render(){
-    var main = $('list');
-    var shown = invites.filter(matches);
-    if(!shown.length){ main.innerHTML = emptyBox(); return; }
-    main.innerHTML = shown.map(function(inv){
-      var cfg = inv.config || {};
-      var kind = isFlower(cfg) ? 'цэцэг + захидал 🌸' : (isSorry(cfg) ? 'аргадах захидал 🥺' : 'урилга 💌');
-      var openWhat = isFlower(cfg) ? 'Мэндчилгээг' : (isSorry(cfg) ? 'Захидлыг' : 'Урилгыг');
-      return '<div class="card' + (inv.response ? ' has-answer' : '') + '">'
-        + '<div class="card-top">'
-          + '<div>'
-            + '<h3 class="card-title">' + esc(cfg.recipientName || '(нэргүй)') + '-д илгээсэн ' + kind + '</h3>'
-            + '<div class="card-meta">'
-              + (cfg.senderName ? 'Илгээгч: <b>' + esc(cfg.senderName) + '</b><br>' : '')
-              + 'Үүсгэсэн: ' + esc(fmtWhen(inv.created_at))
-              + '<br>ID: <span class="id-mono">' + esc(inv.id) + '</span>'
-            + '</div>'
-            + '<div style="margin-top:8px;">' + statusBadge(inv) + '</div>'
-          + '</div>'
-          + '<div class="card-actions">'
-            + '<a class="btn small secondary" href="' + esc(inviteUrl(cfg, inv.id)) + '" target="_blank">🔗 ' + openWhat + ' нээх</a>'
-            + '<button class="btn small secondary" data-copy="' + esc(inviteUrl(cfg, inv.id)) + '">📋 Линк хуулах</button>'
-            // Хариу ирсний дараа засахыг зөвшөөрөхгүй, owner_token байхгүй бол зөвхөн харна
-            + (canEdit(inv)
-                ? '<a class="btn small secondary" href="create.html?edit=' + encodeURIComponent(inv.id) + '">✏️ Засах</a>'
-                : '')
-            + (BolzooAPI.getOwnerToken(inv.id)
-                ? '<button class="btn small danger" data-del="' + esc(inv.id) + '">🗑️ Бүрмөсөн устгах</button>'
-                : '<button class="btn small secondary" data-forget="' + esc(inv.id) + '">✖️ Жагсаалтаас хасах</button>')
-          + '</div>'
-        + '</div>'
-        + answerBlock(inv)
-      + '</div>';
+  function renderHistory(inv){
+    var history = Array.isArray(inv.response_history) ? inv.response_history : [];
+    if(!history.length) return '';
+    var items = history.slice().reverse().map(function(entry){
+      var s = summarizeHistoryEntry(entry);
+      return '<div class="history-item">'
+        + esc(s.label)
+        + (s.when ? ' <span class="card-meta">· ' + esc(s.when) + '</span>' : '')
+        + '</div>';
     }).join('');
+    return '<div class="history">'
+      + '<span class="history-title">📚 Өмнөх хариунууд</span>'
+      + items
+      + '</div>';
   }
 
-  function updateStats(){
-    var opened    = invites.filter(function(i){ return !!i.opened_at; }).length;
-    var responded = invites.filter(function(i){ return !!i.responded_at; }).length;
-    $('statTotal').textContent = invites.length;
-    $('statOpened').textContent = opened;
-    $('statResponded').textContent = responded;
-    $('filters').querySelector('[data-count="all"]').textContent = invites.length;
-    $('filters').querySelector('[data-count="responded"]').textContent = responded;
-    $('filters').querySelector('[data-count="waiting"]').textContent = invites.length - responded;
+  function render(list_){
+    var main = $('list');
+    // Clear
+    while(main.firstChild) main.removeChild(main.firstChild);
+    if(!list_.length){
+      var e = empty.cloneNode(true);
+      e.style.display='block';
+      main.appendChild(e);
+      return;
+    }
+    list_.forEach(function(inv){
+      var cfg = inv.config || {};
+      var el = document.createElement('div');
+      el.className = 'card' + (isAccepted(inv) ? ' answer-yes' : '');
+      el.innerHTML =
+        '<div>'
+          + '<h3 class="card-title">' + esc(cfg.recipientName || '(нэргүй)')
+            + (isApologyInvite(inv) ? ' <small style="color:#c9346a;font-size:10px;">· ЭВЛЭРЬЕ</small>' : '') + '</h3>'
+          + '<div class="card-meta">'
+            + (cfg.senderName ? 'Илгээгч: <b>'+esc(cfg.senderName)+'</b> · ' : '')
+            + 'Үүсгэсэн: ' + esc(fmtWhen(inv.created_at))
+            + ' · <span class="id-mono">' + esc(inv.id) + '</span>'
+          + '</div>'
+          + '<div style="margin-top:8px;">' + statusBadge(inv) + '</div>'
+          + renderResponse(inv)
+        + '</div>'
+        + '<div class="card-actions">'
+          + (DEMO_MODE
+            ? '<span class="demo-card-pill">Жишээ хариу</span>'
+            : '<a class="btn small secondary" href="' + esc(inviteUrl(inv.id)) + '" target="_blank">🔗 Нээх</a>'
+              + '<button class="btn small secondary" data-copy="' + esc(inviteUrl(inv.id)) + '">📋 Хуулах</button>'
+              + '<button class="btn small danger" data-del="' + esc(inv.id) + '">🗑️ Устгах</button>')
+        + '</div>';
+      main.appendChild(el);
+    });
+  }
+
+  function updateStats(list_){
+    $('statTotal').textContent = list_.length;
+    $('statOpened').textContent = list_.filter(function(i){ return !!i.opened_at; }).length;
+    $('statResponded').textContent = list_.filter(function(i){ return !!i.responded_at; }).length;
+  }
+
+  function updateCelebration(list_){
+    var box = $('answerCelebration');
+    var accepted = list_.filter(isAccepted).sort(function(a,b){
+      return String(b.responded_at || '').localeCompare(String(a.responded_at || ''));
+    });
+    if(!accepted.length){
+      box.hidden = true;
+      return;
+    }
+    var invite = accepted[0];
+    var cfg = invite.config || {};
+    var r = invite.response || {};
+    $('celebrationTitle').textContent = cfg.recipientName
+      ? 'Тийм ээ! ' + cfg.recipientName + ' таны урилгыг зөвшөөрлөө 💕'
+      : 'Тийм ээ! Таны урилгыг зөвшөөрлөө 💕';
+    $('celebrationMessage').textContent = accepted.length > 1
+      ? 'Нийт ' + accepted.length + ' урилга зөвшөөрөгдсөн байна. Таны болзоонд аз жаргал, инээд хөөр дүүрэн байх болтугай ✨'
+      : 'Таны болзоонд амжилт хүсье — хамтдаа хамгийн гоё дурсамжаа бүтээгээрэй ✨';
+    var details = [];
+    if(r.date) details.push('<span>📅 ' + esc(r.date) + '</span>');
+    if(r.time) details.push('<span>🕐 ' + esc(r.time) + '</span>');
+    if(r.kind) details.push('<span>💝 ' + esc(r.kind) + '</span>');
+    $('celebrationDetails').innerHTML = details.join('');
+    box.hidden = false;
+  }
+
+  function demoApologyInvites(){
+    var now = Date.now();
+    return [{
+      id: 'DEMO-EVLEREY',
+      config: {
+        experienceType: 'apology',
+        recipientName: 'Хайрт минь',
+        senderName: 'Танаас',
+        apologyIssue: 'harsh_words',
+        apologyRepair: 'Уурласан үедээ шууд хариулахгүй, тайвшраад чамайг бүрэн сонсож ярилцана.'
+      },
+      response: {
+        type: 'apology',
+        status: 'meet',
+        statusLabel: 'Уулзаж ярилцахад бэлэн',
+        readinessPercent: 80
+      },
+      response_history: [
+        {
+          response: {type:'apology', status:'needs_space', readinessPercent:30},
+          responded_at: new Date(now - 2 * 86400000).toISOString()
+        },
+        {
+          response: {type:'apology', status:'read', readinessPercent:50},
+          responded_at: new Date(now - 86400000).toISOString()
+        }
+      ],
+      created_at: new Date(now - 3 * 86400000).toISOString(),
+      opened_at: new Date(now - 2 * 86400000).toISOString(),
+      responded_at: new Date(now - 20 * 60000).toISOString()
+    }];
   }
 
   async function load(){
     $('refresh').disabled = true;
     try{
-      var invs = await BolzooAPI.listMyInvites();
-      // Хариу ирсэн нь эхэндээ, дараа нь шинэ үүссэн нь
-      invs.sort(function(a,b){
-        var ar = a.responded_at ? 1 : 0, br = b.responded_at ? 1 : 0;
-        if(ar !== br) return br - ar;
-        return (b.created_at||'').localeCompare(a.created_at||'');
-      });
-      invites = invs;
-      render();
-      updateStats();
+      var invs = DEMO_MODE ? demoApologyInvites() : await BolzooAPI.listMyInvites();
+      // sort newest first
+      invs.sort(function(a,b){ return (b.created_at||'').localeCompare(a.created_at||''); });
+      render(invs);
+      updateStats(invs);
+      updateCelebration(invs);
     }catch(e){
       alert('Ачаалахад алдаа: '+(e.message||e));
     }finally{
       $('refresh').disabled = false;
     }
   }
-
-  /* ---------- ID / линкээр хайх ---------- */
-  function parseId(raw){
-    var s = (raw||'').trim();
-    if(!s) return '';
-    var m = s.match(/[?&]id=([^&#\s]+)/);
-    if(m) return decodeURIComponent(m[1]);
-    if(/^[A-Za-z0-9_-]+$/.test(s)) return s;
-    return '';
-  }
-  async function lookup(){
-    var st = $('lookupStatus');
-    var id = parseId($('lookupInput').value);
-    if(!id){
-      st.className = 'lookup-status err';
-      st.textContent = '❌ ID олдсонгүй. Урилгын бүтэн линк эсвэл ID-г буулгана уу.';
-      return;
-    }
-    st.className = 'lookup-status';
-    st.textContent = '⏳ Хайж байна…';
-    $('lookupBtn').disabled = true;
-    try{
-      await BolzooAPI.trackInvite(id);
-      st.className = 'lookup-status ok';
-      st.textContent = '✅ Нэмэгдлээ. Доорх жагсаалтаас хараарай.';
-      $('lookupInput').value = '';
-      filter = 'all';
-      setChip('all');
-      await load();
-    }catch(e){
-      st.className = 'lookup-status err';
-      st.textContent = '❌ ' + (e.message || 'Олдсонгүй');
-    }finally{
-      $('lookupBtn').disabled = false;
-    }
-  }
-  function setChip(f){
-    var chips = $('filters').querySelectorAll('.chip');
-    for(var i=0;i<chips.length;i++){
-      chips[i].classList.toggle('on', chips[i].getAttribute('data-filter') === f);
-    }
-  }
-  $('lookupBtn').addEventListener('click', lookup);
-  $('lookupInput').addEventListener('keydown', function(e){ if(e.key === 'Enter') lookup(); });
-
-  $('filters').addEventListener('click', function(e){
-    var chip = e.target.closest('.chip');
-    if(!chip) return;
-    filter = chip.getAttribute('data-filter');
-    setChip(filter);
-    render();
-  });
 
   document.addEventListener('click', function(e){
     var copyBtn = e.target.closest('[data-copy]');
@@ -418,35 +525,94 @@
       }
       return;
     }
-    var forgetBtn = e.target.closest('[data-forget]');
-    if(forgetBtn){
-      var fid = forgetBtn.getAttribute('data-forget');
-      if(!confirm('Зөвхөн энэ жагсаалтаас хасах уу?\n\nУрилга өөрөө устахгүй — илгээсэн линк хэвээр ажиллана. Дараа нь ID-аар нь дахин нэмж болно.')) return;
-      BolzooAPI.forgetInvite(fid);
-      load();
-      return;
-    }
     var delBtn = e.target.closest('[data-del]');
     if(delBtn){
       var id = delBtn.getAttribute('data-del');
-      if(!confirm('Энэ урилгыг БҮРМӨСӨН устгах уу?\n\nИлгээсэн линк ажиллахаа болино, ирсэн хариу нь ч устана. Буцаах боломжгүй.')) return;
+      if(!confirm('Энэ урилгыг устгах уу? Буцаах боломжгүй.')) return;
       BolzooAPI.deleteInvite(id).then(load).catch(function(err){
         alert('Устгаж чадсангүй: '+(err.message||err));
       });
     }
   });
 
-  $('refresh').addEventListener('click', load);
+  /* ---------- Recovery: LOV code OR #recover=id~token URL hash ---------- */
+  function setRecoverStatus(msg, tone){
+    var el = $('recoverStatus'); if(!el) return;
+    el.textContent = msg || '';
+    el.classList.remove('ok','bad');
+    if(tone) el.classList.add(tone);
+  }
+  async function recoverAndLoad(code){
+    var normalized = String(code || '').trim().toUpperCase();
+    if(!normalized) return;
+    setRecoverStatus('⏳ Шалгаж байна…', null);
+    $('recoverBtn').disabled = true;
+    try{
+      var data = await BolzooAPI.recoverInvite(normalized);
+      BolzooAPI.rememberOwnedInvite(data.id, data.owner_token);
+      setRecoverStatus('✅ Сэргээв. Жагсаалт шинэчлэгдэж байна…', 'ok');
+      await load();
+      // Success бол recovery box-ыг хаах — санамжийг status-т үлдээнэ
+      var box = $('recoverBox'); if(box) box.open = false;
+    }catch(err){
+      setRecoverStatus('⚠️ ' + (err.message || 'Сэргээж чадсангүй'), 'bad');
+    }finally{
+      $('recoverBtn').disabled = false;
+    }
+  }
 
-  // Линкээр шууд ирсэн бол (dashboard.html?id=xxx) тухайн урилгыг автоматаар нэмнэ
-  (function(){
-    var q = new URLSearchParams(window.location.search).get('id');
-    if(q){ $('lookupInput').value = q; lookup(); return; }
-    load();
+  var recoverForm = $('recoverForm');
+  if(recoverForm){
+    recoverForm.addEventListener('submit', function(e){
+      e.preventDefault();
+      recoverAndLoad($('recoverCode').value);
+    });
+  }
+  var emptyRecoverBtn = $('emptyRecoverBtn');
+  if(emptyRecoverBtn){
+    emptyRecoverBtn.addEventListener('click', function(){
+      var box = $('recoverBox');
+      if(box){ box.open = true; box.scrollIntoView({behavior:'smooth', block:'center'}); }
+      setTimeout(function(){ var i = $('recoverCode'); if(i) i.focus(); }, 250);
+    });
+  }
+
+  // Create хуудасны “Кодоор сэргээх” холбоосоор ирвэл сэргээх хэсгийг
+  // автоматаар нээж, кодын талбар дээр шууд төвлөрүүлнэ.
+  (function openRecoveryPrompt(){
+    var params = new URLSearchParams(location.search);
+    if(params.get('recover') !== '1') return;
+    var box = $('recoverBox');
+    if(box){
+      box.open = true;
+      setTimeout(function(){
+        box.scrollIntoView({behavior:'smooth', block:'center'});
+        var input = $('recoverCode');
+        if(input) input.focus();
+      }, 120);
+    }
   })();
 
-  // 30 секунд тутам шинэ хариу ирсэн эсэхийг шалгана
-  setInterval(load, 30000);
+  // URL hash: #recover=<id>~<owner_token>  (success modal-с ирсэн сэргээх линк)
+  (function processRecoverHash(){
+    var hash = String(location.hash || '');
+    var m = hash.match(/[#&]recover=([^&~]+)~([^&]+)/);
+    if(!m) return;
+    var id = decodeURIComponent(m[1]);
+    var token = decodeURIComponent(m[2]);
+    if(!id || !token) return;
+    var added = BolzooAPI.rememberOwnedInvite(id, token);
+    if(!added) return;
+    // Hash-ыг URL-с арилгах — token дэлгэц дээр үлдэхгүй
+    try{ history.replaceState(null, '', location.pathname + location.search); }catch(_){}
+    setRecoverStatus('✅ Урилгын хариу энэ browser-т сэргээгдлээ 💗', 'ok');
+    var box = $('recoverBox'); if(box) box.open = true;
+  })();
+
+  $('refresh').addEventListener('click', load);
+  load();
+  // auto-refresh every 30s to catch new responses
+  if(!DEMO_MODE) setInterval(load, 30000);
 })();
 </script>
 </body>

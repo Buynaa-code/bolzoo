@@ -1,12 +1,6 @@
 -- Bolzoo Supabase schema
 -- Run this in Supabase SQL editor: https://supabase.com/dashboard/project/_/sql/new
 --
--- ⚠️ АЛЬ ХЭДИЙН АЖИЛЛАЖ БУЙ САЙТ ДЭЭР ШИНЭЧЛЭХ БОЛ:
---    Файлын ТӨГСГӨЛД байгаа "АЛХАМ 2 — ХҮСНЭГТИЙГ ТҮГЖИХ" хэсгийг эхэлж
---    бүү ажиллуул. Дараалал: (1) энэ файл АЛХАМ 2-гүйгээр → (2) frontend
---    deploy → (3) АЛХАМ 2. Тайлбарыг тэр хэсгээс уншина уу.
---    Шинэ төсөл бол бүгдийг нэг дор ажиллуулж болно.
---
 -- After running this file:
 --   1. Set your admin password:
 --        insert into public.admin_settings(key, value) values ('admin_password', 'YOUR-SECRET-HERE')
@@ -19,14 +13,48 @@ create extension if not exists "pgcrypto";
 /* ---------- invites ---------- */
 
 create table if not exists public.invites (
-  id            text primary key,           -- short public ID, e.g. "aB3xK9zQ"
-  owner_token   uuid not null default gen_random_uuid(),
-  config        jsonb not null,             -- recipient name, sender, videoId, theme, etc
-  response      jsonb,                      -- filled when recipient answers
-  opened_at     timestamptz,                -- first time recipient opened link
-  responded_at  timestamptz,
-  created_at    timestamptz not null default now()
+  id             text primary key,           -- short public ID, e.g. "aB3xK9zQ"
+  owner_token    uuid not null default gen_random_uuid(),
+  config         jsonb not null,             -- PUBLIC: recipient name, sender, videoId, theme, etc
+  private_config jsonb not null default '{}'::jsonb, -- OWNER-ONLY: responseEmail, notes, etc
+  response       jsonb,                      -- filled when recipient answers
+  opened_at      timestamptz,                -- first time recipient opened link
+  responded_at   timestamptz,
+  created_at     timestamptz not null default now()
 );
+
+-- Existing installs upgrade path.
+alter table public.invites
+  add column if not exists private_config   jsonb not null default '{}'::jsonb;
+alter table public.invites
+  add column if not exists response_history jsonb not null default '[]'::jsonb;
+
+-- Timeline: record each older response before it gets overwritten.
+create or replace function public._append_response_history()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if OLD.response is not null and OLD.response is distinct from NEW.response then
+    NEW.response_history := coalesce(OLD.response_history, '[]'::jsonb)
+      || jsonb_build_array(
+        jsonb_build_object(
+          'response',     OLD.response,
+          'responded_at', OLD.responded_at
+        )
+      );
+  end if;
+  return NEW;
+end;
+$$;
+
+drop trigger if exists invites_response_history on public.invites;
+create trigger invites_response_history
+  before update of response on public.invites
+  for each row
+  execute function public._append_response_history();
 
 create index if not exists invites_created_at_idx on public.invites (created_at desc);
 
@@ -35,9 +63,8 @@ alter table public.invites enable row level security;
 -- Anon cannot insert invites directly anymore — they must go through create_invite_with_code RPC.
 drop policy if exists "anon can insert invites" on public.invites;
 
--- Anon энэ хүснэгтийг ШУУД УНШИХ ЁСГҮЙ — гэхдээ түгжээг файлын ТӨГСГӨЛД
--- байрлуулав ("АЛХАМ 2" хэсгийг үзнэ үү). Учир нь энэ мөрийг ажиллуулмагц
--- хуучин frontend уншиж чадахгүй болно.
+-- Direct table reads are blocked. Public config is returned by /api/invite.
+drop policy if exists "anon can select invites" on public.invites;
 
 -- Anon UPDATE-ыг зөвшөөрөхгүй — хариу болон нээсэн тэмдгийг save_response / mark_opened RPC дамжуулна.
 drop policy if exists "anon can update response" on public.invites;
@@ -70,21 +97,10 @@ create index if not exists access_codes_used_idx on public.access_codes (used);
 
 alter table public.access_codes enable row level security;
 
--- Anon энэ хүснэгтийг ШУУД УНШИХ ЁСГҮЙ — түгжээ файлын ТӨГСГӨЛД байна
--- ("АЛХАМ 2"). Хуучин frontend код шалгахдаа энэ хүснэгтийг уншдаг тул
--- түгжээг deploy хийсний ДАРАА тавина.
+-- Direct table reads are blocked. Exact-code validation uses /api/validate-code.
+drop policy if exists "anon can select access codes" on public.access_codes;
 
 -- No anon insert/update/delete — those go through RPCs (admin_* + create_invite_with_code)
-
-/* ---------- Цэвэрлэгээ ----------
- * Түр хугацаанд хоёр багцтай (Энгийн/Онцгой) байсныг больж, бүх боломжийг
- * нэг үнэд оруулсан. Өмнөх хувилбарыг ажиллуулж байсан бол доорх мөрүүд
- * үлдэгдлийг цэвэрлэнэ. Хэзээ ч ажиллуулаагүй бол юу ч болохгүй.
- */
-drop function if exists public._apply_plan_limits(jsonb, text);
-drop function if exists public.admin_create_codes(text, int, text, text);
-alter table public.access_codes drop constraint if exists access_codes_plan_check;
-alter table public.access_codes drop column if exists plan;
 
 /* ---------- Helpers ---------- */
 
@@ -95,13 +111,13 @@ security definer
 set search_path = public
 as $$
 declare
-  correct_pw text;
+  stored_pw text;
 begin
-  select value into correct_pw from public.admin_settings where key = 'admin_password';
-  if correct_pw is null then
-    raise exception 'Admin password not set. Run: insert into admin_settings(key,value) values (''admin_password'',''your-secret'') on conflict (key) do update set value = excluded.value;';
+  select value into stored_pw from public.admin_settings where key = 'admin_password';
+  if stored_pw is null then
+    raise exception 'Admin password not set. Run: insert into admin_settings(key,value) values (''admin_password'', crypt(''your-secret'', gen_salt(''bf'',10))) on conflict (key) do update set value = excluded.value;';
   end if;
-  if admin_pw is null or admin_pw <> correct_pw then
+  if admin_pw is null or crypt(admin_pw, stored_pw) <> stored_pw then
     raise exception 'Invalid admin password';
   end if;
 end;
@@ -110,6 +126,7 @@ $$;
 create or replace function public._gen_code()
 returns text
 language plpgsql
+set search_path = public, pg_catalog
 as $$
 declare
   chars text := 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';   -- no I, O, 0, 1
@@ -125,69 +142,17 @@ $$;
 
 /* ---------- RPCs ---------- */
 
--- Код хүчинтэй эсэхийг шалгана. Кодын жагсаалт, note зэргийг ИЛ ГАРГАХГҮЙ —
--- зөвхөн тухайн нэг кодын талаар "болно / болохгүй" гэсэн хариу өгнө.
-create or replace function public.check_access_code(p_code text)
-returns table (ok boolean, reason text)
-language plpgsql
-stable
-security definer
-set search_path = public
-as $$
-declare
-  c public.access_codes%rowtype;
-begin
-  if p_code is null or length(p_code) = 0 then
-    return query select false, 'empty'::text; return;
-  end if;
-  select * into c from public.access_codes where code = p_code;
-  if not found then
-    return query select false, 'not_found'::text; return;
-  end if;
-  if c.used then
-    return query select false, 'used'::text; return;
-  end if;
-  return query select true, null::text;
-end;
-$$;
-
-grant execute on function public.check_access_code(text) to anon;
-
--- Урилгыг ID-аар нь уншина. owner_token-ыг ХЭЗЭЭ Ч буцаахгүй, мөн зөвхөн
--- нэрлэсэн ID-уудыг өгнө — тиймээс хүснэгтийг бүхэлд нь татах боломжгүй.
-create or replace function public.get_invites(p_ids text[])
-returns table (
-  id            text,
-  config        jsonb,
-  response      jsonb,
-  opened_at     timestamptz,
-  responded_at  timestamptz,
-  created_at    timestamptz
-)
-language plpgsql
-stable
-security definer
-set search_path = public
-as $$
-begin
-  if p_ids is null or array_length(p_ids, 1) is null then return; end if;
-  if array_length(p_ids, 1) > 200 then raise exception 'Too many ids'; end if;
-  return query
-    select i.id, i.config, i.response, i.opened_at, i.responded_at, i.created_at
-      from public.invites i
-     where i.id = any(p_ids)
-     order by i.created_at desc;
-end;
-$$;
-
-grant execute on function public.get_invites(text[]) to anon;
-
 -- Redeem a code and create an invite in one atomic step.
 -- Called from create.html when the buyer submits their invite form.
+-- p_private_config carries owner-only fields (e.g. responseEmail) so they never
+-- reach the public /api/invite GET response.
+drop function if exists public.create_invite_with_code(text, jsonb, text);
+
 create or replace function public.create_invite_with_code(
-  p_invite_id     text,
-  p_config        jsonb,
-  p_access_code   text
+  p_invite_id       text,
+  p_config          jsonb,
+  p_access_code     text,
+  p_private_config  jsonb default '{}'::jsonb
 )
 returns table (id text, owner_token uuid, created_at timestamptz)
 language plpgsql
@@ -198,16 +163,54 @@ declare
   code_row public.access_codes%rowtype;
   new_owner uuid := gen_random_uuid();
   now_ts timestamptz := now();
+  expiry_ts timestamptz;
 begin
-  if p_invite_id is null or length(p_invite_id) < 4 then raise exception 'Invalid invite id'; end if;
+  if p_invite_id is null or length(p_invite_id) < 8 then raise exception 'Invalid invite id'; end if;
   if p_access_code is null or length(p_access_code) = 0 then raise exception 'Access code required'; end if;
+  if p_config is null or jsonb_typeof(p_config) <> 'object' or octet_length(p_config::text) > 32768 then
+    raise exception 'Invalid invite config';
+  end if;
+  if p_private_config is null or jsonb_typeof(p_private_config) <> 'object' or octet_length(p_private_config::text) > 16384 then
+    raise exception 'Invalid private config';
+  end if;
+  if p_config->>'experienceType' = 'apology' then
+    if coalesce(p_config->>'apologyIssue', '') not in
+       ('harsh_words', 'forgot', 'neglected', 'cancelled', 'jealousy', 'other') then
+      raise exception 'Invalid apology issue';
+    end if;
+    if coalesce(p_config->>'apologyTone', '') not in ('short', 'gentle', 'serious') then
+      raise exception 'Invalid apology tone';
+    end if;
+    if p_config ? 'apologyPaper'
+       and coalesce(p_config->>'apologyPaper', '') not in ('soft', 'dotted', 'grid', 'handmade', 'linen', 'clean') then
+      raise exception 'Invalid apology paper';
+    end if;
+    if length(trim(coalesce(p_config->>'apologyLetter', ''))) = 0
+       or length(p_config->>'apologyLetter') > 5000 then
+      raise exception 'Invalid apology letter';
+    end if;
+    begin
+      expiry_ts := nullif(p_config->>'expiresAt', '')::timestamptz;
+    exception when others then
+      raise exception 'Invalid apology expiry';
+    end;
+    if expiry_ts is null or expiry_ts <= now_ts or expiry_ts > now_ts + interval '31 days' then
+      raise exception 'Invalid apology expiry';
+    end if;
+  end if;
 
   select * into code_row from public.access_codes where code = p_access_code for update;
   if not found then raise exception 'Invalid access code'; end if;
   if code_row.used then raise exception 'Access code already used'; end if;
 
-  insert into public.invites(id, owner_token, config, created_at)
-    values (p_invite_id, new_owner, p_config, now_ts);
+  insert into public.invites(id, owner_token, config, private_config, created_at)
+    values (
+      p_invite_id,
+      new_owner,
+      p_config,
+      p_private_config,
+      now_ts
+    );
 
   update public.access_codes
     set used = true, used_at = now_ts, used_for_invite_id = p_invite_id
@@ -217,29 +220,91 @@ begin
 end;
 $$;
 
-grant execute on function public.create_invite_with_code(text, jsonb, text) to anon;
+grant execute on function public.create_invite_with_code(text, jsonb, text, jsonb) to anon;
 
--- Recipient: хариугаа хадгална. Зөвхөн response + responded_at-г өөрчилнө.
+-- Recipient: хариугаа хадгална. p_client_ts дамжуулж илгээвэл хожуу stale retry
+-- эсвэл response.final = true болсон хариуг дарж бичихгүй.
+drop function if exists public.save_response(text, jsonb);
+
 create or replace function public.save_response(
-  p_invite_id text,
-  p_response  jsonb
+  p_invite_id  text,
+  p_response   jsonb,
+  p_client_ts  timestamptz default null
 )
 returns void
 language plpgsql
 security definer
 set search_path = public
 as $$
+declare
+  invite_config    jsonb;
+  existing_response jsonb;
+  existing_ts       timestamptz;
+  expiry_ts         timestamptz;
+  readiness_percent integer;
 begin
-  if p_invite_id is null or length(p_invite_id) = 0 then raise exception 'Invite id required'; end if;
+  if p_invite_id is null or length(p_invite_id) = 0 then
+    raise exception 'Invite id required';
+  end if;
+  if p_response is null or jsonb_typeof(p_response) <> 'object' or octet_length(p_response::text) > 16384 then
+    raise exception 'Invalid response';
+  end if;
+
+  select config, response, responded_at
+    into invite_config, existing_response, existing_ts
+    from public.invites
+   where id = p_invite_id;
+
+  if not found then
+    raise exception 'Invite not found';
+  end if;
+
+  if invite_config->>'experienceType' = 'apology' then
+    begin
+      expiry_ts := nullif(invite_config->>'expiresAt', '')::timestamptz;
+    exception when others then
+      raise exception 'Invalid apology expiry';
+    end;
+    if expiry_ts is null or expiry_ts <= now() then raise exception 'Invite expired'; end if;
+    if p_response->>'type' <> 'apology'
+       or coalesce(p_response->>'status', '') not in ('needs_space', 'read', 'message', 'meet', 'stop') then
+      raise exception 'Invalid apology response';
+    end if;
+    if p_response ? 'readinessPercent' then
+      if jsonb_typeof(p_response->'readinessPercent') <> 'number'
+         or coalesce(p_response->>'readinessPercent', '') !~ '^(0|[1-9][0-9]?|100)$' then
+        raise exception 'Invalid apology readiness';
+      end if;
+      readiness_percent := (p_response->>'readinessPercent')::integer;
+      if mod(readiness_percent, 10) <> 0 then raise exception 'Invalid apology readiness'; end if;
+      if p_response->>'status' = 'stop' and readiness_percent <> 0 then
+        raise exception 'Stop readiness must be zero';
+      end if;
+    end if;
+    if coalesce(p_response->>'final', 'false') = 'true' and p_response->>'status' <> 'stop' then
+      raise exception 'Only stop may be final';
+    end if;
+  end if;
+
+  if existing_response is not null
+     and coalesce(existing_response->>'final', 'false') = 'true' then
+    return;
+  end if;
+
+  if p_client_ts is not null
+     and existing_ts is not null
+     and existing_ts > p_client_ts then
+    return;
+  end if;
+
   update public.invites
-    set response = p_response,
-        responded_at = now()
-    where id = p_invite_id;
-  if not found then raise exception 'Invite not found'; end if;
+     set response = p_response,
+         responded_at = now()
+   where id = p_invite_id;
 end;
 $$;
 
-grant execute on function public.save_response(text, jsonb) to anon;
+grant execute on function public.save_response(text, jsonb, timestamptz) to anon;
 
 -- Recipient: анх удаа нээхэд opened_at тэмдэглэнэ (дахин дарж бичихгүй).
 create or replace function public.mark_opened(p_invite_id text)
@@ -248,8 +313,21 @@ language plpgsql
 security definer
 set search_path = public
 as $$
+declare
+  invite_config jsonb;
+  expiry_ts timestamptz;
 begin
   if p_invite_id is null or length(p_invite_id) = 0 then return; end if;
+  select config into invite_config from public.invites where id = p_invite_id;
+  if not found then return; end if;
+  if invite_config->>'experienceType' = 'apology' then
+    begin
+      expiry_ts := nullif(invite_config->>'expiresAt', '')::timestamptz;
+    exception when others then
+      return;
+    end;
+    if expiry_ts is null or expiry_ts <= now() then return; end if;
+  end if;
   update public.invites
     set opened_at = now()
     where id = p_invite_id and opened_at is null;
@@ -277,41 +355,6 @@ end;
 $$;
 
 grant execute on function public.delete_own_invite(text, uuid) to anon;
-
--- Owner: үүсгэсэн урилгаа засна.
---
--- Нэг код = нэг урилга тул нэг үсгийн алдаа кодыг шатаадаг байсан. Одоо
--- ХАРИУ ИРЭХЭЭС ӨМНӨ засаж болно. Хариу ирсэн бол хориглоно — хүлээн авагч
--- харсан зүйл дээрээ үндэслэж хариулсан, түүнийг нь дараа нь өөрчлөх нь
--- шударга бус.
-create or replace function public.update_own_invite(
-  p_invite_id   text,
-  p_owner_token uuid,
-  p_config      jsonb
-)
-returns void
-language plpgsql
-security definer
-set search_path = public
-as $$
-declare
-  inv public.invites%rowtype;
-begin
-  if p_invite_id is null or p_owner_token is null then
-    raise exception 'invite id and owner token required';
-  end if;
-  if p_config is null then raise exception 'config required'; end if;
-
-  select * into inv from public.invites where id = p_invite_id for update;
-  if not found then raise exception 'Invite not found'; end if;
-  if inv.owner_token <> p_owner_token then raise exception 'Wrong owner token'; end if;
-  if inv.responded_at is not null then raise exception 'Already answered'; end if;
-
-  update public.invites set config = p_config where id = p_invite_id;
-end;
-$$;
-
-grant execute on function public.update_own_invite(text, uuid, jsonb) to anon;
 
 -- Admin: create N new codes at once.
 create or replace function public.admin_create_codes(
@@ -383,36 +426,198 @@ $$;
 
 grant execute on function public.admin_delete_code(text, text) to anon;
 
+/* ---------- payments (self-serve QPay via wire.mn) ---------- */
+
+create table if not exists public.payments (
+  id                  text primary key,               -- wire.mn payment_intent id (жишээ: obj_1a2b3c)
+  status              text not null default 'pending',-- new | requires_action | processing | succeeded | canceled | failed
+  amount              integer not null,               -- MNT ₮ (minor units)
+  currency            text not null default 'MNT',
+  provider            text not null default 'wire',   -- 'wire' | 'mock'
+  provider_intent_id  text,                           -- wire.mn intent id (id-тай ижил)
+  client_secret       text,
+  next_action         jsonb,                          -- QR / deeplink payload
+  code                text references public.access_codes(code) on delete set null,
+  email               text,
+  raw_event           jsonb,
+  created_at          timestamptz not null default now(),
+  updated_at          timestamptz not null default now(),
+  expires_at          timestamptz
+);
+
+create index if not exists payments_status_idx     on public.payments (status);
+create index if not exists payments_created_at_idx on public.payments (created_at desc);
+
+alter table public.payments enable row level security;
+
+-- Payment polling uses /api/payment-status with the server-side service role.
+drop policy if exists "anon can select payments" on public.payments;
+
+-- No anon insert/update/delete — backend endpoint-ууд (server.js эсвэл Vercel function) service_role-оор гүйцэтгэнэ.
+
+/* ---------- webhook_events (idempotency) ---------- */
+
+create table if not exists public.webhook_events (
+  id            text primary key,   -- wire.mn event id
+  type          text not null,
+  intent_id     text,
+  raw           jsonb,
+  processed_at  timestamptz not null default now()
+);
+
+alter table public.webhook_events enable row level security;
+-- Backend only (service_role). Anon-д ямар ч policy байхгүй.
+
+/* ---------- notifications (email outbox) ---------- */
+
+create table if not exists public.notifications (
+  id          uuid primary key default gen_random_uuid(),
+  invite_id   text not null references public.invites(id) on delete cascade,
+  kind        text not null,             -- 'response' | future kinds
+  to_email    text not null,
+  sent_at     timestamptz,
+  error       text,
+  created_at  timestamptz not null default now(),
+  unique (invite_id, kind)                -- idempotency: one email per (invite, kind)
+);
+
+create index if not exists notifications_invite_id_idx on public.notifications(invite_id);
+create index if not exists notifications_pending_idx  on public.notifications(created_at)
+  where sent_at is null;
+
+alter table public.notifications enable row level security;
+-- Backend only (service_role). Never queryable by anon.
+
+/* ---------- access_codes нэмэлт талбар (self-serve tracking) ---------- */
+
+alter table public.access_codes add column if not exists source     text;    -- 'admin' | 'self_service'
+alter table public.access_codes add column if not exists payment_id text references public.payments(id) on delete set null;
+
+create unique index if not exists access_codes_payment_id_unique_idx
+  on public.access_codes (payment_id)
+  where payment_id is not null;
+
+/* ---------- Verified webhook processing ---------- */
+
+create or replace function public.process_wire_event(
+  p_event_id  text,
+  p_type      text,
+  p_intent_id text,
+  p_raw       jsonb
+)
+returns table (
+  processed     boolean,
+  payment_found boolean,
+  new_status    text
+)
+language plpgsql
+security invoker
+set search_path = ''
+as $$
+declare
+  v_inserted integer := 0;
+  v_updated integer := 0;
+  v_status text;
+begin
+  if p_event_id is null or length(p_event_id) = 0 then
+    raise exception 'event id required';
+  end if;
+
+  insert into public.webhook_events(id, type, intent_id, raw)
+  values (p_event_id, coalesce(p_type, ''), p_intent_id, p_raw)
+  on conflict (id) do nothing;
+  get diagnostics v_inserted = row_count;
+
+  if v_inserted = 0 then
+    return query select false, true, null::text;
+    return;
+  end if;
+
+  v_status := case p_type
+    when 'payment_intent.succeeded' then 'succeeded'
+    when 'charge.succeeded' then 'succeeded'
+    when 'payment_intent.canceled' then 'canceled'
+    when 'payment_intent.payment_failed' then 'failed'
+    when 'charge.failed' then 'failed'
+    else null
+  end;
+
+  if v_status is null or p_intent_id is null then
+    return query select true, false, null::text;
+    return;
+  end if;
+
+  update public.payments
+  set status = v_status,
+      raw_event = p_raw,
+      updated_at = now()
+  where id = p_intent_id;
+  get diagnostics v_updated = row_count;
+
+  return query select true, (v_updated = 1), v_status;
+end;
+$$;
+
+/* ---------- Least-privilege Data API grants ---------- */
+
+revoke all on table public.invites from public, anon, authenticated;
+revoke all on table public.access_codes from public, anon, authenticated;
+revoke all on table public.payments from public, anon, authenticated;
+revoke all on table public.admin_settings from public, anon, authenticated;
+revoke all on table public.webhook_events from public, anon, authenticated;
+revoke all on table public.notifications from public, anon, authenticated;
+
+grant select, insert, update, delete
+  on table public.invites,
+           public.access_codes,
+           public.payments,
+           public.admin_settings,
+           public.webhook_events,
+           public.notifications
+  to service_role;
+
+alter default privileges for role postgres in schema public
+  revoke select, insert, update, delete on tables
+  from public, anon, authenticated, service_role;
+alter default privileges for role postgres in schema public
+  revoke usage, select on sequences
+  from public, anon, authenticated, service_role;
+alter default privileges for role postgres in schema public
+  revoke execute on functions
+  from public, anon, authenticated, service_role;
+
+revoke execute on function public._check_admin_pw(text)
+  from public, anon, authenticated;
+revoke execute on function public._gen_code()
+  from public, anon, authenticated;
+revoke execute on function public._append_response_history()
+  from public, anon, authenticated;
+revoke execute on function public.create_invite_with_code(text, jsonb, text, jsonb)
+  from public, authenticated;
+revoke execute on function public.save_response(text, jsonb, timestamptz)
+  from public, authenticated;
+revoke execute on function public.mark_opened(text)
+  from public, authenticated;
+revoke execute on function public.delete_own_invite(text, uuid)
+  from public, authenticated;
+revoke execute on function public.admin_create_codes(text, int, text)
+  from public, authenticated;
+revoke execute on function public.admin_list_codes(text)
+  from public, authenticated;
+revoke execute on function public.admin_delete_code(text, text)
+  from public, authenticated;
+revoke all on function public.process_wire_event(text, text, text, jsonb)
+  from public, anon, authenticated;
+
+grant usage on schema public to anon, service_role;
+grant execute on function public.create_invite_with_code(text, jsonb, text, jsonb) to anon;
+grant execute on function public.save_response(text, jsonb, timestamptz) to anon;
+grant execute on function public.mark_opened(text) to anon;
+grant execute on function public.delete_own_invite(text, uuid) to anon;
+grant execute on function public.admin_create_codes(text, int, text) to anon;
+grant execute on function public.admin_list_codes(text) to anon;
+grant execute on function public.admin_delete_code(text, text) to anon;
+grant execute on function public.process_wire_event(text, text, text, jsonb) to service_role;
+
 -- Force PostgREST to reload its schema cache so new tables/functions are picked up immediately.
-NOTIFY pgrst, 'reload schema';
-
-
-/* ═══════════════════════════════════════════════════════════════════════
-   АЛХАМ 2 — ХҮСНЭГТИЙГ ТҮГЖИХ
-
-   ⚠️ Доорх мөрүүдийг ЗӨВХӨН шинэ frontend deploy хийгдсЭНИЙ ДАРАА
-      ажиллуулна уу. Дараалал нь чухал:
-
-        1) Энэ файлыг АЛХАМ 2-гүйгээр ажиллуулна   (шинэ RPC-үүд үүснэ,
-           хуучин сайт хэвийн ажилласаар байна)
-        2) PR-ээ merge хийж deploy хийнэ            (шинэ сайт RPC ашиглана)
-        3) Доорх блокийг ажиллуулна                  (хуучин зам хаагдана)
-
-      Яагаад? Одоо ажиллаж буй сайт эдгээр хүснэгтийг ШУУД уншдаг. Түгжээг
-      эрт тавибал deploy дуустал сайт ажиллахгүй; оройтвол аюулгүй байдлын
-      нүх нээлттэй хэвээр байна.
-
-      Шинээр төсөл эхлүүлж байгаа бол бүх файлыг нэг дор ажиллуулж болно.
-   ═══════════════════════════════════════════════════════════════════════ */
-
--- Урилга: ID мэдэхгүйгээр бүгдийг татах, owner_token унших боломжийг хаана.
--- Унших ажил get_invites() RPC-ээр явна.
-drop policy if exists "anon can select invites" on public.invites;
-revoke select on public.invites from anon;
-
--- Кодууд: зарагдаагүй бүх кодыг татах, note доторх худалдан авагчийн
--- мэдээллийг унших боломжийг хаана. Шалгалт check_access_code() RPC-ээр явна.
-drop policy if exists "anon can select access codes" on public.access_codes;
-revoke select on public.access_codes from anon;
-
 NOTIFY pgrst, 'reload schema';
