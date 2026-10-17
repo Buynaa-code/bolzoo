@@ -49,6 +49,10 @@ class Reminders implements ReminderScheduler {
   ValueChanged<String>? onTap;
   String? pendingEventId;
   int _revision = 0;
+  // The native queue last applied in full. Foreground polls reconcile often;
+  // an unchanged queue must not cancel and reschedule every notification.
+  // Cleared before any native work so a failed or interrupted batch is retried.
+  List<String>? _applied;
   Future<void> _pending = Future.value();
   Future<T> _serial<T>(Future<T> Function() operation) {
     final result = _pending.then((_) => operation());
@@ -133,13 +137,21 @@ class Reminders implements ReminderScheduler {
     final snapshot = List<ReminderNotice>.of(notices);
     return _serial(() async {
       if (!ready || revision != _revision) return;
-      await _plugin.cancelAllPendingNotifications();
-      if (revision != _revision) return;
       final upcoming = snapshot.where((n) => n.at.isAfter(_now())).toList()
         ..sort((a, b) => a.at.compareTo(b.at));
-      var id = 1;
       // iOS allows only 64 pending notifications; keep room for future categories.
-      for (final notice in upcoming.take(60)) {
+      final queue = upcoming.take(60).toList();
+      final signature = [
+        for (final notice in queue)
+          '${notice.id}\u0000${notice.at.toUtc().microsecondsSinceEpoch}'
+              '\u0000${notice.body}',
+      ];
+      if (listEquals(_applied, signature)) return;
+      _applied = null;
+      await _plugin.cancelAllPendingNotifications();
+      if (revision != _revision) return;
+      var id = 1;
+      for (final notice in queue) {
         if (revision != _revision) return;
         await _plugin.zonedSchedule(
           id: id++,
@@ -160,17 +172,20 @@ class Reminders implements ReminderScheduler {
           payload: notice.id,
         );
       }
+      if (revision == _revision) _applied = signature;
     });
   }
 
   @override
   Future<void> clear() {
     ++_revision;
+    _applied = null;
     pendingEventId = null;
     return _serial(() async {
       // Initialization may have returned an old launch payload while this
       // account-clear barrier was waiting for native work to finish.
       pendingEventId = null;
+      _applied = null;
       if (ready) await _plugin.cancelAll();
     });
   }

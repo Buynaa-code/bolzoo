@@ -70,6 +70,7 @@ class TogetherScreenState extends State<TogetherScreen>
   String? _wishPair;
   final _memoryEditorKey = GlobalKey<MemoryEditorState>();
   TogetherSnapshot? _lastSnapshot;
+  String? _reminderScope;
   String? _memoryId;
   bool _addingMemory = false;
   int _tab = 0;
@@ -168,7 +169,15 @@ class TogetherScreenState extends State<TogetherScreen>
     final snapshot = _controller.data;
     final changed = !identical(snapshot, _lastSnapshot);
     _lastSnapshot = snapshot;
-    if (changed) widget.reminders?.observe(snapshot);
+    // Each poll returns a new snapshot object. Wishes and memories still use it
+    // as their sharing heartbeat below, but native reminders are cleared and
+    // rebuilt only when the pair or the calendar's dates actually change. The
+    // coordinator's own poll keeps reconciling the upcoming range meanwhile.
+    final reminderScope = togetherReminderScope(snapshot);
+    if (reminderScope != _reminderScope) {
+      _reminderScope = reminderScope;
+      widget.reminders?.observe(snapshot);
+    }
     final wishPair = _controller.paired ? snapshot?.pairId : null;
     if (_wishPair != wishPair) {
       _wishPair = wishPair;

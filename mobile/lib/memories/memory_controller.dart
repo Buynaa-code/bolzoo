@@ -1,10 +1,15 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math' as math;
 import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 import 'memory_models.dart';
 import 'memory_repository.dart';
+
+/// Day covers are at most 64 KB each, so a few requests in flight keep memory
+/// bounded while a month full of photo days no longer loads one at a time.
+const _coverConcurrency = 4;
 
 class MemoryController extends ChangeNotifier {
   MemoryController(this.repository) {
@@ -72,21 +77,48 @@ class MemoryController extends ChangeNotifier {
       error = null;
       failure = null;
       _notify();
-      // Only one cover per day appears in the grid; serial fetches bound memory.
+      // Only one cover per day appears in the grid.
       final covers = <String, SharedMemory>{};
       for (final item in items) {
         covers.putIfAbsent(item.day, () => item);
       }
-      for (final item in covers.values) {
-        if (!current || scope != _epoch || load != _loadEpoch) return;
-        if (thumbnails.containsKey(item.id)) continue;
-        final bytes = await repository.photo(item, thumbnail: true);
-        if (!current || scope != _epoch || load != _loadEpoch) return;
-        if (bytes.length > 64 * 1024)
-          throw const MemoryFailure('invalid_response');
-        thumbnails[item.id] = bytes;
-        _notify();
+      final queue = [
+        for (final item in covers.values)
+          if (!thumbnails.containsKey(item.id)) item,
+      ];
+      bool live() => current && scope == _epoch && load == _loadEpoch;
+      var cursor = 0;
+      Object? coverError;
+      StackTrace? coverStack;
+      // Workers share one queue; the first failure stops new requests, exactly
+      // as the former serial loop stopped at its first failed cover.
+      Future<void> worker() async {
+        while (coverError == null && cursor < queue.length) {
+          if (!live()) return;
+          final item = queue[cursor++];
+          try {
+            final bytes = await repository.photo(item, thumbnail: true);
+            if (!live()) return;
+            if (bytes.length > 64 * 1024) {
+              throw const MemoryFailure('invalid_response');
+            }
+            thumbnails[item.id] = bytes;
+            _notify();
+          } catch (caught, stack) {
+            if (coverError == null) {
+              coverError = caught;
+              coverStack = stack;
+            }
+          }
+        }
       }
+
+      await Future.wait([
+        for (var i = 0; i < math.min(_coverConcurrency, queue.length); i++)
+          worker(),
+      ]);
+      final thrown = coverError;
+      if (thrown != null) Error.throwWithStackTrace(thrown, coverStack!);
     } on MemoryFailure catch (e) {
       if (scope == _epoch && load == _loadEpoch && !_disposed) {
         _recordFailure(e);

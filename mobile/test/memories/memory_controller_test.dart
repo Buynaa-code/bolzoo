@@ -14,11 +14,12 @@ SharedMemory _memory({
   String id = 'memory-one',
   String pair = _pair,
   String actor = 'a',
+  String day = '2026-10-08',
 }) => SharedMemory(
   id: id,
   pairId: pair,
   creatorId: actor,
-  day: '2026-10-08',
+  day: day,
   title: 'Кофе',
   note: 'Хамтдаа',
   sticker: 'rounded',
@@ -139,6 +140,69 @@ void main() {
     expect(controller.pairId, _otherPair);
     expect(controller.items.single, same(next));
     expect(controller.thumbnails.keys, [next.id]);
+  });
+
+  test('day covers load in parallel but never more than four at a time', () async {
+    final replies = <String, Completer<Uint8List>>{};
+    var inFlight = 0, peak = 0;
+    repository.rows = [
+      for (var day = 1; day <= 6; day++)
+        _memory(id: 'memory-$day', day: '2026-10-0$day'),
+    ];
+    repository.onPhoto = (memory, _) {
+      inFlight++;
+      if (inFlight > peak) peak = inFlight;
+      final reply = Completer<Uint8List>();
+      replies[memory.id] = reply;
+      return reply.future.whenComplete(() {
+        inFlight--;
+      });
+    };
+    controller.bind(_pair, _month);
+    await _flush();
+    expect(replies, hasLength(4));
+    for (final reply in replies.values.toList()) {
+      reply.complete(Uint8List.fromList([1]));
+    }
+    await _flush();
+    expect(replies, hasLength(6));
+    expect(controller.loading, isTrue);
+    for (final reply in replies.values.where((r) => !r.isCompleted).toList()) {
+      reply.complete(Uint8List.fromList([1]));
+    }
+    await _flush();
+    expect(peak, 4);
+    expect(controller.thumbnails, hasLength(6));
+    expect(controller.loading, isFalse);
+    expect(controller.error, isNull);
+  });
+
+  test('a failed cover stops new requests and is reported once', () async {
+    final replies = <String, Completer<Uint8List>>{};
+    repository.rows = [
+      for (var day = 1; day <= 6; day++)
+        _memory(id: 'memory-$day', day: '2026-10-0$day'),
+    ];
+    repository.onPhoto = (memory, _) =>
+        (replies[memory.id] = Completer<Uint8List>()).future;
+    controller.bind(_pair, _month);
+    await _flush();
+    expect(replies.keys, ['memory-1', 'memory-2', 'memory-3', 'memory-4']);
+    replies['memory-1']!.completeError(const MemoryFailure('unavailable'));
+    await _flush();
+    for (final id in ['memory-2', 'memory-3', 'memory-4']) {
+      replies[id]!.complete(Uint8List.fromList([1]));
+    }
+    await _flush();
+    expect(replies, hasLength(4));
+    expect(controller.failure?.code, 'unavailable');
+    expect(controller.pairId, _pair);
+    expect(controller.thumbnails.keys.toSet(), {
+      'memory-2',
+      'memory-3',
+      'memory-4',
+    });
+    expect(controller.loading, isFalse);
   });
 
   test('late thumbnail cannot restore cache after sign out', () async {
