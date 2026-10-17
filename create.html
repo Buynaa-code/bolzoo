@@ -1561,6 +1561,15 @@
     box-shadow:0 18px 34px -22px rgba(157,99,230,.88); transition:transform .16s ease;
   }
   .success-native:hover{transform:translateY(-1px);}
+  .success-apps{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px;}
+  .success-app{
+    min-height:44px; display:flex; align-items:center; justify-content:center;
+    border:1px solid var(--line); border-radius:999px; background:#fff; text-decoration:none;
+    font-family:'Nunito',sans-serif; font-size:13px; font-weight:900; transition:background .15s;
+  }
+  .success-app:hover{background:#fff6f9;}
+  .success-app.messenger{color:#0084ff;}
+  .success-app.instagram{color:#c136a0;}
   .success-qr{margin-top:12px; display:flex; flex-direction:column; align-items:center; gap:6px; color:#8b7b8d; font-size:12px; font-weight:800;}
   .success-qr img{width:132px; height:132px; border-radius:10px; background:#fdf3f8;}
   .success-status{margin:10px 0 0; color:#3a8a4a; font-size:13px; font-weight:900; word-break:break-all;}
@@ -2218,6 +2227,10 @@
         <button class="copy-btn" id="successCopyBtn" type="button">Хуулах</button>
       </div>
       <button class="success-native" id="successShareBtn" type="button" hidden>Илгээх</button>
+      <div class="success-apps">
+        <a class="success-app messenger" id="shareMessenger" href="#" target="_blank" rel="noopener">Messenger</a>
+        <a class="success-app instagram" id="shareInstagram" href="https://www.instagram.com/direct/inbox/" target="_blank" rel="noopener">Instagram</a>
+      </div>
       <div class="quiet-links">
         <a class="text-btn" id="successOpen" href="#" target="_blank" rel="noopener">Нээж үзэх</a>
         <button class="text-btn" id="successQrToggle" type="button" aria-expanded="false" aria-controls="successQr" hidden>QR код</button>
@@ -3404,6 +3417,8 @@
     $('successMsg').textContent = publishedNote();
     fillLinkField($('successLink'), published.url);
     $('successOpen').href = published.url;
+    $('shareMessenger').href = 'https://www.facebook.com/dialog/send?app_id=291823901192022&link='
+      + encodeURIComponent(published.url) + '&redirect_uri=' + encodeURIComponent(published.url);
     $('successStatus').textContent = '';
     $('successRecovery').hidden = !published.recovery;
     // Утсан дээр нэг том «Илгээх» (Messenger/Instagram бүгд native цонхонд бий).
@@ -3438,6 +3453,14 @@
     }).catch(function(err){
       if(err && err.name === 'AbortError') return;
       $('successStatus').textContent = 'Хуваалцаж чадсангүй — «Хуулах»-аар оролдоорой';
+    });
+  });
+  // Instagram вебээс DM-д линк дамжуулах боломжгүй тул эхлээд хуулаад inbox-ыг нээнэ
+  $('shareInstagram').addEventListener('click', function(){
+    copyToClipboard(published.url).then(function(){
+      $('successStatus').textContent = 'Линк хуулагдлаа · Instagram DM-д paste хийгээрэй 💌';
+    }, function(){
+      $('successStatus').textContent = 'Линкээ «Хуулах»-аар хуулаад Instagram DM-д paste хийгээрэй';
     });
   });
   $('successQrToggle').addEventListener('click', function(){
