@@ -1030,29 +1030,45 @@
     background:linear-gradient(100deg,#ff4f86,#ff5f93 54%,#ff4d82);
   }
   .form-actions{display:grid; grid-template-columns:1fr 1fr 1.6fr; gap:14px; margin-top:22px;}
-  .link-box{
-    margin-top:8px;
-    background:linear-gradient(135deg,#fff6f9,#ffe8f0);
-    border:1px solid #ffcbd9;
-    border-radius:12px;
-    padding:14px 16px;
-    word-break:break-all;
-    color:#3e1738;
-    font-family:ui-monospace, Menlo, monospace;
-    font-size:13px;
-    line-height:1.45;
-    font-weight:800;
+  /* ---------- линк: нэг мөрөнд линк + «Хуулах», бусад нь чимээгүй холбоос ---------- */
+  .link-field{
+    display:flex; align-items:center; gap:8px; overflow:hidden;
+    padding:5px 5px 5px 16px; border:1px solid var(--line); border-radius:999px; background:#fff;
   }
-  .link-box::before{
-    content:"Таны урилгын линк";
-    display:block;
-    margin:0 0 5px;
-    color:#6d536b;
-    font-family:'Nunito',sans-serif;
-    font-size:12px;
-    font-weight:900;
+  /* Багтахгүй бол ЭХЭНД нь "…" тавина (rtl) — ?id=… төгсгөл нь линкүүдийг ялгах гол
+     хэсэг тул үргэлж харагдана. Доторх &lrm; нь цэг таслалыг байранд нь барина. */
+  .link-url{
+    flex:1; min-width:0; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;
+    direction:rtl; text-align:left; color:#4b173f; font-size:13px; font-weight:800; user-select:all;
   }
-  .link-actions{display:flex; gap:10px; margin-top:10px; flex-wrap:wrap;}
+  .lk-host{color:#b59aad;}
+  .copy-btn{
+    flex-shrink:0; border:0; cursor:pointer; padding:10px 16px; border-radius:999px;
+    font-family:'Nunito',sans-serif; font-size:13px; font-weight:900;
+    background:#ffe8f0; color:var(--hot); transition:background .15s, color .15s;
+  }
+  .copy-btn.copied{background:#e3f5e8; color:#3a8a4a;}
+  .text-btn{
+    border:0; background:none; cursor:pointer; padding:4px 2px;
+    font-family:'Nunito',sans-serif; font-size:13px; font-weight:800; color:#8b7b8d; text-decoration:none;
+  }
+  .text-btn:hover{color:var(--hot);}
+  .quiet-links{display:flex; justify-content:center; flex-wrap:wrap; gap:4px 20px; margin-top:12px;}
+  .ok-title::before{
+    content:"✓"; display:inline-grid; place-items:center; vertical-align:2px;
+    width:22px; height:22px; margin-right:8px; border-radius:50%;
+    background:#e3f5e8; color:#3a8a4a; font-family:'Nunito',sans-serif; font-size:13px;
+  }
+  .link-result{margin:0 0 22px; text-align:center;}
+  .link-result-title{margin:0; color:#4b173f; font-size:17px; font-weight:900;}
+  .link-result-sub{margin:3px 0 0; color:#8b7b8d; font-size:12.5px; font-weight:800;}
+  .link-result .link-field{margin-top:14px;}
+  .link-result[hidden], .link-result [hidden], .success-card [hidden], .link-result-sub:empty{display:none !important;}
+  /* Линк гарсны дараа төлбөрийн хэсэг утгагүй — зөвхөн линк үлдэнэ. Формоо өөрчилбөл
+     (засах API байхгүй тул энэ нь шинэ урилга) published класс авагдаж төлбөр буцаж гарна. */
+  body.published #finalStepIntro, body.published .price-splash, body.published .final-checkout,
+  body.published .final-flow, body.published #manualCodeOption, body.published .final-actions,
+  body.published #status:empty{display:none;}
   .status{margin-top:14px; min-height:20px; font-weight:900; font-size:13px; color:var(--hot); text-align:center;}
   .backend-row{margin-top:22px; padding-top:18px; border-top:1px solid rgba(248,215,226,.78); display:flex; align-items:center; justify-content:center; gap:10px; flex-wrap:wrap;}
   #backendBadge{font-size:12px; color:#8b7b8d; font-weight:800;}
@@ -1536,60 +1552,26 @@
   .success-modal{position:fixed; inset:0; z-index:110; display:grid; place-items:center; padding:20px; background:rgba(72,25,55,.55); backdrop-filter:blur(10px); animation:successFadeIn .3s ease;}
   .success-card{position:relative; width:min(430px,100%); background:linear-gradient(135deg,#fff8fb,#fff); border-radius:22px; padding:30px 24px 24px; text-align:center; border:1px solid rgba(255,203,217,.72); box-shadow:0 28px 60px -24px rgba(105,39,78,.6); animation:successPopIn .42s cubic-bezier(.2,1.35,.4,1);}
   .success-close{position:absolute; top:12px; right:12px; width:32px; height:32px; border:0; border-radius:50%; background:#fff; color:#6a4062; font-size:14px; cursor:pointer; box-shadow:0 6px 14px -8px rgba(90,42,70,.4); font-weight:900;}
-  .success-emoji{font-size:44px; margin:2px 0 10px; display:inline-block; animation:successFloat 2.4s ease-in-out infinite;}
-  .success-title{font-family:'Comfortaa',sans-serif; font-size:22px; line-height:1.25; margin:0 0 8px; color:#4b173f;}
-  .success-msg{color:#8b7b8d; font-size:14px; line-height:1.5; font-weight:800; margin:0 0 18px;}
-  .success-link{margin:0 0 14px; padding:14px 16px; border-radius:12px; border:1px solid #ffcbd9; background:linear-gradient(135deg,#fff6f9,#ffe8f0); color:#3e1738; font-family:ui-monospace,Menlo,monospace; font-size:13px; font-weight:800; line-height:1.4; word-break:break-all; text-align:left;}
-  .success-share{display:grid; grid-template-columns:1fr; gap:8px; margin-bottom:8px;}
-  .success-share.has-native{grid-template-columns:1.15fr 1fr;}
-  .success-copy,.success-native{min-height:54px; border:0; border-radius:14px; color:#fff; font-family:'Nunito',sans-serif; font-size:15px; font-weight:900; cursor:pointer; box-shadow:0 18px 34px -22px rgba(157,99,230,.88); transition:transform .16s ease, box-shadow .16s ease; padding:0 12px;}
-  .success-native{background:linear-gradient(100deg,#ff4d82,#9d63e6);}
+  .success-title{font-family:'Comfortaa',sans-serif; font-size:20px; line-height:1.3; margin:0 0 4px; color:#4b173f;}
+  .success-msg{color:#8b7b8d; font-size:13px; line-height:1.5; font-weight:800; margin:0 0 18px;}
+  .success-native{
+    width:100%; min-height:52px; margin-top:10px; border:0; border-radius:999px; cursor:pointer;
+    background:linear-gradient(100deg,#ff4d82,#9d63e6); color:#fff;
+    font-family:'Nunito',sans-serif; font-size:15px; font-weight:900;
+    box-shadow:0 18px 34px -22px rgba(157,99,230,.88); transition:transform .16s ease;
+  }
   .success-native:hover{transform:translateY(-1px);}
-  .success-copy{background:#fff; color:#4b173f; border:1px solid #ffcbd9; box-shadow:0 12px 24px -18px rgba(105,39,78,.4);}
-  .success-copy:hover{background:#ffeef4;}
-  .success-copy.copied{background:linear-gradient(100deg,#5aba7a,#3a8a4a); color:#fff; border-color:#3a8a4a;}
-  .success-share:not(.has-native) .success-copy{background:linear-gradient(100deg,#ff4d82,#9d63e6); color:#fff; border-color:transparent;}
-  .success-apps{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:0 0 6px;}
-  .success-app{min-height:44px; border:1px solid rgba(255,203,217,.72); border-radius:12px; background:#fff; color:#4b173f; font-family:'Nunito',sans-serif; font-weight:800; font-size:13px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; text-decoration:none; box-shadow:0 8px 18px -14px rgba(105,39,78,.4);}
-  .success-app:hover{background:#ffeef4; transform:translateY(-1px);}
-  .success-app.messenger{color:#0084ff;}
-  .success-app.instagram{color:#c136a0;}
-  .success-qr{margin-top:14px; padding:12px; border-radius:12px; background:#fff; border:1px dashed rgba(255,203,217,.72); display:flex; align-items:center; gap:12px; text-align:left;}
-  .success-qr img{width:96px; height:96px; border-radius:8px; background:#fdf3f8;}
-  .success-qr-copy{font-size:12px; color:#8b7b8d; font-weight:800; line-height:1.4;}
-  .success-qr-copy b{color:#4b173f;}
-  .success-hint{margin:12px 0 0; color:#a08699; font-size:12px; font-weight:800;}
-  .success-hint a{color:#c136a0;}
-  .success-inbox{
-    display:grid;
-    grid-template-columns:36px minmax(0,1fr);
-    align-items:start;
-    gap:12px;
-    margin:14px 0 0;
-    padding:12px 14px;
-    text-align:left;
-    background:linear-gradient(135deg,#fff8fb,#fff);
-    border:1px solid rgba(255,203,217,.72);
-    border-radius:14px;
-    box-shadow:0 12px 24px -20px rgba(105,39,78,.4);
+  .success-qr{margin-top:12px; display:flex; flex-direction:column; align-items:center; gap:6px; color:#8b7b8d; font-size:12px; font-weight:800;}
+  .success-qr img{width:132px; height:132px; border-radius:10px; background:#fdf3f8;}
+  .success-status{margin:10px 0 0; color:#3a8a4a; font-size:13px; font-weight:900; word-break:break-all;}
+  .success-status:empty{display:none;}
+  .success-recovery{
+    display:flex; align-items:center; gap:12px; margin-top:18px; padding-top:16px;
+    border-top:1px solid var(--line); text-align:left;
   }
-  .success-inbox-ic{
-    width:36px;
-    height:36px;
-    border-radius:50%;
-    display:grid;
-    place-items:center;
-    background:linear-gradient(135deg,#ffe8f0,#fff);
-    font-size:18px;
-    box-shadow:inset 0 0 0 1px rgba(255,145,176,.5);
-  }
-  .success-inbox b{display:block; color:#4b173f; font-size:13px; font-weight:900;}
-  .success-inbox p{margin:2px 0 0; color:#6a4062; font-size:12px; font-weight:800; line-height:1.4; word-break:break-word;}
-  .success-inbox .success-inbox-email{color:#c136a0; font-family:ui-monospace,Menlo,monospace;}
-  .success-inbox-lock{color:#3a8a4a;}
-  .success-inbox-link{display:inline-block; margin-top:8px; color:#c136a0; font-size:12px; font-weight:900; text-decoration:none;}
-  .success-inbox-link:hover{text-decoration:underline;}
-  .success-status{margin-top:10px; min-height:18px; color:#3a8a4a; font-size:13px; font-weight:900;}
+  .success-recovery div{flex:1; min-width:0;}
+  .success-recovery b{display:block; color:#4b173f; font-size:13px; font-weight:900;}
+  .success-recovery span{display:block; color:#a08699; font-size:11.5px; font-weight:800; line-height:1.4;}
   .code-example{margin:6px 0 4px; font-size:12px; color:#8b7b8d; font-weight:700;}
   .code-example code{background:#fff; border:1px solid #ffcbd9; border-radius:6px; padding:2px 6px; font-family:ui-monospace,Menlo,monospace; color:#4b173f;}
   .payment-toast{display:none; margin:0 0 16px; padding:12px 16px; border-radius:14px; background:linear-gradient(100deg,rgba(90,186,122,.16),rgba(58,138,74,.14)); border:1px solid rgba(58,138,74,.35); color:#215a34; font-weight:800; font-size:13px; line-height:1.45;}
@@ -1597,7 +1579,6 @@
   @keyframes paymentToastIn{from{opacity:0; transform:translateY(-6px);} to{opacity:1; transform:none;}}
   @keyframes successFadeIn{from{opacity:0;} to{opacity:1;}}
   @keyframes successPopIn{0%{opacity:0; transform:scale(.9) translateY(10px);} 100%{opacity:1; transform:none;}}
-  @keyframes successFloat{0%,100%{transform:translateY(0) scale(1);} 50%{transform:translateY(-6px) scale(1.05);}}
 
   .purpose-gate{
     margin:22px 0 20px;
@@ -2105,6 +2086,21 @@
 
         <div class="wizard-step" data-step="5">
         <button class="step-back" type="button" data-step-back>← Өмнөх алхам</button>
+
+        <div class="link-result" id="linkResult" hidden>
+          <p class="link-result-title ok-title" id="linkResultTitle">Линк бэлэн</p>
+          <p class="link-result-sub" id="linkResultSub"></p>
+          <div class="link-field">
+            <span class="link-url" id="linkBox">&lrm;<span class="lk-host"></span><span class="lk-path"></span>&lrm;</span>
+            <button class="copy-btn" id="copyLink" type="button">Хуулах</button>
+          </div>
+          <div class="quiet-links">
+            <button class="text-btn" id="shareLink" type="button">Илгээх</button>
+            <a class="text-btn" id="openLink" href="#" target="_blank" rel="noopener">Нээж үзэх</a>
+            <button class="text-btn" id="newInvite" type="button">＋ Шинэ урилга</button>
+          </div>
+        </div>
+
         <p class="subtitle" id="finalStepIntro" style="margin-bottom:18px;">Бүх зүйл бэлэн! Preview-гээ сүүлчийн удаа шалгаад, төлбөрөө төлөн линкээ аваарай 💌</p>
 
         <div class="price-splash" aria-label="1 урилга үүсгэх эрхийн үнэ">
@@ -2152,13 +2148,6 @@
             </div>
           </div>
         </details>
-
-        <div class="link-box" id="linkBox" style="display:none;"></div>
-        <div class="link-actions" id="linkActions" style="display:none;">
-          <button class="btn small secondary" id="copyLink">🔗 Хуулах</button>
-          <button class="btn small secondary" id="openLink">Нээж үзэх</button>
-          <button class="btn small secondary" id="shareLink" type="button">📤 Хуваалцах</button>
-        </div>
 
         <div class="form-actions final-actions">
           <button class="btn wide" id="generate">9,900₮ төлөөд линкээ авах →</button>
@@ -2222,45 +2211,30 @@
   <div class="success-modal" id="successModal" hidden role="dialog" aria-modal="true" aria-labelledby="successModalTitle">
     <div class="success-card">
       <button class="success-close" id="successClose" type="button" aria-label="Хаах">✕</button>
-      <span class="success-emoji" aria-hidden="true">💌</span>
-      <h2 class="success-title" id="successModalTitle">Урилгын линк бэлэн!</h2>
-      <p class="success-msg">Одоо чи <b id="successRecipient">хайртай хүн</b> рүүгээ доорх линкийг илгээгээрэй 💗</p>
-      <div class="success-link" id="successLink"></div>
-      <div class="success-share" id="successShare">
-        <button class="success-native" id="successShareBtn" type="button" hidden>📤 Хуваалцах</button>
-        <button class="success-copy" id="successCopyBtn" type="button">📋 Хуулж авах</button>
+      <h2 class="success-title ok-title" id="successModalTitle">Линк бэлэн</h2>
+      <p class="success-msg" id="successMsg"></p>
+      <div class="link-field">
+        <span class="link-url" id="successLink">&lrm;<span class="lk-host"></span><span class="lk-path"></span>&lrm;</span>
+        <button class="copy-btn" id="successCopyBtn" type="button">Хуулах</button>
       </div>
-      <div class="success-apps">
-        <a class="success-app messenger" id="shareMessenger" href="#" target="_blank" rel="noopener">📨 Messenger</a>
-        <a class="success-app instagram" id="shareInstagram" href="#" target="_blank" rel="noopener">📷 Instagram</a>
+      <button class="success-native" id="successShareBtn" type="button" hidden>Илгээх</button>
+      <div class="quiet-links">
+        <a class="text-btn" id="successOpen" href="#" target="_blank" rel="noopener">Нээж үзэх</a>
+        <button class="text-btn" id="successQrToggle" type="button" aria-expanded="false" aria-controls="successQr" hidden>QR код</button>
+        <a class="text-btn" href="dashboard.html" target="_blank" rel="noopener">Хариу харах</a>
       </div>
-      <div class="success-qr">
-        <img id="successQrImg" alt="" />
-        <div class="success-qr-copy">
-          <b>Утсаараа scan хийж явуулах</b><br>
-          Компьютер дээрээс үүсгэсэн бол QR-аа гар утсаараа уншиж, тэндээсээ шууд ил&shy;гээе ✨
-        </div>
+      <div class="success-qr" id="successQr" hidden>
+        <img id="successQrImg" alt="" width="132" height="132" />
+        Утсаараа уншуулаад тэндээсээ илгээгээрэй
       </div>
-      <div class="success-status" id="successStatus" aria-live="polite"></div>
-      <div class="success-inbox" id="successInbox">
-        <span class="success-inbox-ic" aria-hidden="true">📬</span>
+      <p class="success-status" id="successStatus" aria-live="polite"></p>
+      <div class="success-recovery" id="successRecovery" hidden>
         <div>
-          <b>Хариу энд ирнэ · <span class="success-inbox-lock">🔒 зөвхөн танд</span></b>
-          <p>
-            Энэ browser дээрээс <a class="success-inbox-link" href="dashboard.html" target="_blank" rel="noopener">🔒 Хувийн хариунуудын самбар нээх →</a>
-          </p>
+          <b>Өөр утаснаас хариу харах линк</b>
+          <span>Зөвхөн өөртөө хадгал — дотор нь хувийн түлхүүр бий</span>
         </div>
+        <button class="copy-btn" id="successRecoveryCopyBtn" type="button">Хуулах</button>
       </div>
-      <div class="success-inbox" id="successRecovery" style="background:linear-gradient(135deg,#f2fff2,#fff8f4); border-color:rgba(90,186,122,.35);">
-        <span class="success-inbox-ic" aria-hidden="true">🔑</span>
-        <div style="min-width:0;">
-          <b style="color:#215a34;">Өөр browser/утаснаас хариу харах линк</b>
-          <p style="color:#3a5a44;">Дараах линкийг өөртөө bookmark хийж эсвэл өөрийнхөө имэйл рүү илгээгээрэй. Ямар ч browser-с дарахад хариу энэ browser шиг харагдана. Бусад хүнд илгээхгүй байхыг зөвлөж байна — линк дотор хувийн token байгаа.</p>
-          <div class="success-link" id="successRecoveryLink" style="margin-top:8px;"></div>
-          <button class="success-copy" id="successRecoveryCopyBtn" type="button" style="margin-top:8px;">📋 Хариу харах линк хуулах</button>
-        </div>
-      </div>
-      <p class="success-hint">1 код = 1 урилга. Дараагийнхаа төлөө <a href="pay.html" id="successNewCode">шинэ код авах →</a></p>
     </div>
   </div>
 
@@ -3163,7 +3137,10 @@
   function updateDockNext(){
     var next = $('continueStep');
     if(!next) return;
-    if(currentStep === TOTAL_STEPS){
+    if(currentStep === TOTAL_STEPS && isPublished()){
+      next.textContent = 'Линкээ илгээх';
+      next.disabled = false;
+    } else if(currentStep === TOTAL_STEPS){
       next.textContent = codeIsValid ? '💌 Линкээ авах' : '9,900₮ төлөөд линкээ авах →';
       next.disabled = isPublishing || !draftReady();
     } else {
@@ -3184,7 +3161,8 @@
   }
   function handleDockNext(){
     if(currentStep === TOTAL_STEPS){
-      if(!$('generate').disabled) $('generate').click();
+      if(isPublished()) openSuccessModal();
+      else if(!$('generate').disabled) $('generate').click();
       return;
     }
     if(!canAdvance()){
@@ -3321,88 +3299,124 @@
     var base = new URL('dashboard.html', window.location.href).href;
     return base + '#recover=' + encodeURIComponent(inviteId) + '~' + encodeURIComponent(ownerToken);
   }
-  function showLink(url, msg, inviteId, ownerToken){
-    $('linkBox').textContent = url;
-    $('linkBox').style.display = 'block';
-    $('linkActions').style.display = 'flex';
-    setStatus(msg || '✅ Линк бэлэн!');
-    openSuccessModal(url, $('recipientName').value.trim(), buildRecoveryUrl(inviteId, ownerToken));
+  /* ---------- Линк гарсны дараах төлөв ----------
+   * Төлбөрийн хэсэг нуугдаж зөвхөн линк үлдэнэ. Засах API байхгүй тул формоо
+   * өөрчилбөл энэ линкэд орохгүй — тэр үед төлбөр буцаж гарч шинэ линк авна.
+   */
+  var published = null;   // { url, json, recovery, name, apology }
+  function isPublished(){ return document.body.classList.contains('published'); }
+  function fillLinkField(el, url){
+    // https:// нь утгагүй урт; домэйн нь бүдэг, ?id=… хэсэг нь тод
+    var bare = url.replace(/^https?:\/\//, '');
+    var cut = bare.indexOf('/') + 1;
+    el.querySelector('.lk-host').textContent = bare.slice(0, cut);
+    el.querySelector('.lk-path').textContent = bare.slice(cut);
   }
+  function showLink(url, inviteId, ownerToken){
+    published = {
+      url: url,
+      json: JSON.stringify(collectConfig()),
+      recovery: buildRecoveryUrl(inviteId, ownerToken),
+      name: $('recipientName').value.trim(),
+      apology: currentExperience === 'apology'
+    };
+    fillLinkField($('linkBox'), url);
+    $('openLink').href = url;
+    $('linkResult').hidden = false;
+    setStatus('');
+    syncPublished();
+    openSuccessModal();
+  }
+  function publishedNote(){
+    return [published.name ? 'Хэнд: ' + published.name : '',
+            published.apology ? '30 хоног хүчинтэй' : ''].filter(Boolean).join(' · ');
+  }
+  function syncPublished(){
+    if(!published) return;
+    var same = JSON.stringify(collectConfig()) === published.json;
+    document.body.classList.toggle('published', same);
+    $('linkResultTitle').textContent = same ? 'Линк бэлэн' : 'Өмнөх линк';
+    $('linkResultTitle').classList.toggle('ok-title', same);
+    $('linkResultSub').textContent = same
+      ? publishedNote()
+      : 'Өөрчлөлт энэ линкэд орохгүй — доороос шинэ линк авна';
+    updateDockNext();
+  }
+  // Сонголтын товч, текст талбар — аль нь ч байсан өөрчлөлтийг нэг дор барина
+  ['input','change','click'].forEach(function(type){
+    document.addEventListener(type, function(){ if(published) syncPublished(); });
+  });
 
   /* ---------- Success modal ---------- */
-  function successShareText(recipientName){
+  function successShareText(recipientName, apology){
     return (recipientName ? recipientName + ' минь, ' : '')
-      + (currentExperience === 'apology'
-        ? 'чамд чин сэтгэлээсээ хэлэх зүйл байна 🫶'
-        : 'чамд болзооны урилга ирлээ 💌');
+      + (apology ? 'чамд чин сэтгэлээсээ хэлэх зүйл байна 🫶' : 'чамд болзооны урилга ирлээ 💌');
   }
   function copyToClipboard(text){
-    if(navigator.clipboard && navigator.clipboard.writeText){
-      return navigator.clipboard.writeText(text).catch(function(){
-        var t = document.createElement('textarea'); t.value=text; document.body.appendChild(t); t.select(); document.execCommand('copy'); t.remove();
-      });
+    function legacy(){
+      var t = document.createElement('textarea');
+      t.value = text; t.setAttribute('readonly', '');
+      t.style.position = 'fixed'; t.style.opacity = '0';
+      document.body.appendChild(t); t.select();
+      var ok = false;
+      try{ ok = document.execCommand('copy'); }catch(e){}
+      t.remove();
+      return ok ? Promise.resolve() : Promise.reject(new Error('copy failed'));
     }
-    var t = document.createElement('textarea'); t.value=text; document.body.appendChild(t); t.select(); document.execCommand('copy'); t.remove();
-    return Promise.resolve();
+    if(navigator.clipboard && window.isSecureContext){
+      return navigator.clipboard.writeText(text).catch(legacy);
+    }
+    return legacy();
   }
-  function openSuccessModal(url, recipientName, recoveryUrl){
-    $('successLink').textContent = url;
+  function selectLinkText(el){
+    // &lrm; тэмдэгтүүдийг сонголтод оруулахгүй — URL-ийн төгсгөлд наалдаж id-г эвдэнэ
+    var range = document.createRange();
+    range.setStartBefore(el.querySelector('.lk-host'));
+    range.setEndAfter(el.querySelector('.lk-path'));
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(range);
+  }
+  // Хуулсныг товч дээрээ шууд мэдэгдэнэ; хуулж чадахгүй бол onFail-аар гараар хуулуулна
+  function bindCopy(btn, getText, onFail){
+    var timer = null;
+    btn.addEventListener('click', function(){
+      copyToClipboard(getText()).then(function(){
+        btn.textContent = 'Хуулагдлаа ✓';
+        btn.classList.add('copied');
+      }, function(){
+        btn.textContent = 'Гараар хуулна уу';
+        onFail();
+      }).then(function(){
+        clearTimeout(timer);
+        timer = setTimeout(function(){ btn.textContent = 'Хуулах'; btn.classList.remove('copied'); }, 2200);
+      });
+    });
+  }
+  bindCopy($('successCopyBtn'), function(){ return published.url; }, function(){ selectLinkText($('successLink')); });
+  bindCopy($('copyLink'), function(){ return published.url; }, function(){ selectLinkText($('linkBox')); });
+  bindCopy($('successRecoveryCopyBtn'), function(){ return published.recovery; }, function(){
+    $('successStatus').textContent = published.recovery;
+  });
+
+  function openSuccessModal(){
+    if(!published) return;
+    $('successModalTitle').textContent = published.apology ? 'Эвлэрлийн линк бэлэн' : 'Линк бэлэн';
+    $('successMsg').textContent = publishedNote();
+    fillLinkField($('successLink'), published.url);
+    $('successOpen').href = published.url;
     $('successStatus').textContent = '';
-    $('successRecipient').textContent = recipientName && recipientName.trim() ? recipientName.trim() : 'хайртай хүн';
-    $('successModalTitle').textContent = currentExperience === 'apology'
-      ? 'Эвлэрлийн нууц линк бэлэн!'
-      : 'Урилгын линк бэлэн!';
-
-    var recoveryBox = $('successRecovery');
-    var recoveryLinkEl = $('successRecoveryLink');
-    if(recoveryBox && recoveryLinkEl){
-      if(recoveryUrl){
-        recoveryLinkEl.textContent = recoveryUrl;
-        recoveryLinkEl.dataset.url = recoveryUrl;
-        recoveryBox.style.display = '';
-      } else {
-        recoveryBox.style.display = 'none';
-      }
-    }
-    var recoveryCopyBtn = $('successRecoveryCopyBtn');
-    if(recoveryCopyBtn){
-      recoveryCopyBtn.classList.remove('copied');
-      recoveryCopyBtn.textContent = '📋 Хариу харах линк хуулах';
-    }
-
-    var copyBtn = $('successCopyBtn');
-    copyBtn.classList.remove('copied');
-    copyBtn.textContent = '📋 Хуулж авах';
-
-    // Native share sheet is the highest-leverage path on mobile. When
-    // available, promote it above the plain copy button.
-    var share = $('successShare');
-    var nativeBtn = $('successShareBtn');
-    if(navigator.share){
-      share.classList.add('has-native');
-      nativeBtn.hidden = false;
-    } else {
-      share.classList.remove('has-native');
-      nativeBtn.hidden = true;
-    }
-
-    // Messenger + Instagram deep links. Messenger has a stable web share URL;
-    // Instagram doesn't expose direct-message share to the web so we copy the
-    // link to clipboard and open the app/inbox — user pastes into DM.
-    $('shareMessenger').href = 'https://www.facebook.com/dialog/send?app_id=291823901192022&link=' + encodeURIComponent(url) + '&redirect_uri=' + encodeURIComponent(url);
-    $('shareInstagram').href = 'https://www.instagram.com/direct/inbox/';
-    $('shareInstagram').dataset.url = url;
-
-    // QR code — external service, sized for mobile scanning. Loading it lazily
-    // means the modal renders instantly if the network is slow.
-    $('successQrImg').src = 'https://api.qrserver.com/v1/create-qr-code/?size=192x192&margin=2&data=' + encodeURIComponent(url);
-    $('successQrImg').alt = 'QR: ' + url;
+    $('successRecovery').hidden = !published.recovery;
+    // Утсан дээр нэг том «Илгээх» (Messenger/Instagram бүгд native цонхонд бий).
+    // Компьютер дээр «Хуулах» л үндсэн, утас руу шилжүүлэх QR нь нэг товшилтын цаана.
+    $('successShareBtn').hidden = !navigator.share;
+    $('successQrToggle').hidden = !!navigator.share;
+    $('successQr').hidden = true;
+    $('successQrToggle').setAttribute('aria-expanded', 'false');
 
     $('successModal').hidden = false;
     document.body.classList.add('preview-modal-open');
     setTimeout(function(){
-      var focusTarget = navigator.share ? nativeBtn : copyBtn;
-      focusTarget.focus({ preventScroll: true });
+      (navigator.share ? $('successShareBtn') : $('successCopyBtn')).focus({ preventScroll: true });
     }, 220);
   }
   function closeSuccessModal(){
@@ -3415,46 +3429,27 @@
   });
   $('successShareBtn').addEventListener('click', function(){
     if(!navigator.share) return;
-    var url = $('successLink').textContent;
-    var recipient = $('successRecipient').textContent;
     navigator.share({
-      title: currentExperience === 'apology' ? 'Чамд хэлэх зүйл байна 🫶' : 'Болзооны урилга 💌',
-      text:  successShareText(recipient === 'хайртай хүн' ? '' : recipient),
-      url:   url
+      title: published.apology ? 'Чамд хэлэх зүйл байна 🫶' : 'Болзооны урилга 💌',
+      text:  successShareText(published.name, published.apology),
+      url:   published.url
     }).then(function(){
       $('successStatus').textContent = 'Илгээлээ 💌';
     }).catch(function(err){
       if(err && err.name === 'AbortError') return;
-      $('successStatus').textContent = 'Хуваалцаж чадсангүй — доорх товчоор оролдоорой';
+      $('successStatus').textContent = 'Хуваалцаж чадсангүй — «Хуулах»-аар оролдоорой';
     });
   });
-  $('successCopyBtn').addEventListener('click', function(){
-    var url = $('successLink').textContent;
-    var btn = $('successCopyBtn');
-    copyToClipboard(url).then(function(){
-      btn.classList.add('copied');
-      btn.textContent = '✅ Хуулагдлаа';
-      $('successStatus').textContent = 'Messenger/Instagram-т paste хийгээд илгээгээрэй 💌';
-    });
-  });
-  var recoveryCopy = $('successRecoveryCopyBtn');
-  if(recoveryCopy){
-    recoveryCopy.addEventListener('click', function(){
-      var link = $('successRecoveryLink');
-      var url = (link && (link.dataset.url || link.textContent)) || '';
-      if(!url) return;
-      copyToClipboard(url).then(function(){
-        recoveryCopy.classList.add('copied');
-        recoveryCopy.textContent = '✅ Хуулагдлаа — bookmark хийгээрэй';
-      });
-    });
-  }
-  $('shareInstagram').addEventListener('click', function(){
-    // Copy first so paste-in-DM works as soon as Instagram opens.
-    var url = this.dataset.url || $('successLink').textContent;
-    copyToClipboard(url).then(function(){
-      $('successStatus').textContent = 'Линк хуулагдлаа · Instagram DM-д paste хийгээрэй 💌';
-    });
+  $('successQrToggle').addEventListener('click', function(){
+    var box = $('successQr'), img = $('successQrImg');
+    box.hidden = !box.hidden;
+    this.setAttribute('aria-expanded', String(!box.hidden));
+    // Нээх үед л ачаална — линк гадны QR үйлчилгээ рүү шаардлагагүй үед явахгүй
+    if(!box.hidden && img.dataset.url !== published.url){
+      img.src = 'https://api.qrserver.com/v1/create-qr-code/?size=264x264&margin=2&data=' + encodeURIComponent(published.url);
+      img.alt = 'QR: ' + published.url;
+      img.dataset.url = published.url;
+    }
   });
   document.addEventListener('keydown', function(e){
     if(e.key === 'Escape' && !$('successModal').hidden) closeSuccessModal();
@@ -3483,15 +3478,7 @@
     try{
       var split = splitConfig(cfg);
       var res = await BolzooAPI.createInvite(split.public, code, split.private);
-      var url = buildShortUrl(res.id, true);
-      showLink(
-        url,
-        currentExperience === 'apology'
-          ? '✅ Эвлэрлийн нууц линк бэлэн! 30 хоног хүчинтэй ('+res.id+')'
-          : '✅ Урилга үүслээ! Богино линк бэлэн ('+res.id+')',
-        res.id,
-        res.ownerToken
-      );
+      showLink(buildShortUrl(res.id, true), res.id, res.ownerToken);
       refreshOwnerResponseEntry();
       setCodeUI('bad', '⚠️ Энэ код ашиглагдлаа.');
       // Upgrade the status message to include a direct new-code path so the
@@ -3521,33 +3508,9 @@
     }
   });
 
-  $('copyLink').addEventListener('click', function(){
-    var text = $('linkBox').textContent;
-    if(navigator.clipboard && navigator.clipboard.writeText){
-      navigator.clipboard.writeText(text).then(function(){
-        setStatus('📋 Хуулагдлаа! Одоо Messenger/Instagram-т paste хий');
-      });
-    } else {
-      var t = document.createElement('textarea'); t.value=text; document.body.appendChild(t); t.select(); document.execCommand('copy'); t.remove();
-      setStatus('📋 Хуулагдлаа!');
-    }
-  });
-
-  $('openLink').addEventListener('click', function(){
-    window.open($('linkBox').textContent, '_blank');
-  });
-
-  $('shareLink').addEventListener('click', function(){
-    var url = $('linkBox').textContent.trim();
-    if(!url){ setStatus('⚠️ Эхлээд линк үүсгэнэ үү'); return; }
-    var cfg = collectConfig();
-    var text = successShareText(cfg.recipientName || '');
-    if(navigator.share){
-      navigator.share({title:currentExperience === 'apology' ? 'Чамд хэлэх зүйл байна' : 'Болзооны урилга', text:text, url:url}).catch(function(){});
-    } else {
-      window.location.href = 'mailto:?subject='+encodeURIComponent('Болзооны урилга 💌')+'&body='+encodeURIComponent(text+'\n\n'+url);
-    }
-  });
+  // Хуудсан дээрх линкийн «Илгээх» нь илгээх цонхыг (утсанд share, компьютерт QR) дахин нээнэ
+  $('shareLink').addEventListener('click', openSuccessModal);
+  $('newInvite').addEventListener('click', function(){ $('resetForm').click(); });
 
   $('resetForm').addEventListener('click', function(){
     ['accessCode','recipientName','senderName','videoId','customNote','locationName','locationUrl','specialLetter','apologyWhatHappened','apologyRegret','apologyRepair'].forEach(function(id){
@@ -3581,8 +3544,9 @@
     lastCheckedCode = '';
     setCodeUI('', '');
     $('videoPreview').style.display = 'none';
-    $('linkBox').style.display = 'none';
-    $('linkActions').style.display = 'none';
+    published = null;
+    document.body.classList.remove('published');
+    $('linkResult').hidden = true;
     setStatus('');
     clearPersistence();
     setPreviewDirty(false);
